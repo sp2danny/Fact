@@ -142,7 +142,7 @@ int main(int argc, char* argv[])
 	m.center_y = (argc>=3) ? atof(argv[2]) : 0.0l;
 	m.scale_x  = (argc>=4) ? atof(argv[3]) : 3.2l;
 	m.scale_y  = (argc>=5) ? atof(argv[4]) : (m.scale_x*24.0/32.0);
-	m.generate(500);
+	m.generate(1500);
 	m.makeimage().Save("fact.bmp");
 
 	std::cout << "done." << std::endl;
