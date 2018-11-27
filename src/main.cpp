@@ -7,6 +7,8 @@
 #include <cassert>
 #include <cstdlib>
 
+#include <gtk/gtk.h>
+
 #include "graph.h"
 
 typedef std::complex<long double> Cmplx;
@@ -146,6 +148,20 @@ int main(int argc, char* argv[])
 	m.makeimage().Save("fact.bmp");
 
 	std::cout << "done." << std::endl;
+
+
+	GtkWidget *window;
+
+	gtk_init (&argc, &argv);
+
+	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	gtk_widget_show (window);
+
+	gtk_main ();
+
+
 }
+
+
 
 
