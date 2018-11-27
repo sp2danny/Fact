@@ -136,6 +136,51 @@ Image Map::makeimage()
 	return img;
 }
 
+void hello(GtkWidget *widget, gpointer data)
+{
+	(void)widget;
+	(void)data;
+
+	g_print ("Hello World\n");
+}
+
+gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
+{
+	(void)widget;
+	(void)event;
+	(void)data;
+
+	g_print("delete event occurred\n");
+
+	return TRUE;
+}
+
+void destroy(GtkWidget* widget, gpointer data)
+{
+	(void)widget;
+	(void)data;
+
+    gtk_main_quit();
+}
+
+void gtk_app()
+{
+	GtkWidget* window;
+	GtkWidget* button;
+
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	g_signal_connect(window, "delete-event", G_CALLBACK(delete_event), nullptr);
+	g_signal_connect(window, "destroy", G_CALLBACK(destroy), nullptr);
+	gtk_container_set_border_width(GTK_CONTAINER(window), 10);
+	button = gtk_button_new_with_label("Hello World");
+	g_signal_connect(button, "clicked", G_CALLBACK(hello), nullptr);
+	g_signal_connect_swapped(button, "clicked", G_CALLBACK(gtk_widget_destroy), window);
+	gtk_container_add(GTK_CONTAINER(window), button);
+	gtk_widget_show(button);
+	gtk_widget_show(window);
+	gtk_main();
+}
+
 int main(int argc, char* argv[])
 {
 	Map m;
@@ -143,23 +188,14 @@ int main(int argc, char* argv[])
 	m.center_x = (argc>=2) ? atof(argv[1]) : -0.5l;
 	m.center_y = (argc>=3) ? atof(argv[2]) : 0.0l;
 	m.scale_x  = (argc>=4) ? atof(argv[3]) : 3.2l;
-	m.scale_y  = (argc>=5) ? atof(argv[4]) : (m.scale_x*24.0/32.0);
-	m.generate(1500);
+	m.scale_y  = (argc>=5) ? atof(argv[4]) : (m.scale_x*3.0/4.0);
+	m.generate(2500);
 	m.makeimage().Save("fact.bmp");
 
 	std::cout << "done." << std::endl;
 
-
-	GtkWidget *window;
-
-	gtk_init (&argc, &argv);
-
-	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_widget_show (window);
-
-	gtk_main ();
-
-
+	gtk_init(&argc, &argv);
+	gtk_app();
 }
 
 
