@@ -3,4 +3,8 @@ bin
 *.o
 *.out
 *.bmp
-
+*.o.d
+*.d
+*.db
+Fact.txt
+*.tags
