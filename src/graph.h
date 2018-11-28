@@ -12,7 +12,7 @@ typedef unsigned char UC;
 
 struct RGB
 {
-	UC r, g, b;
+	UC b, g, r;
 };
 
 #pragma pack(pop)

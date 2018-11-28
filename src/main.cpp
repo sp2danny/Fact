@@ -100,7 +100,7 @@ void Map::generate(unsigned long cap)
 					points[idx].z = z;
 					break;
 				}
-				if (std::abs(z) > 2.1l)
+				if (std::abs(z) > 2.0l)
 				{
 					points[idx].status = Point::out;
 					points[idx].iter = n;
@@ -122,17 +122,24 @@ T clamp(T val, T min, T max)
 	return val;
 }
 
+
 RGB col(Point p)
 {
 	auto x = p.iter;
-	static const float pi2 = 3.1415926536 * 2;
-	float f = pi2 * (x % 250) / 250.0f;
-	float r = 0.5f + 0.5f*std::sin(f + pi2 * 0.000f);
-	float g = 0.5f + 0.5f*std::sin(f + pi2 * 0.333f);
-	float b = 0.5f + 0.5f*std::sin(f + pi2 * 0.666f);
-	int ri = clamp(int(r*255), 0, 255);
-	int gi = clamp(int(g*255), 0, 255);
-	int bi = clamp(int(b*255), 0, 255);
+	auto over = abs(p.z) ; // - 2.0l;
+
+	static const float pi2 = 3.1415926536f * 2;
+	static const float ilg2 = 1.0f / log(2.0f);
+	float f = ((x % 225) + 1) / 225.0f;
+
+	f -= log(log(over) * ilg2) * ilg2 / 225.0;
+	f *= pi2;
+	float r = 0.5f + 0.5f*std::sin(f + pi2 * 0.00000f);
+	float g = 0.5f + 0.5f*std::sin(f + pi2 * 0.33333f);
+	float b = 0.5f + 0.5f*std::sin(f + pi2 * 0.66666f);
+	int ri = clamp(int(r*256), 0, 255);
+	int gi = clamp(int(g*256), 0, 255);
+	int bi = clamp(int(b*256), 0, 255);
 	return {(UC)ri, (UC)gi, (UC)bi};
 }
 
@@ -148,9 +155,9 @@ Image Map::makeimage()
 			auto p = points[idx];
 			if (p.status == Point::out)
 			{
-				img.PutPixel(width-x-1,y,col(p));
+				img.PutPixel(x,y,col(p));
 			} else {
-				img.PutPixel(width-x-1,y,{0,0,0});
+				img.PutPixel(x,y,{0,0,0});
 			}
 		}
 	}
@@ -201,18 +208,20 @@ int main(int argc, char* argv[])
 {
 	Map m;
 	m.width = 640; m.height = 480;
-	m.center_x = (argc>=2) ? atof(argv[1]) : -0.5l;
-	m.center_y = (argc>=3) ? atof(argv[2]) : 0.0l;
-	m.scale_x  = (argc>=4) ? atof(argv[3]) : 3.2l;
-	m.scale_y  = (argc>=5) ? atof(argv[4]) : (m.scale_x*3.0/4.0);
-	m.generate(120);
+	m.center_x = (argc>=3) ? atof(argv[2]) : -0.666l;
+	m.center_y = (argc>=4) ? atof(argv[3]) : 0.0l;
+	m.scale_x  = (argc>=5) ? atof(argv[4]) : 3.2l;
+	m.scale_y  = (argc>=6) ? atof(argv[5]) : (m.scale_x*3.0/4.0);
+	m.generate((argc>=2) ? atoi(argv[1]) : 500 );
 	auto img = m.makeimage();
-	//img.Save("fact.bmp");
+	img.Save("fact.bmp");
 
 	std::cout << "done." << std::endl;
 
 	gtk_init(&argc, &argv);
 	gtk_app(img);
+	
+	//std::cout << min_f << std::endl << max_f << std::endl;
 }
 
 

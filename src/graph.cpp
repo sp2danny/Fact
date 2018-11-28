@@ -78,7 +78,7 @@ void Image::Save(std::ostream& out)
 
 	bih.hdr_size = sizeof(BITMAP_INFO_HDR);
 	bih.img_width = w;
-	bih.img_height = h;
+	bih.img_height = -h;
 	bih.col_planes = 1;
 	bih.bpp = 24;
 	bih.compr_meth = 0;
