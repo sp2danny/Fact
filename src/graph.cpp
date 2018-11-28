@@ -3,10 +3,17 @@
 
 #include <fstream>
 #include <cstring>
+#include <cassert>
+
+Image::Image()
+{
+	w = h = 0;
+}
 
 Image::Image(int w, int h)
 	: w(w), h(h)
 {
+	assert(w && h);
 	pixels.resize(w*h, {255,255,255});
 }
 

@@ -19,6 +19,7 @@ struct RGB
 
 struct Image
 {
+	Image();
 	Image(int, int);
 	void PutPixel(int, int, RGB);
 	void Save(std::ostream&);

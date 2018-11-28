@@ -34,6 +34,7 @@ struct Map
 	std::size_t to_index(unsigned long x, unsigned long y) const;
 	long double to_xpos(unsigned long x) const;
 	long double to_ypos(unsigned long y) const;
+	void generate_init();
 	void generate(unsigned long cap);
 	Image makeimage();
 };
@@ -66,36 +67,45 @@ long double Map::to_ypos(unsigned long y) const
 	return fact * scale_y + center_y;
 }
 
-/*
-cardoid:
-
-p = srqt( (x-1/4)^2 + y^2 )
-x < p - 2p^2 + 1/4
-
-bulb:
-
-(x+1)^2 + y^2 < 1/16
-*/
-
-void Map::generate(unsigned long cap)
+void Map::generate_init()
 {
 	points.resize(width*height);
-	unsigned long x,y;
+	unsigned long x,y, idx = 0;
 	for (y=0; y<height; ++y)
 	{
 		long double yld = to_ypos(y);
 		for (x=0; x<width; ++x)
 		{
 			long double xld = to_xpos(x);
-			Cmplx c{xld, yld};
-			Cmplx z = c;
-			unsigned long n = 1;
+			Cmplx z{xld, yld};
+			points[idx].status = Point::calc;
+			points[idx].iter = 1;
+			points[idx].z = z;
+			++idx;
+		}
+	}
+
+}
+
+void Map::generate(unsigned long cap)
+{
+	unsigned long x,y;
+	for (y=0; y<height; ++y)
+	{
+		long double yld = to_ypos(y);
+		for (x=0; x<width; ++x)
+		{
 			auto idx = to_index(x, y);
+			if (points[idx].status != Point::calc)
+				continue;
+			long double xld = to_xpos(x);
+			Cmplx c{xld, yld};
+			Cmplx z = points[idx].z;
+			unsigned long n = points[idx].iter;
 			while (true)
 			{
 				if (n >= cap)
 				{
-					points[idx].status = Point::calc;
 					points[idx].iter = n;
 					points[idx].z = z;
 					break;
@@ -107,6 +117,37 @@ void Map::generate(unsigned long cap)
 					points[idx].z = z;
 					break;
 				}
+
+				/*
+				cardoid:
+
+				p = srqt( (x-1/4)^2 + y^2 )
+				x < p - 2p^2 + 1/4
+
+				bulb:
+
+				(x+1)^2 + y^2 < 1/16
+				*/
+				
+				/*
+				long double y2 = pow(yld,2);
+				if ((pow(xld-1,2) + y2) < 0.0625l)
+				{
+					points[idx].status = Point::in;
+					points[idx].iter = 0;
+					points[idx].z = z;
+					break;
+				}
+				long double p = sqrt( pow(xld-1/4,2) + y2 );
+				if (xld < (p - 2*pow(p,2) + 0.25l))
+				{
+					points[idx].status = Point::in;
+					points[idx].iter = 0;
+					points[idx].z = z;
+					break;
+				}
+				*/
+
 				z = step(c, z);
 				++n;
 			}
@@ -164,6 +205,42 @@ Image Map::makeimage()
 	return img;
 }
 
+Map m;
+Image img;
+
+unsigned long update_cap = 100;
+unsigned long update_step = 10;
+
+gboolean idle_func(gpointer data)
+{
+	update_step += (update_step/10);
+	update_cap += update_step;
+	
+	m.generate(update_cap);
+	img = m.makeimage();
+	
+	[[maybe_unused]]
+	GtkImage* image = (GtkImage*)data;
+	
+	[[maybe_unused]]
+	GdkPixbuf* pbuf = gdk_pixbuf_new_from_data(
+		img.data(),
+		GDK_COLORSPACE_RGB,
+		FALSE,
+		8,
+		img.Width(),
+		img.Height(),
+		img.Width()*3,
+		nullptr,
+		nullptr
+	);
+
+	gtk_image_set_from_pixbuf(image, pbuf);
+	
+	std::cout << "refreshed at " << update_cap << "\r" << std::flush;
+
+	return TRUE;
+}
 
 gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
 {
@@ -176,17 +253,16 @@ gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
 	return TRUE;
 }
 
-void gtk_app(Image& img)
+void gtk_app()
 {
 	GtkWidget* window;
 	GtkWidget* image;
-	(void)image;
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_signal_connect(window, "delete-event", G_CALLBACK(delete_event), nullptr);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 8);
 
-	GdkPixbuf* pbuf = gdk_pixbuf_new_from_data (
+	GdkPixbuf* pbuf = gdk_pixbuf_new_from_data(
 		img.data(),
 		GDK_COLORSPACE_RGB,
 		FALSE,
@@ -197,29 +273,31 @@ void gtk_app(Image& img)
 		nullptr,
 		nullptr
 	);
-	image = gtk_image_new_from_pixbuf (pbuf);
-	gtk_container_add (GTK_CONTAINER (window), image);
+	image = gtk_image_new_from_pixbuf(pbuf);
+	gtk_container_add(GTK_CONTAINER(window), image);
 	gtk_widget_show(image);
 	gtk_widget_show(window);
+	gtk_idle_add(&idle_func, image);
 	gtk_main();
 }
 
 int main(int argc, char* argv[])
 {
-	Map m;
 	m.width = 640; m.height = 480;
 	m.center_x = (argc>=3) ? atof(argv[2]) : -0.666l;
 	m.center_y = (argc>=4) ? atof(argv[3]) : 0.0l;
 	m.scale_x  = (argc>=5) ? atof(argv[4]) : 3.2l;
 	m.scale_y  = (argc>=6) ? atof(argv[5]) : (m.scale_x*3.0/4.0);
-	m.generate((argc>=2) ? atoi(argv[1]) : 500 );
-	auto img = m.makeimage();
+	update_cap = (argc>=2) ? atoi(argv[1]) : 100;
+	m.generate_init();
+	m.generate(update_cap);
+	img = m.makeimage();
 	img.Save("fact.bmp");
 
 	std::cout << "done." << std::endl;
 
 	gtk_init(&argc, &argv);
-	gtk_app(img);
+	gtk_app();
 	
 	//std::cout << min_f << std::endl << max_f << std::endl;
 }
