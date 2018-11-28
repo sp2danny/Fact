@@ -226,7 +226,7 @@ gboolean idle_func(gpointer data)
 
 	gtk_image_set_from_pixbuf(image, pbuf);
 	
-	std::cout << "refreshed at " << update_cap << "\r" << std::flush;
+	//std::cout << "refreshed at " << update_cap << "\r" << std::flush;
 
 	return TRUE;
 }
@@ -242,6 +242,47 @@ gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
 	return TRUE;
 }
 
+gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
+{
+	(void)widget;
+	(void)event;
+	(void)data;
+	
+	long double ldx = m.to_xpos(event->x);
+	long double ldy = m.to_ypos(event->y);
+	
+	//std::cout << "clicked at " << event->x << "," << event->y << "\n" << std::flush;
+	
+	m.center_x = ldx;
+	m.center_y = ldy;
+	m.scale_x *= 0.5;
+	m.scale_y *= 0.5;
+	
+	update_cap = 100;
+	update_step = 10;
+	m.generate_init();
+	m.generate(update_cap);
+	img = m.makeimage();
+
+	[[maybe_unused]]
+	GdkPixbuf* pbuf = gdk_pixbuf_new_from_data(
+		img.data(),
+		GDK_COLORSPACE_RGB,
+		FALSE,
+		8,
+		img.Width(),
+		img.Height(),
+		img.Width()*3,
+		nullptr,
+		nullptr
+	);
+
+	GtkImage* img = (GtkImage*)data;
+	gtk_image_set_from_pixbuf(img, pbuf);
+
+	return TRUE;
+}
+
 void gtk_app()
 {
 	GtkWidget* window;
@@ -250,7 +291,10 @@ void gtk_app()
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_signal_connect(window, "delete-event", G_CALLBACK(delete_event), nullptr);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 8);
-
+	
+	GtkWidget* eventbox = gtk_event_box_new();
+	gtk_container_add(GTK_CONTAINER(window), eventbox);
+	
 	GdkPixbuf* pbuf = gdk_pixbuf_new_from_data(
 		img.data(),
 		GDK_COLORSPACE_RGB,
@@ -263,7 +307,13 @@ void gtk_app()
 		nullptr
 	);
 	image = gtk_image_new_from_pixbuf(pbuf);
-	gtk_container_add(GTK_CONTAINER(window), image);
+
+	gtk_widget_set_events(eventbox, GDK_BUTTON1_MASK);
+	g_signal_connect(GTK_OBJECT(eventbox), "button-press-event", G_CALLBACK(button_press), image);
+
+	gtk_container_add(GTK_CONTAINER(eventbox), image);
+	
+    gtk_widget_show(eventbox);
 	gtk_widget_show(image);
 	gtk_widget_show(window);
 	gtk_idle_add(&idle_func, image);
