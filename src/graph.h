@@ -8,10 +8,14 @@
 
 typedef unsigned char UC;
 
+#pragma pack(push, 1)
+
 struct RGB
 {
 	UC r, g, b;
 };
+
+#pragma pack(pop)
 
 struct Image
 {
@@ -19,6 +23,9 @@ struct Image
 	void PutPixel(int, int, RGB);
 	void Save(std::ostream&);
 	void Save(std::string fn);
+	UC* data() { return (UC*)pixels.data(); }
+	int Width() const { return w; }
+	int Height() const { return h; }
 private:
 	int idx(int, int) const;
 	int w, h;

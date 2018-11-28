@@ -18,7 +18,12 @@ Cmplx step(Cmplx c, Cmplx z)
 	return z*z + c;
 }
 
-typedef unsigned long Point;
+struct Point
+{
+	enum { in, calc, out } status = calc;
+	unsigned long iter = 0;
+	Cmplx z = {0,0};
+};
 
 struct Map
 {
@@ -61,6 +66,17 @@ long double Map::to_ypos(unsigned long y) const
 	return fact * scale_y + center_y;
 }
 
+/*
+cardoid:
+
+p = srqt( (x-1/4)^2 + y^2 )
+x < p - 2p^2 + 1/4
+
+bulb:
+
+(x+1)^2 + y^2 < 1/16
+*/
+
 void Map::generate(unsigned long cap)
 {
 	points.resize(width*height);
@@ -79,12 +95,16 @@ void Map::generate(unsigned long cap)
 			{
 				if (n >= cap)
 				{
-					points[idx] = 0;
+					points[idx].status = Point::calc;
+					points[idx].iter = n;
+					points[idx].z = z;
 					break;
 				}
 				if (std::abs(z) > 2.1l)
 				{
-					points[idx] = n;
+					points[idx].status = Point::out;
+					points[idx].iter = n;
+					points[idx].z = z;
 					break;
 				}
 				z = step(c, z);
@@ -102,8 +122,9 @@ T clamp(T val, T min, T max)
 	return val;
 }
 
-RGB col(unsigned long x)
+RGB col(Point p)
 {
+	auto x = p.iter;
 	static const float pi2 = 3.1415926536 * 2;
 	float f = pi2 * (x % 250) / 250.0f;
 	float r = 0.5f + 0.5f*std::sin(f + pi2 * 0.000f);
@@ -125,7 +146,7 @@ Image Map::makeimage()
 		{
 			auto idx = to_index(x, y);
 			auto p = points[idx];
-			if (p)
+			if (p.status == Point::out)
 			{
 				img.PutPixel(width-x-1,y,col(p));
 			} else {
@@ -136,13 +157,6 @@ Image Map::makeimage()
 	return img;
 }
 
-void hello(GtkWidget *widget, gpointer data)
-{
-	(void)widget;
-	(void)data;
-
-	g_print ("Hello World\n");
-}
 
 gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
 {
@@ -150,33 +164,35 @@ gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
 	(void)event;
 	(void)data;
 
-	g_print("delete event occurred\n");
-
+	//printf("de 1\n"); fflush(stdout);
+	gtk_main_quit();
 	return TRUE;
 }
 
-void destroy(GtkWidget* widget, gpointer data)
-{
-	(void)widget;
-	(void)data;
-
-    gtk_main_quit();
-}
-
-void gtk_app()
+void gtk_app(Image& img)
 {
 	GtkWidget* window;
-	GtkWidget* button;
+	GtkWidget* image;
+	(void)image;
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_signal_connect(window, "delete-event", G_CALLBACK(delete_event), nullptr);
-	g_signal_connect(window, "destroy", G_CALLBACK(destroy), nullptr);
-	gtk_container_set_border_width(GTK_CONTAINER(window), 10);
-	button = gtk_button_new_with_label("Hello World");
-	g_signal_connect(button, "clicked", G_CALLBACK(hello), nullptr);
-	g_signal_connect_swapped(button, "clicked", G_CALLBACK(gtk_widget_destroy), window);
-	gtk_container_add(GTK_CONTAINER(window), button);
-	gtk_widget_show(button);
+	gtk_container_set_border_width(GTK_CONTAINER(window), 8);
+
+	GdkPixbuf* pbuf = gdk_pixbuf_new_from_data (
+		img.data(),
+		GDK_COLORSPACE_RGB,
+		FALSE,
+		8,
+		img.Width(),
+		img.Height(),
+		img.Width()*3,
+		nullptr,
+		nullptr
+	);
+	image = gtk_image_new_from_pixbuf (pbuf);
+	gtk_container_add (GTK_CONTAINER (window), image);
+	gtk_widget_show(image);
 	gtk_widget_show(window);
 	gtk_main();
 }
@@ -189,13 +205,14 @@ int main(int argc, char* argv[])
 	m.center_y = (argc>=3) ? atof(argv[2]) : 0.0l;
 	m.scale_x  = (argc>=4) ? atof(argv[3]) : 3.2l;
 	m.scale_y  = (argc>=5) ? atof(argv[4]) : (m.scale_x*3.0/4.0);
-	m.generate(2500);
-	m.makeimage().Save("fact.bmp");
+	m.generate(120);
+	auto img = m.makeimage();
+	//img.Save("fact.bmp");
 
 	std::cout << "done." << std::endl;
 
 	gtk_init(&argc, &argv);
-	gtk_app();
+	gtk_app(img);
 }
 
 
