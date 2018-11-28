@@ -118,35 +118,24 @@ void Map::generate(unsigned long cap)
 					break;
 				}
 
-				/*
-				cardoid:
-
-				p = srqt( (x-1/4)^2 + y^2 )
-				x < p - 2p^2 + 1/4
-
-				bulb:
-
-				(x+1)^2 + y^2 < 1/16
-				*/
-				
-				/*
-				long double y2 = pow(yld,2);
-				if ((pow(xld-1,2) + y2) < 0.0625l)
+				// first bulb
+				long double y2 = pow(yld, 2);
+				if ((pow(xld+1.0l, 2.0l) + y2) < 0.0625l)
 				{
 					points[idx].status = Point::in;
 					points[idx].iter = 0;
 					points[idx].z = z;
 					break;
 				}
-				long double p = sqrt( pow(xld-1/4,2) + y2 );
-				if (xld < (p - 2*pow(p,2) + 0.25l))
+				// main cardoid
+				long double p = sqrt( pow(xld-0.25l, 2.0l) + y2 );
+				if (xld < (p - 2.0l*pow(p, 2.0l) + 0.25l))
 				{
 					points[idx].status = Point::in;
 					points[idx].iter = 0;
 					points[idx].z = z;
 					break;
 				}
-				*/
 
 				z = step(c, z);
 				++n;
@@ -283,7 +272,7 @@ void gtk_app()
 
 int main(int argc, char* argv[])
 {
-	m.width = 640; m.height = 480;
+	m.width = 1024; m.height = 768;
 	m.center_x = (argc>=3) ? atof(argv[2]) : -0.666l;
 	m.center_y = (argc>=4) ? atof(argv[3]) : 0.0l;
 	m.scale_x  = (argc>=5) ? atof(argv[4]) : 3.2l;
