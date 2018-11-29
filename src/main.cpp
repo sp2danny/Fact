@@ -10,6 +10,9 @@
 #include <gtk/gtk.h>
 
 #include "graph.h"
+#include "cmdline.h"
+
+cmdline cmd;
 
 typedef std::complex<long double> Cmplx;
 
@@ -322,16 +325,21 @@ void gtk_app()
 
 int main(int argc, char* argv[])
 {
-	m.width = 1024; m.height = 768;
-	m.center_x = (argc>=3) ? atof(argv[2]) : -0.666l;
-	m.center_y = (argc>=4) ? atof(argv[3]) : 0.0l;
-	m.scale_x  = (argc>=5) ? atof(argv[4]) : 3.2l;
-	m.scale_y  = (argc>=6) ? atof(argv[5]) : (m.scale_x*3.0/4.0);
-	update_cap = (argc>=2) ? atoi(argv[1]) : 100;
+	cmd.init(argc, argv);
+	
+	m.width    = std::stoi(cmd.get_parameter("width",  "640"));
+	m.height   = std::stoi(cmd.get_parameter("height", "480"));
+	m.center_x = std::stof(cmd.get_parameter("center-x", "-0.75"));
+	m.center_y = std::stof(cmd.get_parameter("center-y", "-0.0"));
+	m.scale_x  = std::stof(cmd.get_parameter("scale-x", "3.2"));
+	m.scale_y  = std::stof(cmd.get_parameter("scale-y", std::to_string(m.scale_x*3.0/4.0).c_str()));
+	update_cap = std::stoi(cmd.get_parameter("depth",  "100"));
+	
 	m.generate_init();
 	m.generate(update_cap);
 	img = m.makeimage();
-	img.Save("fact.bmp");
+	if (cmd.has_option('s', "save"))
+		img.Save("fact.bmp");
 
 	std::cout << "done." << std::endl;
 
