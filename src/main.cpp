@@ -163,8 +163,6 @@ auto Map::generate(unsigned long cap) -> Status
 	else return did_smth ? was_updated : no_change;
 }
 
-// enum Status { all_done, was_updated, no_change };
-
 template<typename T>
 T clamp(T val, T min, T max)
 {
@@ -176,7 +174,7 @@ T clamp(T val, T min, T max)
 RGB col(Point p)
 {
 	auto x = p.iter;
-	auto over = abs(p.z) ; // - 2.0l;
+	auto over = abs(p.z) ;
 
 	static const float pi2 = 3.1415926536f * 2;
 	static const float ilg2 = 1.0f / log(2.0f);
@@ -225,20 +223,37 @@ gboolean idle_func(gpointer data)
 {
 	if (m.map_all_done) return TRUE;
 
+	static unsigned long noupdatefor = 0;
+
+	if (noupdatefor >= 100) return TRUE;
+
 	update_step += (update_step/10);
 	update_cap += update_step;
-	
+
 	auto res = m.generate(update_cap);
-	if (res==Map::all_done)
+	if (res == Map::all_done)
 	{
+		std::cout << " --- all done ---   " << std::endl << std::flush;
 		m.map_all_done = true;
 		return TRUE;
 	}
+
+	if (res == Map::was_updated)
+	{
+		std::cout << " working            " << "\r" << std::flush;
+		noupdatefor = 0;
+	}
+	if (res == Map::no_change)
+	{
+		noupdatefor += 1;
+		std::cout << " unupdated " << noupdatefor << "\r" << std::flush;
+	}
+
 	img = m.makeimage();
-	
+
 	[[maybe_unused]]
 	GtkImage* image = (GtkImage*)data;
-	
+
 	[[maybe_unused]]
 	GdkPixbuf* pbuf = gdk_pixbuf_new_from_data(
 		img.data(),
@@ -253,8 +268,6 @@ gboolean idle_func(gpointer data)
 	);
 
 	gtk_image_set_from_pixbuf(image, pbuf);
-	
-	//std::cout << "refreshed at " << update_cap << "\r" << std::flush;
 
 	return TRUE;
 }
@@ -265,7 +278,6 @@ gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
 	(void)event;
 	(void)data;
 
-	//printf("de 1\n"); fflush(stdout);
 	gtk_main_quit();
 	return TRUE;
 }
@@ -335,13 +347,13 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 
 	if (event->type != GDK_BUTTON_PRESS)
 		return TRUE;
-	
+
     if (event->button == 3)
     {
        	m.scale_x *= zoom_step;
 		m.scale_y *= zoom_step;
     }
-	
+
     if (event->button == 1)
 	{
 		long double ldx = m.to_xpos(event->x);
@@ -352,10 +364,10 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 		m.scale_x /= zoom_step;
 		m.scale_y /= zoom_step;
 	}
-	
+
 	update_cap = 100;
 	update_step = 10;
-	
+
 	mk_img((GtkImage*)data);
 	return TRUE;
 }
@@ -366,13 +378,13 @@ void gtk_app()
 	GtkWidget* image;
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	g_signal_connect(G_OBJECT(window), "delete-event",    G_CALLBACK(delete_event), nullptr);
+	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(delete_event), nullptr);
 
 	gtk_container_set_border_width(GTK_CONTAINER(window), 8);
-	
+
 	GtkWidget* eventbox = gtk_event_box_new();
 	gtk_container_add(GTK_CONTAINER(window), eventbox);
-	
+
 	GdkPixbuf* pbuf = gdk_pixbuf_new_from_data(
 		img.data(),
 		GDK_COLORSPACE_RGB,
@@ -386,12 +398,12 @@ void gtk_app()
 	);
 	image = gtk_image_new_from_pixbuf(pbuf);
 
-	g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(key_press), image);
+	g_signal_connect(G_OBJECT(window), "key-press-event", G_CALLBACK(key_press), image);
 	gtk_widget_set_events(eventbox, GDK_BUTTON1_MASK);
 	g_signal_connect(GTK_OBJECT(eventbox), "button-press-event", G_CALLBACK(button_press), image);
 
 	gtk_container_add(GTK_CONTAINER(eventbox), image);
-	
+
     gtk_widget_show(eventbox);
 	gtk_widget_show(image);
 	gtk_widget_show(window);
@@ -402,24 +414,15 @@ void gtk_app()
 int main(int argc, char* argv[])
 {
 	cmd.init(argc, argv);
-	
-	m.width    = std::stoi(cmd.get_parameter("width",  "640"));
-	m.height   = std::stoi(cmd.get_parameter("height", "480"));
-	m.center_x = std::stold(cmd.get_parameter("center-x", "-0.75"));
-	m.center_y = std::stold(cmd.get_parameter("center-y", "-0.0"));
-	m.scale_x  = std::stold(cmd.get_parameter("scale-x", "3.2"));
-	m.scale_y  = std::stold(cmd.get_parameter("scale-y", std::to_string( (long double) m.scale_x*3.0l/4.0l).c_str()));
-	update_cap = std::stoi(cmd.get_parameter("depth",  "100"));
-	zoom_step  = std::stoi(cmd.get_parameter("zoom-step",  "2"));
 
-	/*std::cout << std::setprecision(70);
-	std::cout << m.width    << std::endl;
-	std::cout << m.height   << std::endl;
-	std::cout << m.center_x << std::endl;
-	std::cout << m.center_y << std::endl;
-	std::cout << m.scale_x  << std::endl;
-	std::cout << m.scale_y  << std::endl;
-	std::cout << update_cap << std::endl;*/
+	m.width    = std::stoi(  cmd.get_parameter ("width",      "640"   ));
+	m.height   = std::stoi(  cmd.get_parameter ("height",     "480"   ));
+	m.center_x = std::stold( cmd.get_parameter ("center-x",   "-0.75" ));
+	m.center_y = std::stold( cmd.get_parameter ("center-y",   "-0.0"  ));
+	m.scale_x  = std::stold( cmd.get_parameter ("scale-x",    "3.2"   ));
+	m.scale_y  = std::stold( cmd.get_parameter ("scale-y",    std::to_string( (Flt) m.scale_x*3.0l/4.0l).c_str()));
+	update_cap = std::stoi(  cmd.get_parameter ("depth",      "100"   ));
+	zoom_step  = std::stoi(  cmd.get_parameter ("zoom-step",  "2"     ));
 
 	m.generate_init();
 	m.generate(update_cap);
@@ -431,10 +434,5 @@ int main(int argc, char* argv[])
 
 	gtk_init(&argc, &argv);
 	gtk_app();
-	
-	//std::cout << min_f << std::endl << max_f << std::endl;
 }
-
-
-
 

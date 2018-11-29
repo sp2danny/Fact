@@ -33,8 +33,3 @@ private:
 	std::vector<RGB> pixels;
 };
 
-
-
-
-
-

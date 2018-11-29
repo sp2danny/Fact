@@ -62,10 +62,6 @@ struct BITMAP_INFO_HDR
 
 void Image::Save(std::ostream& out)
 {
-	(void)out;
-	(void)w;
-	(void)h;
-
 	BITMAP_FILE_HEADER bfh;
 
 	int scanlinesize = 3*w;
@@ -100,7 +96,7 @@ void Image::Save(std::ostream& out)
 	{
 		for(int x=0;x<w;++x)
 		{
-			RGB& pix = pixels[idx(x,y)]; // Pixels(x,y);
+			RGB& pix = pixels[idx(x,y)];
 
 			out.write( (char*) & pix.r, 1 );
 			out.write( (char*) & pix.g, 1 );
@@ -117,9 +113,3 @@ int Image::idx(int x, int y) const
 {
 	return x + y*w;
 }
-
-/******************************************************************************/
-
-
-
-
