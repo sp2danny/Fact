@@ -356,8 +356,8 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 
     if (event->button == 1)
 	{
-		long double ldx = m.to_xpos(event->x);
-		long double ldy = m.to_ypos(event->y);
+		Flt ldx = m.to_xpos(event->x);
+		Flt ldy = m.to_ypos(event->y);
 
 		m.center_x = ldx;
 		m.center_y = ldy;
@@ -420,7 +420,7 @@ int main(int argc, char* argv[])
 	m.center_x = std::stold( cmd.get_parameter ("center-x",   "-0.75" ));
 	m.center_y = std::stold( cmd.get_parameter ("center-y",   "-0.0"  ));
 	m.scale_x  = std::stold( cmd.get_parameter ("scale-x",    "3.2"   ));
-	m.scale_y  = std::stold( cmd.get_parameter ("scale-y",    std::to_string( (Flt) m.scale_x*3.0l/4.0l).c_str()));
+	m.scale_y  = std::stold( cmd.get_parameter ("scale-y",    std::to_string((Flt)m.scale_x*3.0l/4.0l).c_str()));
 	update_cap = std::stoi(  cmd.get_parameter ("depth",      "100"   ));
 	zoom_step  = std::stoi(  cmd.get_parameter ("zoom-step",  "2"     ));
 
