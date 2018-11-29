@@ -23,13 +23,16 @@ compile: fact.out
 clear:
 	rm bin/*.o *.out
 
-bin/main.o: src/main.cpp src/graph.h
+bin/main.o: src/main.cpp src/graph.h src/cmdline.h
 	$(COMPILE) -c -o bin/main.o src/main.cpp
 
 bin/graph.o: src/graph.cpp src/graph.h
 	$(COMPILE) -c -o bin/graph.o src/graph.cpp
 
-fact.out: bin/main.o bin/graph.o
-	$(LINK) -o fact.out bin/main.o bin/graph.o
+bin/cmdline.o: src/cmdline.cpp src/cmdline.h
+	$(COMPILE) -c -o bin/cmdline.o src/cmdline.cpp
+
+fact.out: bin/main.o bin/graph.o bin/cmdline.o
+	$(LINK) -o fact.out bin/main.o bin/graph.o bin/cmdline.o
 
 

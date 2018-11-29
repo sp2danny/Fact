@@ -6,15 +6,20 @@
 #include <cstddef>
 #include <cassert>
 #include <cstdlib>
+#include <iomanip>
 
 #include <gtk/gtk.h>
+#include <gdk/gdk.h>
+#include <gdk/gdkkeysyms.h>
 
 #include "graph.h"
 #include "cmdline.h"
 
 cmdline cmd;
 
-typedef std::complex<long double> Cmplx;
+typedef long double Flt;
+
+typedef std::complex<Flt> Cmplx;
 
 Cmplx step(Cmplx c, Cmplx z)
 {
@@ -31,14 +36,16 @@ struct Point
 struct Map
 {
 	unsigned long width, height;
-	long double scale_x, scale_y;
-	long double center_x, center_y;
+	Flt scale_x, scale_y;
+	Flt center_x, center_y;
+	bool map_all_done = false;
 	std::vector<Point> points;
 	std::size_t to_index(unsigned long x, unsigned long y) const;
-	long double to_xpos(unsigned long x) const;
-	long double to_ypos(unsigned long y) const;
+	Flt to_xpos(unsigned long x) const;
+	Flt to_ypos(unsigned long y) const;
 	void generate_init();
-	void generate(unsigned long cap);
+	enum Status { all_done, was_updated, no_change };
+	Status generate(unsigned long cap);
 	Image makeimage();
 };
 
@@ -52,34 +59,35 @@ std::size_t Map::to_index(unsigned long x, unsigned long y) const
 	return idx;
 }
 
-long double Map::to_xpos(unsigned long x) const
+Flt Map::to_xpos(unsigned long x) const
 {
 	assert(x<width);
-	long double fact = x;
-	fact /= (long double)width;
+	Flt fact = x;
+	fact /= (Flt)width;
 	fact -= 0.5l;
 	return fact * scale_x + center_x;
 }
 
-long double Map::to_ypos(unsigned long y) const
+Flt Map::to_ypos(unsigned long y) const
 {
 	assert(y<height);
-	long double fact = y;
-	fact /= (long double)height;
+	Flt fact = y;
+	fact /= (Flt)height;
 	fact -= 0.5l;
 	return fact * scale_y + center_y;
 }
 
 void Map::generate_init()
 {
+	map_all_done = false;
 	points.resize(width*height);
 	unsigned long x,y, idx = 0;
 	for (y=0; y<height; ++y)
 	{
-		long double yld = to_ypos(y);
+		Flt yld = to_ypos(y);
 		for (x=0; x<width; ++x)
 		{
-			long double xld = to_xpos(x);
+			Flt xld = to_xpos(x);
 			Cmplx z{xld, yld};
 			points[idx].status = Point::calc;
 			points[idx].iter = 1;
@@ -87,21 +95,24 @@ void Map::generate_init()
 			++idx;
 		}
 	}
-
 }
 
-void Map::generate(unsigned long cap)
+auto Map::generate(unsigned long cap) -> Status
 {
+	bool found_one = false;
+	bool did_smth = false;
+
 	unsigned long x,y;
 	for (y=0; y<height; ++y)
 	{
-		long double yld = to_ypos(y);
+		Flt yld = to_ypos(y);
 		for (x=0; x<width; ++x)
 		{
 			auto idx = to_index(x, y);
 			if (points[idx].status != Point::calc)
 				continue;
-			long double xld = to_xpos(x);
+			found_one = true;
+			Flt xld = to_xpos(x);
 			Cmplx c{xld, yld};
 			Cmplx z = points[idx].z;
 			unsigned long n = points[idx].iter;
@@ -115,6 +126,7 @@ void Map::generate(unsigned long cap)
 				}
 				if (std::abs(z) > 2.0l)
 				{
+					did_smth = true;
 					points[idx].status = Point::out;
 					points[idx].iter = n;
 					points[idx].z = z;
@@ -122,18 +134,20 @@ void Map::generate(unsigned long cap)
 				}
 
 				// first bulb
-				long double y2 = pow(yld, 2);
+				Flt y2 = pow(yld, 2);
 				if ((pow(xld+1.0l, 2.0l) + y2) < 0.0625l)
 				{
+					did_smth = true;
 					points[idx].status = Point::in;
 					points[idx].iter = 0;
 					points[idx].z = z;
 					break;
 				}
 				// main cardoid
-				long double p = sqrt( pow(xld-0.25l, 2.0l) + y2 );
+				Flt p = sqrt( pow(xld-0.25l, 2.0l) + y2 );
 				if (xld < (p - 2.0l*pow(p, 2.0l) + 0.25l))
 				{
+					did_smth = true;
 					points[idx].status = Point::in;
 					points[idx].iter = 0;
 					points[idx].z = z;
@@ -145,7 +159,11 @@ void Map::generate(unsigned long cap)
 			}
 		}
 	}
+	if (!found_one) return all_done;
+	else return did_smth ? was_updated : no_change;
 }
+
+// enum Status { all_done, was_updated, no_change };
 
 template<typename T>
 T clamp(T val, T min, T max)
@@ -154,7 +172,6 @@ T clamp(T val, T min, T max)
 	if (val>max) val=max;
 	return val;
 }
-
 
 RGB col(Point p)
 {
@@ -202,13 +219,21 @@ Image img;
 
 unsigned long update_cap = 100;
 unsigned long update_step = 10;
+float zoom_step = 2;
 
 gboolean idle_func(gpointer data)
 {
+	if (m.map_all_done) return TRUE;
+
 	update_step += (update_step/10);
 	update_cap += update_step;
 	
-	m.generate(update_cap);
+	auto res = m.generate(update_cap);
+	if (res==Map::all_done)
+	{
+		m.map_all_done = true;
+		return TRUE;
+	}
 	img = m.makeimage();
 	
 	[[maybe_unused]]
@@ -245,24 +270,8 @@ gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
 	return TRUE;
 }
 
-gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
+void mk_img(GtkImage* image)
 {
-	(void)widget;
-	(void)event;
-	(void)data;
-	
-	long double ldx = m.to_xpos(event->x);
-	long double ldy = m.to_ypos(event->y);
-	
-	//std::cout << "clicked at " << event->x << "," << event->y << "\n" << std::flush;
-	
-	m.center_x = ldx;
-	m.center_y = ldy;
-	m.scale_x *= 0.5;
-	m.scale_y *= 0.5;
-	
-	update_cap = 100;
-	update_step = 10;
 	m.generate_init();
 	m.generate(update_cap);
 	img = m.makeimage();
@@ -280,9 +289,74 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 		nullptr
 	);
 
-	GtkImage* img = (GtkImage*)data;
-	gtk_image_set_from_pixbuf(img, pbuf);
+	gtk_image_set_from_pixbuf(image, pbuf);
+}
 
+gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
+{
+	(void)widget;
+	(void)data;
+	switch (event->keyval)
+	{
+	case GDK_s:
+		img.Save("fact.bmp");
+		break;
+	case GDK_z:
+		zoom_step += 1.0l;
+		break;
+	case GDK_x:
+		zoom_step -= 1.0l;
+		break;
+	case GDK_space:
+		m.scale_x /= zoom_step;
+		m.scale_y /= zoom_step;
+		mk_img((GtkImage*)data);
+		break;
+	case GDK_p:
+		std::cout << std::setprecision(20);
+		std::cout << "center-x     : " << m.center_x  << std::endl;
+		std::cout << "center-y     : " << m.center_y  << std::endl;
+		std::cout << "scale-x      : " << m.scale_x   << std::endl;
+		std::cout << "scale-y      : " << m.scale_y   << std::endl;
+		std::cout << "update cap   : " << update_cap  << std::endl;
+		std::cout << "update step  : " << update_step << std::endl;
+		std::cout << "zoom step    : " << zoom_step   << std::endl;
+		break;
+	}
+
+	return TRUE;
+}
+
+gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
+{
+	(void)widget;
+	(void)event;
+	(void)data;
+
+	if (event->type != GDK_BUTTON_PRESS)
+		return TRUE;
+	
+    if (event->button == 3)
+    {
+       	m.scale_x *= zoom_step;
+		m.scale_y *= zoom_step;
+    }
+	
+    if (event->button == 1)
+	{
+		long double ldx = m.to_xpos(event->x);
+		long double ldy = m.to_ypos(event->y);
+
+		m.center_x = ldx;
+		m.center_y = ldy;
+		m.scale_x /= zoom_step;
+		m.scale_y /= zoom_step;
+	}
+	
+	update_cap = 100;
+	update_step = 10;
+	
+	mk_img((GtkImage*)data);
 	return TRUE;
 }
 
@@ -292,7 +366,8 @@ void gtk_app()
 	GtkWidget* image;
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	g_signal_connect(window, "delete-event", G_CALLBACK(delete_event), nullptr);
+	g_signal_connect(G_OBJECT(window), "delete-event",    G_CALLBACK(delete_event), nullptr);
+
 	gtk_container_set_border_width(GTK_CONTAINER(window), 8);
 	
 	GtkWidget* eventbox = gtk_event_box_new();
@@ -311,6 +386,7 @@ void gtk_app()
 	);
 	image = gtk_image_new_from_pixbuf(pbuf);
 
+	g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(key_press), image);
 	gtk_widget_set_events(eventbox, GDK_BUTTON1_MASK);
 	g_signal_connect(GTK_OBJECT(eventbox), "button-press-event", G_CALLBACK(button_press), image);
 
@@ -329,12 +405,22 @@ int main(int argc, char* argv[])
 	
 	m.width    = std::stoi(cmd.get_parameter("width",  "640"));
 	m.height   = std::stoi(cmd.get_parameter("height", "480"));
-	m.center_x = std::stof(cmd.get_parameter("center-x", "-0.75"));
-	m.center_y = std::stof(cmd.get_parameter("center-y", "-0.0"));
-	m.scale_x  = std::stof(cmd.get_parameter("scale-x", "3.2"));
-	m.scale_y  = std::stof(cmd.get_parameter("scale-y", std::to_string(m.scale_x*3.0/4.0).c_str()));
+	m.center_x = std::stold(cmd.get_parameter("center-x", "-0.75"));
+	m.center_y = std::stold(cmd.get_parameter("center-y", "-0.0"));
+	m.scale_x  = std::stold(cmd.get_parameter("scale-x", "3.2"));
+	m.scale_y  = std::stold(cmd.get_parameter("scale-y", std::to_string( (long double) m.scale_x*3.0l/4.0l).c_str()));
 	update_cap = std::stoi(cmd.get_parameter("depth",  "100"));
-	
+	zoom_step  = std::stoi(cmd.get_parameter("zoom-step",  "2"));
+
+	/*std::cout << std::setprecision(70);
+	std::cout << m.width    << std::endl;
+	std::cout << m.height   << std::endl;
+	std::cout << m.center_x << std::endl;
+	std::cout << m.center_y << std::endl;
+	std::cout << m.scale_x  << std::endl;
+	std::cout << m.scale_y  << std::endl;
+	std::cout << update_cap << std::endl;*/
+
 	m.generate_init();
 	m.generate(update_cap);
 	img = m.makeimage();
