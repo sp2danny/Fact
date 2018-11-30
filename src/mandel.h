@@ -34,7 +34,7 @@ struct Map
 	void generate_init();
 	enum Status { all_done, was_updated, no_change };
 	Status generate(UL cap);
-	Image makeimage();
+	Image makeimage(float mod);
 };
 
 template<typename T>
@@ -45,7 +45,7 @@ T clamp(T val, T min, T max)
 	return val;
 }
 
-RGB col(Point p);
+RGB col(Point p, float mod);
 
 void movie_maker(Map& m, UL cap);
 

@@ -132,16 +132,17 @@ auto Map::generate(UL cap) -> Status
 		return did_smth ? was_updated : no_change;
 }
 
-RGB col(Point p)
+RGB col(Point p, float mod)
 {
 	auto x = p.iter;
 	auto over = abs(p.z) ;
 
 	static const float pi2 = 3.1415926536f * 2;
 	static const float ilg2 = 1.0f / log(2.0f);
-	float f = ((x % 225) + 1) / 225.0f;
+	float f = fmod(x, mod) + 1;
+	f /= mod;
 
-	f -= log(log(over) * ilg2) * ilg2 / 225.0;
+	f -= log(log(over) * ilg2) * ilg2 / mod;
 	f *= pi2;
 	float r = 0.5f + 0.5f*std::sin(f + pi2 * 0.00000f);
 	float g = 0.5f + 0.5f*std::sin(f + pi2 * 0.33333f);
@@ -152,7 +153,7 @@ RGB col(Point p)
 	return {(UC)ri, (UC)gi, (UC)bi};
 }
 
-Image Map::makeimage()
+Image Map::makeimage(float mod)
 {
 	Image img(width, height);
 	UL x,y;
@@ -164,7 +165,7 @@ Image Map::makeimage()
 			auto p = points[idx];
 			if (p.status == Point::out)
 			{
-				img.PutPixel(x,y,col(p));
+				img.PutPixel(x,y,col(p, mod));
 			} else {
 				img.PutPixel(x,y,{0,0,0});
 			}
@@ -186,7 +187,7 @@ void movie_maker(Map& m, UL cap)
 		m.scale_y = zoom_cur / xy_factor;
 		m.generate_init();
 		m.generate(cap);
-		auto img = m.makeimage();
+		auto img = m.makeimage(225.f);
 		std::sprintf(buff, "./img/m%05lu.bmp", num);
 		img.Save(buff);
 		zoom_cur *= 0.99l;

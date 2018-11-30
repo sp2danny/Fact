@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 		name += ".bmp";
 		return name;
 	};
-	
+
 	UL i = 1;
 	Str curr_name = mkname(i);
 
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 	{
 		std::cout << "skipping 1 .. " << (i-1) << std::endl;
 	}
-	
+
 	Map m;
 	m.width  = image_width;
 	m.height = image_height;
@@ -74,7 +74,8 @@ int main(int argc, char* argv[])
 		m.scale_y = (zoom_cur * (Flt)image_height) / (Flt)image_width;
 		m.generate_init();
 		m.generate(update_cap);
-		m.makeimage().Save(curr_name);
+		float mod = 215 / pow(zoom_cur, 0.05);
+		m.makeimage(mod).Save(curr_name);
 		std::cout << "Wrote: " << curr_name << "                \r" << std::flush;
 		curr_name = mkname(++i);
 		zoom_cur *= zoom_step;

@@ -32,7 +32,7 @@
       </Compiler>
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(ProjectName)_dbg.out" IntermediateDirectory="./bin/Debug" Command="./$(ProjectName)_dbg.out" CommandArguments="target=bmp" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <General OutputFile="$(ProjectName)_dbg.out" IntermediateDirectory="./bin/Debug" Command="./$(ProjectName)_dbg.out" CommandArguments="center-x=-0xb.cbd5c4ae00101d2p-3 center-y=-0xb.b3604dafd65634fp-25 update-cap=1250 zoom-start=5 width=1024 height=768 num-digits=5 lead=img- target=./img zoom-end=5e-16" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>
