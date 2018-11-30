@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CodeLite_Workspace Name="Fact" Database="">
-  <Project Name="Fact" Path="Fact.project" Active="Yes"/>
+  <Project Name="Fact" Path="Fact.project" Active="No"/>
+  <Project Name="mm" Path="mm.project" Active="Yes"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="no">
       <Project Name="Fact" ConfigName="Debug"/>
+      <Project Name="mm" ConfigName="Debug"/>
     </WorkspaceConfiguration>
     <WorkspaceConfiguration Name="Release" Selected="yes">
       <Project Name="Fact" ConfigName="Release"/>
+      <Project Name="mm" ConfigName="Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>
