@@ -127,6 +127,8 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		zoom_step -= 1.0l;
 		break;
 	case GDK_space:
+		update_cap = 100;
+		update_step = 10;
 		m.scale_x /= zoom_step;
 		m.scale_y /= zoom_step;
 		mk_img((GtkImage*)data);
