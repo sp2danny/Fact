@@ -16,15 +16,15 @@ int main(int argc, char* argv[])
 {
 	cmd.init(argc, argv);
 
-	Flt   zoom_cur        = std::stold( cmd.get_parameter("zoom-start",   "3.2"     ));
-	Flt   zoom_end        = std::stold( cmd.get_parameter("zoom-end",     "0.32"    ));
-	Flt   zoom_step       = std::stold( cmd.get_parameter("zoom-step",    "0.99"    ));
-	UL    num_dig         = std::stol(  cmd.get_parameter("num-digits",   "3"       ));
-	Flt   center_x        = std::stold( cmd.get_parameter("center-x",     "+0.5"    ));
-	Flt   center_y        = std::stold( cmd.get_parameter("center-y",     "0.0"     ));
-	UL    update_cap      = std::stol(  cmd.get_parameter("update-cap",   "50"      ));
-	UL    image_width     = std::stol(  cmd.get_parameter("width",        "640"     ));
-	UL    image_height    = std::stol(  cmd.get_parameter("height",       "480"     ));
+	Flt   zoom_cur        = std::stold ( cmd.get_parameter( "zoom-start",   "3.2"     ));
+	Flt   zoom_end        = std::stold ( cmd.get_parameter( "zoom-end",     "0.32"    ));
+	Flt   zoom_step       = std::stold ( cmd.get_parameter( "zoom-step",    "0.99"    ));
+	UL    num_dig         = std::stol  ( cmd.get_parameter( "num-digits",   "3"       ));
+	Flt   center_x        = std::stold ( cmd.get_parameter( "center-x",     "+0.5"    ));
+	Flt   center_y        = std::stold ( cmd.get_parameter( "center-y",     "0.0"     ));
+	UL    update_cap      = std::stol  ( cmd.get_parameter( "update-cap",   "50"      ));
+	UL    image_width     = std::stol  ( cmd.get_parameter( "width",        "640"     ));
+	UL    image_height    = std::stol  ( cmd.get_parameter( "height",       "480"     ));
 	Str   target_dir      = cmd.get_parameter("target", "img");
 	Str   name_lead       = cmd.get_parameter("lead", "m_");
 
