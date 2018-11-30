@@ -8,6 +8,8 @@
     <File Name="src/main.cpp"/>
     <File Name="src/cmdline.cpp"/>
     <File Name="src/cmdline.h"/>
+    <File Name="src/mandel.h"/>
+    <File Name="src/mandel.cpp"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

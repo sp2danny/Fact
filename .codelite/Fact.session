@@ -5,22 +5,36 @@
   <TabInfoArray Name="TabInfoArray">
     <TabInfo>
       <wxString Value="/home/sp2danny/extra/Fact/src/graph.cpp" Name="FileName"/>
-      <int Value="16" Name="FirstVisibleLine"/>
-      <int Value="27" Name="CurrentLine"/>
+      <int Value="83" Name="FirstVisibleLine"/>
+      <int Value="115" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
     <TabInfo>
       <wxString Value="/home/sp2danny/extra/Fact/src/graph.h" Name="FileName"/>
+      <int Value="3" Name="FirstVisibleLine"/>
+      <int Value="34" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+    <TabInfo>
+      <wxString Value="/home/sp2danny/extra/Fact/src/main.cpp" Name="FileName"/>
+      <int Value="193" Name="FirstVisibleLine"/>
+      <int Value="209" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+    <TabInfo>
+      <wxString Value="/home/sp2danny/extra/Fact/src/cmdline.h" Name="FileName"/>
       <int Value="0" Name="FirstVisibleLine"/>
       <int Value="18" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
     <TabInfo>
-      <wxString Value="/home/sp2danny/extra/Fact/src/main.cpp" Name="FileName"/>
-      <int Value="240" Name="FirstVisibleLine"/>
-      <int Value="253" Name="CurrentLine"/>
+      <wxString Value="/home/sp2danny/extra/Fact/src/cmdline.cpp" Name="FileName"/>
+      <int Value="45" Name="FirstVisibleLine"/>
+      <int Value="17" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>

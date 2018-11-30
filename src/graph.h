@@ -4,7 +4,6 @@
 #include <vector>
 #include <iostream>
 #include <string>
-#include <functional>
 
 typedef unsigned char UC;
 
