@@ -118,6 +118,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\cmdline.h" />
+    <ClInclude Include="src\fixed.hpp" />
     <ClInclude Include="src\graph.h" />
     <ClInclude Include="src\mandel.h" />
   </ItemGroup>

@@ -1,9 +1,14 @@
 
+#include <iostream>
+#include <iomanip>
+
+#include <boost/filesystem.hpp>
+
 #include "graph.h"
 #include "cmdline.h"
 #include "mandel.h"
 
-#include "boost/filesystem.hpp"
+#include "fixed.hpp"
 
 cmdline cmd;
 
@@ -25,6 +30,7 @@ int main(int argc, char* argv[])
 	UL    update_cap      = std::stol  ( cmd.get_parameter( "update-cap",   "50"      ));
 	UL    image_width     = std::stol  ( cmd.get_parameter( "width",        "640"     ));
 	UL    image_height    = std::stol  ( cmd.get_parameter( "height",       "480"     ));
+	UL    skip_count      = std::stol  ( cmd.get_parameter( "skip",         "0"       ));
 	Str   target_dir      = cmd.get_parameter("target", "img");
 	Str   name_lead       = cmd.get_parameter("lead", "m_");
 
@@ -42,6 +48,13 @@ int main(int argc, char* argv[])
 
 	UL i = 1;
 	Str curr_name = mkname(i);
+
+	while (skip_count)
+	{
+		i += 1;
+		zoom_cur *= zoom_step;
+		--skip_count;
+	}
 
 	while (true)
 	{
@@ -76,7 +89,7 @@ int main(int argc, char* argv[])
 		m.generate(update_cap);
 		float mod = 215.f / (float)pow(zoom_cur, 0.05f);
 		m.makeimage(mod).Save(curr_name);
-		std::cout << "Wrote: " << curr_name << "                \r" << std::flush;
+		std::cout << "Wrote: " << curr_name << "  zoom: " << std::setprecision(20) << zoom_cur << "                \r" << std::flush;
 		curr_name = mkname(++i);
 		zoom_cur *= zoom_step;
 	}
