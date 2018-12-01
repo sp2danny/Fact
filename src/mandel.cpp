@@ -139,10 +139,10 @@ RGB col(Point p, float mod)
 
 	static const float pi2 = 3.1415926536f * 2;
 	static const float ilg2 = 1.0f / log(2.0f);
-	float f = fmod(x, mod) + 1;
+	float f = fmod((float)x, mod) + 1.0f;
 	f /= mod;
 
-	f -= log(log(over) * ilg2) * ilg2 / mod;
+	f -= (float)log(log(over) * ilg2) * ilg2 / mod;
 	f *= pi2;
 	float r = 0.5f + 0.5f*std::sin(f + pi2 * 0.00000f);
 	float g = 0.5f + 0.5f*std::sin(f + pi2 * 0.33333f);

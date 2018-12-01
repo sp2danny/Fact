@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 		m.scale_y = (zoom_cur * (Flt)image_height) / (Flt)image_width;
 		m.generate_init();
 		m.generate(update_cap);
-		float mod = 215 / pow(zoom_cur, 0.05);
+		float mod = 215.f / (float)pow(zoom_cur, 0.05f);
 		m.makeimage(mod).Save(curr_name);
 		std::cout << "Wrote: " << curr_name << "                \r" << std::flush;
 		curr_name = mkname(++i);

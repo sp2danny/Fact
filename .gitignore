@@ -9,3 +9,7 @@ bin
 Fact.txt
 mm.txt
 *.tags
+*.exe
+.vs
+
+
