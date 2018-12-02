@@ -6,9 +6,7 @@
 
 #include "graph.h"
 #include "cmdline.h"
-#include "mandel.h"
-
-#include "fixed.hpp"
+#include "mandel_hp.h"
 
 cmdline cmd;
 
@@ -21,12 +19,12 @@ int main(int argc, char* argv[])
 {
 	cmd.init(argc, argv);
 
-	Flt   zoom_cur        = std::stold ( cmd.get_parameter( "zoom-start",   "3.2"     ));
-	Flt   zoom_end        = std::stold ( cmd.get_parameter( "zoom-end",     "0.32"    ));
-	Flt   zoom_step       = std::stold ( cmd.get_parameter( "zoom-step",    "0.99"    ));
+	Flt   zoom_cur        = cmd.get_parameter( "zoom-start",   "3.2"     );
+	Flt   zoom_end        = cmd.get_parameter( "zoom-end",     "0.32"    );
+	Flt   zoom_step       = cmd.get_parameter( "zoom-step",    "0.99"    );
+	Flt   center_x        = cmd.get_parameter( "center-x",     "+0.5"    );
+	Flt   center_y        = cmd.get_parameter( "center-y",     "0.0"     );
 	UL    num_dig         = std::stol  ( cmd.get_parameter( "num-digits",   "3"       ));
-	Flt   center_x        = std::stold ( cmd.get_parameter( "center-x",     "+0.5"    ));
-	Flt   center_y        = std::stold ( cmd.get_parameter( "center-y",     "0.0"     ));
 	UL    update_cap      = std::stol  ( cmd.get_parameter( "update-cap",   "50"      ));
 	UL    image_width     = std::stol  ( cmd.get_parameter( "width",        "640"     ));
 	UL    image_height    = std::stol  ( cmd.get_parameter( "height",       "480"     ));
@@ -89,19 +87,9 @@ int main(int argc, char* argv[])
 		
 		m.scale_x = zoom_cur;
 		m.scale_y = (zoom_cur * (Flt)image_height) / (Flt)image_width;
-		if (cmd.has_option('p', "print"))
-		{
-			std::cout << std::setprecision(25) << std::defaultfloat;
-			std::cout << "center-x     : " << m.center_x  << std::endl;
-			std::cout << "center-y     : " << m.center_y  << std::endl;
-			std::cout << "scale-x      : " << m.scale_x   << std::endl;
-			std::cout << "scale-y      : " << m.scale_y   << std::endl;
-			std::cout << "update cap   : " << update_cap  << std::endl;
-			std::cout << "zoom step    : " << zoom_step   << std::endl;
-		}
 		m.generate_init();
 		m.generate(update_cap);
-		float mod = 215.f / (float)pow(zoom_cur, 0.05f);
+		float mod = 215.f / (float)pow(zoom_cur.get_d(), 0.05f);
 		m.makeimage(mod).Save(curr_name);
 		std::cout << "Wrote: " << curr_name << "  zoom: " << std::setprecision(20) << zoom_cur << "                \r" << std::flush;
 		curr_name = mkname(++i);
