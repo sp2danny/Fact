@@ -75,6 +75,15 @@ int main(int argc, char* argv[])
 	m.height = image_height;
 	m.center_x = center_x;
 	m.center_y = center_y;
+	
+	if (cmd.has_option('p', "print"))
+	{
+		std::cout << std::setprecision(25) << std::defaultfloat;
+		std::cout << "center-x     : " << m.center_x  << std::endl;
+		std::cout << "center-y     : " << m.center_y  << std::endl;
+		std::cout << "update cap   : " << update_cap  << std::endl;
+		std::cout << "zoom step    : " << zoom_step   << std::endl;		
+	}
 
 	while (true)
 	{
@@ -92,18 +101,20 @@ int main(int argc, char* argv[])
 		if (cmd.has_option('p', "print"))
 		{
 			std::cout << std::setprecision(25) << std::defaultfloat;
-			std::cout << "center-x     : " << m.center_x  << std::endl;
-			std::cout << "center-y     : " << m.center_y  << std::endl;
-			std::cout << "scale-x      : " << m.scale_x   << std::endl;
-			std::cout << "scale-y      : " << m.scale_y   << std::endl;
-			std::cout << "update cap   : " << update_cap  << std::endl;
-			std::cout << "zoom step    : " << zoom_step   << std::endl;
+			std::cout << "scale-x      : " << m.scale_x << std::endl;
+			std::cout << "scale-y      : " << m.scale_y << std::endl;
 		}
 		m.generate_init();
 		m.generate(update_cap);
 		float mod = 215.f / (float)pow(zoom_cur, 0.05f);
 		m.makeimage(mod).Save(curr_name);
-		std::cout << "Wrote: " << curr_name << "  zoom: " << std::setprecision(20) << zoom_cur << "                \r" << std::flush;
+		if (cmd.has_option('p', "print"))
+		{
+			std::cout << "mod          : " << mod << std::endl;
+			std::cout << "Wrote: " << curr_name << std::endl;
+		} else {
+			std::cout << "Wrote: " << curr_name << "  zoom: " << std::setprecision(20) << zoom_cur << "                \r" << std::flush;
+		}
 		curr_name = mkname(++i);
 		zoom_cur *= zoom_step;
 	}
