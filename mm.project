@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<CodeLite_Project Name="mm" InternalType="Console">
+<CodeLite_Project Name="mm" InternalType="Console" Version="10.0.0">
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="src">
@@ -15,11 +15,12 @@
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
-      <Compiler Options="-std=c++14 -Wall -Wextra -Werror -pedantic -stdlib=libstdc++" C_Options="" Assembler="">
+      <Compiler Options="-std=c++14 -Wall -Wextra -Werror -pedantic" C_Options="" Assembler="">
         <IncludePath Value="."/>
       </Compiler>
-      <Linker Options="-stdlib=libstdc++">
+      <Linker Options="">
         <LibraryPath Value="."/>
+        <LibraryPath Value="/usr/lib/x86_64-linux-gnu/"/>
         <Library Value="boost_system"/>
         <Library Value="boost_filesystem"/>
         <Library Value="pthread"/>
@@ -33,6 +34,7 @@
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(ProjectName)_dbg.out" IntermediateDirectory="./bin/Debug" Command="./$(ProjectName)_dbg.out" CommandArguments="center-x=-0xb.cbd5c4ae00101d2p-3 center-y=-0xb.b3604dafd65634fp-25 update-cap=1250 zoom-start=5 width=1024 height=768 num-digits=5 lead=img- target=./img zoom-end=5e-16" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>
@@ -57,7 +59,7 @@
         <CustomPostBuild/>
         <CustomPreBuild/>
       </AdditionalRules>
-      <Completion EnableCpp11="no">
+      <Completion EnableCpp11="no" EnableCpp14="no">
         <ClangCmpFlagsC/>
         <ClangCmpFlags/>
         <ClangPP/>
@@ -72,6 +74,7 @@
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(ProjectName).out" IntermediateDirectory="./bin/Release" Command="./$(ProjectName).out" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>
@@ -96,7 +99,7 @@
         <CustomPostBuild/>
         <CustomPreBuild/>
       </AdditionalRules>
-      <Completion EnableCpp11="no">
+      <Completion EnableCpp11="no" EnableCpp14="no">
         <ClangCmpFlagsC/>
         <ClangCmpFlags/>
         <ClangPP/>

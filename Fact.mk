@@ -5,17 +5,17 @@
 ## Release
 ProjectName            :=Fact
 ConfigurationName      :=Release
-WorkspacePath          := "/home/sp2danny/extra/Fact"
-ProjectPath            := "/home/sp2danny/extra/Fact"
+WorkspacePath          :=/home/daniel/project/Fact
+ProjectPath            :=/home/daniel/project/Fact
 IntermediateDirectory  :=./bin/Release
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
-User                   :=Daniel Nyström
-Date                   :=11/30/18
-CodeLitePath           :="/home/sp2danny/.codelite"
-LinkerName             :=/usr/bin/clang++ 
+User                   :=daniel
+Date                   :=01/12/18
+CodeLitePath           :=/home/daniel/.codelite
+LinkerName             :=/usr/bin/clang++
 SharedObjectLinkerName :=/usr/bin/clang++ -shared -fPIC
 ObjectSuffix           :=.o
 DependSuffix           :=.o.d
@@ -35,7 +35,7 @@ PreprocessOnlySwitch   :=-E
 ObjectsFileList        :="Fact.txt"
 PCHCompileFlags        :=
 MakeDirCommand         :=mkdir -p
-LinkOptions            := -stdlib=libc++ 
+LinkOptions            :=  
 IncludePath            :=  $(IncludeSwitch)/usr/include/gtk-2.0 $(IncludeSwitch)/usr/include/glib-2.0 $(IncludeSwitch)/usr/lib/x86_64-linux-gnu/glib-2.0/include $(IncludeSwitch)/usr/include/cairo $(IncludeSwitch)/usr/include/pango-1.0 $(IncludeSwitch)/usr/lib/x86_64-linux-gnu/gtk-2.0/include $(IncludeSwitch)/usr/include/gdk-pixbuf-2.0 $(IncludeSwitch)/usr/include/atk-1.0 $(IncludeSwitch). 
 IncludePCH             := 
 RcIncludePath          := 
@@ -48,17 +48,18 @@ LibPath                := $(LibraryPathSwitch).
 ## AR, CXX, CC, AS, CXXFLAGS and CFLAGS can be overriden using an environment variables
 ##
 AR       := /usr/bin/ar rcu
-CXX      := /usr/bin/clang++ 
-CC       := /usr/bin/clang 
-CXXFLAGS := -std=c++17 -Wall -Wextra -Werror -pedantic -stdlib=libc++ -O2 $(Preprocessors)
+CXX      := /usr/bin/clang++
+CC       := /usr/bin/clang
+CXXFLAGS := -std=c++17 -Wall -Wextra -Werror -pedantic -O2 $(Preprocessors)
 CFLAGS   :=  -O2 $(Preprocessors)
 ASFLAGS  := 
-AS       := /usr/bin/as 
+AS       := /usr/bin/as
 
 
 ##
 ## User defined environment variables
 ##
+CodeLiteDir:=/usr/share/codelite
 Objects0=$(IntermediateDirectory)/src_graph.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_main.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_cmdline.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_mandel.cpp$(ObjectSuffix) 
 
 
@@ -68,7 +69,7 @@ Objects=$(Objects0)
 ##
 ## Main Build Targets 
 ##
-.PHONY: all clean PreBuild PrePreBuild PostBuild
+.PHONY: all clean PreBuild PrePreBuild PostBuild MakeIntermediateDirs
 all: $(OutputFile)
 
 $(OutputFile): $(IntermediateDirectory)/.d $(Objects) 
@@ -76,6 +77,10 @@ $(OutputFile): $(IntermediateDirectory)/.d $(Objects)
 	@echo "" > $(IntermediateDirectory)/.d
 	@echo $(Objects0)  > $(ObjectsFileList)
 	$(LinkerName) $(OutputSwitch)$(OutputFile) @$(ObjectsFileList) $(LibPath) $(Libs) $(LinkOptions)
+
+MakeIntermediateDirs:
+	@test -d ./bin/Release || $(MakeDirCommand) ./bin/Release
+
 
 $(IntermediateDirectory)/.d:
 	@test -d ./bin/Release || $(MakeDirCommand) ./bin/Release
@@ -87,36 +92,36 @@ PreBuild:
 ## Objects
 ##
 $(IntermediateDirectory)/src_graph.cpp$(ObjectSuffix): src/graph.cpp $(IntermediateDirectory)/src_graph.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/sp2danny/extra/Fact/src/graph.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_graph.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/daniel/project/Fact/src/graph.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_graph.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/src_graph.cpp$(DependSuffix): src/graph.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_graph.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_graph.cpp$(DependSuffix) -MM "src/graph.cpp"
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_graph.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_graph.cpp$(DependSuffix) -MM src/graph.cpp
 
 $(IntermediateDirectory)/src_graph.cpp$(PreprocessSuffix): src/graph.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_graph.cpp$(PreprocessSuffix) "src/graph.cpp"
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_graph.cpp$(PreprocessSuffix) src/graph.cpp
 
 $(IntermediateDirectory)/src_main.cpp$(ObjectSuffix): src/main.cpp $(IntermediateDirectory)/src_main.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/sp2danny/extra/Fact/src/main.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_main.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/daniel/project/Fact/src/main.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_main.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/src_main.cpp$(DependSuffix): src/main.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_main.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_main.cpp$(DependSuffix) -MM "src/main.cpp"
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_main.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_main.cpp$(DependSuffix) -MM src/main.cpp
 
 $(IntermediateDirectory)/src_main.cpp$(PreprocessSuffix): src/main.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_main.cpp$(PreprocessSuffix) "src/main.cpp"
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_main.cpp$(PreprocessSuffix) src/main.cpp
 
 $(IntermediateDirectory)/src_cmdline.cpp$(ObjectSuffix): src/cmdline.cpp $(IntermediateDirectory)/src_cmdline.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/sp2danny/extra/Fact/src/cmdline.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_cmdline.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/daniel/project/Fact/src/cmdline.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_cmdline.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/src_cmdline.cpp$(DependSuffix): src/cmdline.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_cmdline.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_cmdline.cpp$(DependSuffix) -MM "src/cmdline.cpp"
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_cmdline.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_cmdline.cpp$(DependSuffix) -MM src/cmdline.cpp
 
 $(IntermediateDirectory)/src_cmdline.cpp$(PreprocessSuffix): src/cmdline.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_cmdline.cpp$(PreprocessSuffix) "src/cmdline.cpp"
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_cmdline.cpp$(PreprocessSuffix) src/cmdline.cpp
 
 $(IntermediateDirectory)/src_mandel.cpp$(ObjectSuffix): src/mandel.cpp $(IntermediateDirectory)/src_mandel.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/sp2danny/extra/Fact/src/mandel.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_mandel.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/daniel/project/Fact/src/mandel.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_mandel.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/src_mandel.cpp$(DependSuffix): src/mandel.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_mandel.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_mandel.cpp$(DependSuffix) -MM "src/mandel.cpp"
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_mandel.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_mandel.cpp$(DependSuffix) -MM src/mandel.cpp
 
 $(IntermediateDirectory)/src_mandel.cpp$(PreprocessSuffix): src/mandel.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_mandel.cpp$(PreprocessSuffix) "src/mandel.cpp"
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_mandel.cpp$(PreprocessSuffix) src/mandel.cpp
 
 
 -include $(IntermediateDirectory)/*$(DependSuffix)
@@ -124,9 +129,6 @@ $(IntermediateDirectory)/src_mandel.cpp$(PreprocessSuffix): src/mandel.cpp
 ## Clean
 ##
 clean:
-	$(RM) ./bin/Release/*$(ObjectSuffix)
-	$(RM) ./bin/Release/*$(DependSuffix)
-	$(RM) $(OutputFile)
-	$(RM) ".build-release/Fact"
+	$(RM) -r ./bin/Release/
 
 

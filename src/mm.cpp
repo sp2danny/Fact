@@ -31,6 +31,7 @@ int main(int argc, char* argv[])
 	UL    image_width     = std::stol  ( cmd.get_parameter( "width",        "640"     ));
 	UL    image_height    = std::stol  ( cmd.get_parameter( "height",       "480"     ));
 	UL    skip_count      = std::stol  ( cmd.get_parameter( "skip",         "0"       ));
+	UL    max_count       = std::stol  ( cmd.get_parameter( "max-count",    "0"       ));
 	Str   target_dir      = cmd.get_parameter("target", "img");
 	Str   name_lead       = cmd.get_parameter("lead", "m_");
 
@@ -82,6 +83,9 @@ int main(int argc, char* argv[])
 		} else {
 			if (zoom_cur > zoom_end) break;
 		}
+		
+		if (max_count)
+			if (i>max_count) break;
 		
 		m.scale_x = zoom_cur;
 		m.scale_y = (zoom_cur * (Flt)image_height) / (Flt)image_width;

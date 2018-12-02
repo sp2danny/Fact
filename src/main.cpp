@@ -56,7 +56,7 @@ gboolean idle_func(gpointer data)
 		std::cout << " unupdated " << noupdatefor << "\r" << std::flush;
 	}
 
-	img = m.makeimage();
+	img = m.makeimage(225);
 
 	[[maybe_unused]]
 	GtkImage* image = (GtkImage*)data;
@@ -93,7 +93,7 @@ void mk_img(GtkImage* image)
 {
 	m.generate_init();
 	m.generate(update_cap);
-	img = m.makeimage();
+	img = m.makeimage(225);
 
 	[[maybe_unused]]
 	GdkPixbuf* pbuf = gdk_pixbuf_new_from_data(
@@ -242,7 +242,7 @@ int main(int argc, char* argv[])
 
 	m.generate_init();
 	m.generate(update_cap);
-	img = m.makeimage();
+	img = m.makeimage(225);
 	if (cmd.has_option('s', "save"))
 		img.Save("fact.bmp");
 
