@@ -22,15 +22,17 @@ cmdline cmd;
 Map m;
 Image img;
 
+unsigned long fuc = 1200;
 unsigned long update_cap = 100;
 unsigned long update_step = 10;
 float zoom_step = 2;
+float mod_base = 215.f;
+float mod_pow = 0.05f;
+unsigned long noupdatefor = 0;
 
 gboolean idle_func(gpointer data)
 {
 	if (m.map_all_done) return TRUE;
-
-	static unsigned long noupdatefor = 0;
 
 	if (noupdatefor >= 100) return TRUE;
 
@@ -56,7 +58,8 @@ gboolean idle_func(gpointer data)
 		std::cout << " unupdated " << noupdatefor << "\r" << std::flush;
 	}
 
-	img = m.makeimage(225);
+	float mod = mod_base / (float)pow(m.scale_x, mod_pow);
+	img = m.makeimage(mod, fuc);
 
 	[[maybe_unused]]
 	GtkImage* image = (GtkImage*)data;
@@ -91,9 +94,13 @@ gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
 
 void mk_img(GtkImage* image)
 {
+	noupdatefor = 0;
 	m.generate_init();
 	m.generate(update_cap);
-	img = m.makeimage(225);
+
+	float mod = mod_base / (float)pow(m.scale_x, mod_pow);
+
+	img = m.makeimage(mod, fuc);
 
 	[[maybe_unused]]
 	GdkPixbuf* pbuf = gdk_pixbuf_new_from_data(
@@ -117,7 +124,10 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 	(void)data;
 	switch (event->keyval)
 	{
-	case GDK_s:
+	case GDK_r:
+		mk_img((GtkImage*)data);
+		break;	
+	case GDK_S:
 		img.Save("fact.bmp");
 		break;
 	case GDK_z:
@@ -142,6 +152,9 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		std::cout << "update cap   : " << update_cap  << std::endl;
 		std::cout << "update step  : " << update_step << std::endl;
 		std::cout << "zoom step    : " << zoom_step   << std::endl;
+		std::cout << "col-base     : " << mod_base    << std::endl;
+		std::cout << "col-pow      : " << mod_pow     << std::endl;
+		std::cout << "col-calc     : " << mod_base / (float)pow(m.scale_x, mod_pow) << std::endl;
 		std::cout << std::hexfloat;
 		std::cout << "center-x     : " << m.center_x  << std::endl;
 		std::cout << "center-y     : " << m.center_y  << std::endl;
@@ -149,6 +162,26 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		break;
 	case GDK_m:
 		movie_maker(m, update_cap);
+		break;
+	case GDK_q:
+		mod_base *= 0.99f;
+		std::cout << "col-base     : " << mod_base    << std::endl;
+		std::cout << "col-pow      : " << mod_pow     << std::endl;
+		break;
+	case GDK_w:
+		mod_base *= 1.01f;
+		std::cout << "col-base     : " << mod_base    << std::endl;
+		std::cout << "col-pow      : " << mod_pow     << std::endl;
+		break;
+	case GDK_a:
+		mod_pow *= 0.99f;
+		std::cout << "col-base     : " << mod_base    << std::endl;
+		std::cout << "col-pow      : " << mod_pow     << std::endl;
+		break;
+	case GDK_s:
+		mod_pow *= 1.01f;
+		std::cout << "col-base     : " << mod_base    << std::endl;
+		std::cout << "col-pow      : " << mod_pow     << std::endl;
 		break;
 	}
 
@@ -237,8 +270,10 @@ int main(int argc, char* argv[])
 	m.center_y = std::stold( cmd.get_parameter ("center-y",   "-0.0"  ));
 	m.scale_x  = std::stold( cmd.get_parameter ("scale-x",    "3.2"   ));
 	m.scale_y  = std::stold( cmd.get_parameter ("scale-y",    std::to_string((Flt)m.scale_x*3.0l/4.0l).c_str()));
-	update_cap = std::stoi(  cmd.get_parameter ("depth",      "100"   ));
+	fuc        = std::stoi(  cmd.get_parameter ("update-cap", "1200"  ));
 	zoom_step  = std::stoi(  cmd.get_parameter ("zoom-step",  "2"     ));
+	mod_base   = std::stof(  cmd.get_parameter ("col-base",   "100"   ));
+	mod_pow    = std::stof(  cmd.get_parameter ("col-pow",    "0.04"  ));
 
 	m.generate_init();
 	m.generate(update_cap);

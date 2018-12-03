@@ -48,7 +48,7 @@
       </Compiler>
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(ProjectName)_dbg.out" IntermediateDirectory="./bin/Debug" Command="$(ProjectName)_dbg.out" CommandArguments="-s width=1024 height=768" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <General OutputFile="$(ProjectName)_dbg.out" IntermediateDirectory="./bin/Debug" Command="$(ProjectName)_dbg.out" CommandArguments="center-x=-1.474528824386659714993156 center-y=-3.487076826169475459669973e-07 scale-x=1.6e-3 scale-y=1.2e-3 zoom-step=10 update-cap=1200\n" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
@@ -88,7 +88,7 @@
       </Compiler>
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(ProjectName).out" IntermediateDirectory="./bin/Release" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <General OutputFile="$(ProjectName).out" IntermediateDirectory="./bin/Release" Command="$(ProjectName).out" CommandArguments="width=1024 height=768 center-x=-1.474528824386659714993156 center-y=-3.487076826169475459669973e-07 scale-x=1.6e-3 scale-y=1.2e-3 zoom-step=10 update-cap=1200 col-base=220 col-pow=-0.01\n" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>

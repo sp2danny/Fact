@@ -47,7 +47,7 @@ struct Map
 	Flt to_ypos(UL y) const;
 	void generate_init();
 	enum Status { all_done, was_updated, no_change };
-	Status generate(UL cap);
+	Status generate(UL cap, bool display=false);
 	Image makeimage(float mod);
 };
 

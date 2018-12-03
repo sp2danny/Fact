@@ -21,17 +21,19 @@ int main(int argc, char* argv[])
 {
 	cmd.init(argc, argv);
 
-	Flt   zoom_cur        = std::stold ( cmd.get_parameter( "zoom-start",   "3.2"     ));
-	Flt   zoom_end        = std::stold ( cmd.get_parameter( "zoom-end",     "0.32"    ));
-	Flt   zoom_step       = std::stold ( cmd.get_parameter( "zoom-step",    "0.99"    ));
-	UL    num_dig         = std::stol  ( cmd.get_parameter( "num-digits",   "3"       ));
-	Flt   center_x        = std::stold ( cmd.get_parameter( "center-x",     "+0.5"    ));
-	Flt   center_y        = std::stold ( cmd.get_parameter( "center-y",     "0.0"     ));
-	UL    update_cap      = std::stol  ( cmd.get_parameter( "update-cap",   "50"      ));
-	UL    image_width     = std::stol  ( cmd.get_parameter( "width",        "640"     ));
-	UL    image_height    = std::stol  ( cmd.get_parameter( "height",       "480"     ));
-	UL    skip_count      = std::stol  ( cmd.get_parameter( "skip",         "0"       ));
-	UL    max_count       = std::stol  ( cmd.get_parameter( "max-count",    "0"       ));
+	Flt   zoom_cur        = std::stold ( cmd.get_parameter ( "zoom-start",   "3.2"     ));
+	Flt   zoom_end        = std::stold ( cmd.get_parameter ( "zoom-end",     "0.32"    ));
+	Flt   zoom_step       = std::stold ( cmd.get_parameter ( "zoom-step",    "0.99"    ));
+	UL    num_dig         = std::stol  ( cmd.get_parameter ( "num-digits",   "3"       ));
+	Flt   center_x        = std::stold ( cmd.get_parameter ( "center-x",     "+0.5"    ));
+	Flt   center_y        = std::stold ( cmd.get_parameter ( "center-y",     "0.0"     ));
+	UL    update_cap      = std::stol  ( cmd.get_parameter ( "update-cap",   "50"      ));
+	UL    image_width     = std::stol  ( cmd.get_parameter ( "width",        "640"     ));
+	UL    image_height    = std::stol  ( cmd.get_parameter ( "height",       "480"     ));
+	UL    skip_count      = std::stol  ( cmd.get_parameter ( "skip",         "0"       ));
+	UL    max_count       = std::stol  ( cmd.get_parameter ( "max-count",    "0"       ));
+	float mod_base        = std::stof  ( cmd.get_parameter ( "col-base",     "100"     ));
+	float mod_pow         = std::stof  ( cmd.get_parameter ( "col-pow",      "0.03"    ));
 	Str   target_dir      = cmd.get_parameter("target", "img");
 	Str   name_lead       = cmd.get_parameter("lead", "m_");
 
@@ -48,7 +50,6 @@ int main(int argc, char* argv[])
 	};
 
 	UL i = 1;
-	Str curr_name = mkname(i);
 
 	while (skip_count)
 	{
@@ -56,6 +57,8 @@ int main(int argc, char* argv[])
 		zoom_cur *= zoom_step;
 		--skip_count;
 	}
+
+	Str curr_name = mkname(i);
 
 	while (true)
 	{
@@ -95,7 +98,15 @@ int main(int argc, char* argv[])
 		
 		if (max_count)
 			if (i>max_count) break;
-		
+			
+		if (boost::filesystem::exists(curr_name))
+		{
+			i += 1;
+			zoom_cur *= zoom_step;
+			curr_name = mkname(i);
+			continue;
+		}
+
 		m.scale_x = zoom_cur;
 		m.scale_y = (zoom_cur * (Flt)image_height) / (Flt)image_width;
 		if (cmd.has_option('p', "print"))
@@ -106,7 +117,7 @@ int main(int argc, char* argv[])
 		}
 		m.generate_init();
 		m.generate(update_cap);
-		float mod = 215.f / (float)pow(zoom_cur, 0.05f);
+		float mod = mod_base / (float)pow(zoom_cur, mod_pow);
 		m.makeimage(mod).Save(curr_name);
 		if (cmd.has_option('p', "print"))
 		{

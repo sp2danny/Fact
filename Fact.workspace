@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CodeLite_Workspace Name="Fact" Database="" Version="10.0.0">
-  <Project Name="Fact" Path="Fact.project" Active="No"/>
-  <Project Name="mm" Path="mm.project" Active="Yes"/>
+  <Project Name="Fact" Path="Fact.project" Active="Yes"/>
+  <Project Name="mm" Path="mm.project" Active="No"/>
   <Project Name="mmhp" Path="mmhp.project" Active="No"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="no">

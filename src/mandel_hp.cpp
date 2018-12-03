@@ -65,7 +65,7 @@ void Map::generate_init()
 	}
 }
 
-auto Map::generate(UL cap) -> Status
+auto Map::generate(UL cap, bool display) -> Status
 {
 	bool found_one = false;
 	bool did_smth = false;
@@ -76,6 +76,13 @@ auto Map::generate(UL cap) -> Status
 		Flt yld = to_ypos(y);
 		for (x=0; x<width; ++x)
 		{
+			if (display)
+			{
+				float f = 100.0f;
+				f /= width * height;
+				f *= x + y * width;
+				std::cout << (int)f << "%\r";
+			}
 			auto idx = to_index(x, y);
 			if (points[idx].status != Point::calc)
 				continue;
@@ -84,6 +91,7 @@ auto Map::generate(UL cap) -> Status
 			Cmplx c{xld, yld};
 			Cmplx z = points[idx].z;
 			UL n = points[idx].iter;
+			const Flt two = 2.0;
 			while (true)
 			{
 				if (n >= cap)
@@ -92,7 +100,7 @@ auto Map::generate(UL cap) -> Status
 					points[idx].z = z;
 					break;
 				}
-				if (std::abs(z) > Flt(2.0))
+				if (std::abs(z) > two)
 				{
 					did_smth = true;
 					points[idx].status = Point::out;
@@ -101,33 +109,32 @@ auto Map::generate(UL cap) -> Status
 					break;
 				}
 
-				// first bulb
-				Flt y2 = yld * yld;
-				Flt xldp1 = xld+1.0;
-				if (((xldp1*xldp1) + y2) < (Flt)0.0625)
+				if (n<=1)
 				{
-					did_smth = true;
-					points[idx].status = Point::in;
-					points[idx].iter = n;
-					if (n>1)
-						std::cout << "found first bulb by secondary means" << std::endl << std::flush;
-					points[idx].z = z;
-					break;
-				}
-				// main cardoid
-				Flt xx = xld-0.25;
-				xx *= xx;
-				xx += y2;
-				Flt p = sqrt(xx);
-				if (xld < (p - 2.0*(p*p) + 0.25))
-				{
-					did_smth = true;
-					points[idx].status = Point::in;
-					points[idx].iter = n;
-					if (n>1)
-						std::cout << "found main cardoid by secondary means" << std::endl << std::flush;
-					points[idx].z = z;
-					break;
+					// first bulb
+					Flt y2 = yld * yld;
+					Flt xldp1 = xld+1.0;
+					if (((xldp1*xldp1) + y2) < (Flt)0.0625)
+					{
+						did_smth = true;
+						points[idx].status = Point::in;
+						points[idx].iter = n;
+						points[idx].z = z;
+						break;
+					}
+					// main cardoid
+					Flt xx = xld-0.25;
+					xx *= xx;
+					xx += y2;
+					Flt p = sqrt(xx);
+					if (xld < (p - 2.0*(p*p) + 0.25))
+					{
+						did_smth = true;
+						points[idx].status = Point::in;
+						points[idx].iter = n;
+						points[idx].z = z;
+						break;
+					}
 				}
 
 				z = step(c, z);

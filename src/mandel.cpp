@@ -96,29 +96,28 @@ auto Map::generate(UL cap) -> Status
 					break;
 				}
 
-				// first bulb
-				Flt y2 = std::pow(yld, 2);
-				if ((std::pow(xld+1.0l, 2.0l) + y2) < 0.0625l)
+				if (n<=1)
 				{
-					did_smth = true;
-					points[idx].status = Point::in;
-					points[idx].iter = n;
-					if (n>1)
-						std::cout << "found first bulb by secondary means" << std::endl << std::flush;
-					points[idx].z = z;
-					break;
-				}
-				// main cardoid
-				Flt p = std::sqrt( std::pow(xld-0.25l, 2.0l) + y2 );
-				if (xld < (p - 2.0l*std::pow(p, 2.0l) + 0.25l))
-				{
-					did_smth = true;
-					points[idx].status = Point::in;
-					points[idx].iter = n;
-					if (n>1)
-						std::cout << "found main cardoid by secondary means" << std::endl << std::flush;
-					points[idx].z = z;
-					break;
+					// first bulb
+					Flt y2 = std::pow(yld, 2);
+					if ((std::pow(xld+1.0l, 2.0l) + y2) < 0.0625l)
+					{
+						did_smth = true;
+						points[idx].status = Point::in;
+						points[idx].iter = n;
+						points[idx].z = z;
+						break;
+					}
+					// main cardoid
+					Flt p = std::sqrt( std::pow(xld-0.25l, 2.0l) + y2 );
+					if (xld < (p - 2.0l*std::pow(p, 2.0l) + 0.25l))
+					{
+						did_smth = true;
+						points[idx].status = Point::in;
+						points[idx].iter = n;
+						points[idx].z = z;
+						break;
+					}
 				}
 
 				z = step(c, z);
@@ -153,7 +152,7 @@ RGB col(Point p, float mod)
 	return {(UC)ri, (UC)gi, (UC)bi};
 }
 
-Image Map::makeimage(float mod)
+Image Map::makeimage(float mod, UL fuc)
 {
 	Image img(width, height);
 	UL x,y;
@@ -166,8 +165,18 @@ Image Map::makeimage(float mod)
 			if (p.status == Point::out)
 			{
 				img.PutPixel(x,y,col(p, mod));
-			} else {
+			}
+			else if (p.status == Point::in)
+			{
 				img.PutPixel(x,y,{0,0,0});
+			}
+			else if (fuc && p.iter < fuc)
+			{
+				img.PutPixel(x,y,{255,255,255});
+			}
+			else
+			{
+				img.PutPixel(x,y,{0,0,0});			
 			}
 		}
 	}

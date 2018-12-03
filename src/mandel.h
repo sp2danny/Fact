@@ -34,7 +34,7 @@ struct Map
 	void generate_init();
 	enum Status { all_done, was_updated, no_change };
 	Status generate(UL cap);
-	Image makeimage(float mod);
+	Image makeimage(float mod, UL fuc = 0);
 };
 
 template<typename T>
