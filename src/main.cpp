@@ -125,10 +125,15 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 	switch (event->keyval)
 	{
 	case GDK_r:
+		update_cap = 100;
+		update_step = 10;
 		mk_img((GtkImage*)data);
 		break;	
 	case GDK_S:
 		img.Save("fact.bmp");
+		break;
+	case GDK_Q:
+		gtk_main_quit();
 		break;
 	case GDK_z:
 		zoom_step += 1.0l;
@@ -144,21 +149,30 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		mk_img((GtkImage*)data);
 		break;
 	case GDK_p:
-		std::cout << std::setprecision(20) << std::defaultfloat;
+		std::cout << std::setprecision(22) << std::defaultfloat;
 		std::cout << "center-x     : " << m.center_x  << std::endl;
 		std::cout << "center-y     : " << m.center_y  << std::endl;
 		std::cout << "scale-x      : " << m.scale_x   << std::endl;
 		std::cout << "scale-y      : " << m.scale_y   << std::endl;
 		std::cout << "update cap   : " << update_cap  << std::endl;
 		std::cout << "update step  : " << update_step << std::endl;
+		std::cout << "trigger cap  : " << fuc         << std::endl;
 		std::cout << "zoom step    : " << zoom_step   << std::endl;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
 		std::cout << "col-calc     : " << mod_base / (float)pow(m.scale_x, mod_pow) << std::endl;
-		std::cout << std::hexfloat;
-		std::cout << "center-x     : " << m.center_x  << std::endl;
-		std::cout << "center-y     : " << m.center_y  << std::endl;
-		std::cout << std::defaultfloat;
+		break;
+	case GDK_c:
+		fuc *= 1.1;
+		std::cout << "update cap   : " << update_cap  << std::endl;
+		std::cout << "update step  : " << update_step << std::endl;
+		std::cout << "trigger cap  : " << fuc         << std::endl;
+		break;
+	case GDK_v:
+		fuc *= 0.9;
+		std::cout << "update cap   : " << update_cap  << std::endl;
+		std::cout << "update step  : " << update_step << std::endl;
+		std::cout << "trigger cap  : " << fuc         << std::endl;
 		break;
 	case GDK_m:
 		movie_maker(m, update_cap);
@@ -276,12 +290,13 @@ int main(int argc, char* argv[])
 	mod_pow    = std::stof(  cmd.get_parameter ("col-pow",    "0.04"  ));
 
 	m.generate_init();
-	m.generate(update_cap);
-	img = m.makeimage(225);
-	if (cmd.has_option('s', "save"))
-		img.Save("fact.bmp");
+	float mod = mod_base / (float)pow(m.scale_x, mod_pow);
+	img = m.makeimage(mod, fuc);
+	//img = m.makeimage(225);
+	//if (cmd.has_option('s', "save"))
+	//	img.Save("fact.bmp");
 
-	std::cout << "done." << std::endl;
+	//std::cout << "done." << std::endl;
 
 	gtk_init(&argc, &argv);
 	gtk_app();
