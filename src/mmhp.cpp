@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 	Flt   zoom_cur        = cmd.get_parameter( "zoom-start",   "3.2"     );
 	Flt   zoom_end        = cmd.get_parameter( "zoom-end",     "0.32"    );
 	Flt   zoom_step       = cmd.get_parameter( "zoom-step",    "0.99"    );
-	Flt   center_x        = cmd.get_parameter( "center-x",     "+0.5"    );
+	Flt   center_x        = cmd.get_parameter( "center-x",     "0.5"     );
 	Flt   center_y        = cmd.get_parameter( "center-y",     "0.0"     );
 	UL    num_dig         = std::stol  ( cmd.get_parameter ( "num-digits",   "3"       ));
 	UL    update_cap      = std::stol  ( cmd.get_parameter ( "update-cap",   "50"      ));

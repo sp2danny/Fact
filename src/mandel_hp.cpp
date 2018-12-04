@@ -71,27 +71,30 @@ auto Map::generate(UL cap, bool display) -> Status
 	bool did_smth = false;
 
 	UL x,y;
+	std::vector<Flt> vfx;
+	for (x=0; x<width; ++x)
+		vfx.push_back(to_xpos(x));
+	const Flt two = 2.0;
+
 	for (y=0; y<height; ++y)
 	{
+		if (display)
+		{
+			float f = 100.0f;
+			f /= height;
+			f *= y;
+			std::cout << (int)f << "%\r" << std::flush;
+		}
 		Flt yld = to_ypos(y);
 		for (x=0; x<width; ++x)
 		{
-			if (display)
-			{
-				float f = 100.0f;
-				f /= width * height;
-				f *= x + y * width;
-				std::cout << (int)f << "%\r";
-			}
 			auto idx = to_index(x, y);
 			if (points[idx].status != Point::calc)
 				continue;
 			found_one = true;
-			Flt xld = to_xpos(x);
-			Cmplx c{xld, yld};
+			Cmplx c{vfx[x], yld};
 			Cmplx z = points[idx].z;
 			UL n = points[idx].iter;
-			const Flt two = 2.0;
 			while (true)
 			{
 				if (n >= cap)
@@ -113,7 +116,7 @@ auto Map::generate(UL cap, bool display) -> Status
 				{
 					// first bulb
 					Flt y2 = yld * yld;
-					Flt xldp1 = xld+1.0;
+					Flt xldp1 = vfx[x]+1.0;
 					if (((xldp1*xldp1) + y2) < (Flt)0.0625)
 					{
 						did_smth = true;
@@ -123,11 +126,11 @@ auto Map::generate(UL cap, bool display) -> Status
 						break;
 					}
 					// main cardoid
-					Flt xx = xld-0.25;
+					Flt xx = vfx[x]-0.25;
 					xx *= xx;
 					xx += y2;
 					Flt p = sqrt(xx);
-					if (xld < (p - 2.0*(p*p) + 0.25))
+					if (vfx[x] < (p - 2.0*(p*p) + 0.25))
 					{
 						did_smth = true;
 						points[idx].status = Point::in;
