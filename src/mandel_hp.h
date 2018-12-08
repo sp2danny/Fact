@@ -32,16 +32,21 @@ struct Point
 {
 	enum { in, calc, out } status = calc;
 	unsigned long iter = 0;
+	double over;
 	Cmplx z = {0.0,0.0};
 };
+
+typedef float (*ModFunc)(double);
 
 struct Map
 {
 	UL width, height;
 	Flt scale_x, scale_y;
 	Flt center_x, center_y;
+	Flt zoom_mul;
 	bool map_all_done = false;
 	std::vector<Point> points;
+	UL new_w, new_h;
 	std::size_t to_index(UL x, UL y) const;
 	Flt to_xpos(UL x) const;
 	Flt to_ypos(UL y) const;
@@ -49,6 +54,9 @@ struct Map
 	enum Status { all_done, was_updated, no_change };
 	Status generate(UL cap, bool display=false);
 	Image makeimage(float mod);
+	void generate_10(UL cap, bool display=false);
+	Image makeimage_N(int n, ModFunc);
+	RGB extrapolate(float x, float y, float mod);
 };
 
 template<typename T>

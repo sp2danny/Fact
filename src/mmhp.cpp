@@ -19,21 +19,21 @@ int main(int argc, char* argv[])
 {
 	cmd.init(argc, argv);
 
-	Flt   zoom_cur        = cmd.get_parameter( "zoom-start",   "3.2"     );
-	Flt   zoom_end        = cmd.get_parameter( "zoom-end",     "0.32"    );
-	Flt   zoom_step       = cmd.get_parameter( "zoom-step",    "0.99"    );
-	Flt   center_x        = cmd.get_parameter( "center-x",     "0.5"     );
-	Flt   center_y        = cmd.get_parameter( "center-y",     "0.0"     );
-	UL    num_dig         = std::stol  ( cmd.get_parameter ( "num-digits",   "3"       ));
-	UL    update_cap      = std::stol  ( cmd.get_parameter ( "update-cap",   "50"      ));
-	UL    image_width     = std::stol  ( cmd.get_parameter ( "width",        "640"     ));
-	UL    image_height    = std::stol  ( cmd.get_parameter ( "height",       "480"     ));
-	UL    skip_count      = std::stol  ( cmd.get_parameter ( "skip",         "0"       ));
-	UL    max_count       = std::stol  ( cmd.get_parameter ( "max-count",    "0"       ));
-	float mod_base        = std::stof  ( cmd.get_parameter ( "col-base",     "100"     ));
-	float mod_pow         = std::stof  ( cmd.get_parameter ( "col-pow",      "0.03"    ));
-	Str   target_dir      = cmd.get_parameter("target", "img");
-	Str   name_lead       = cmd.get_parameter("lead", "m_");
+	static Flt   zoom_cur        = cmd.get_parameter( "zoom-start",   "3.2"     );
+	static Flt   zoom_end        = cmd.get_parameter( "zoom-end",     "0.32"    );
+	static Flt   zoom_step       = cmd.get_parameter( "zoom-step",    "0.99"    );
+	static Flt   center_x        = cmd.get_parameter( "center-x",     "0.5"     );
+	static Flt   center_y        = cmd.get_parameter( "center-y",     "0.0"     );
+	static UL    num_dig         = std::stol  ( cmd.get_parameter ( "num-digits",   "3"       ));
+	static UL    update_cap      = std::stol  ( cmd.get_parameter ( "update-cap",   "50"      ));
+	static UL    image_width     = std::stol  ( cmd.get_parameter ( "width",        "640"     ));
+	static UL    image_height    = std::stol  ( cmd.get_parameter ( "height",       "480"     ));
+	static UL    skip_count      = std::stol  ( cmd.get_parameter ( "skip",         "0"       ));
+	static UL    max_count       = std::stol  ( cmd.get_parameter ( "max-count",    "0"       ));
+	static float mod_base        = std::stof  ( cmd.get_parameter ( "col-base",     "100"     ));
+	static float mod_pow         = std::stof  ( cmd.get_parameter ( "col-pow",      "0.03"    ));
+	static Str   target_dir      = cmd.get_parameter("target", "img");
+	static Str   name_lead       = cmd.get_parameter("lead", "m_");
 
 	auto mkname = [&](UL i) -> Str
 	{
@@ -58,12 +58,15 @@ int main(int argc, char* argv[])
 
 	Str curr_name = mkname(i);
 
-	while (true)
+	if (!cmd.has_option('o', "overwrite"))
 	{
-		if (!boost::filesystem::exists(curr_name)) break;
-		i += 1;
-		zoom_cur *= zoom_step;
-		curr_name = mkname(i);
+		while (true)
+		{
+			if (!boost::filesystem::exists(curr_name)) break;
+			i += 1;
+			zoom_cur *= zoom_step;
+			curr_name = mkname(i);
+		}
 	}
 
 	if (i != 1)
@@ -76,6 +79,7 @@ int main(int argc, char* argv[])
 	m.height = image_height;
 	m.center_x = center_x;
 	m.center_y = center_y;
+	m.zoom_mul = zoom_step;
 	
 	if (cmd.has_option('p', "print"))
 	{
@@ -97,7 +101,7 @@ int main(int argc, char* argv[])
 		if (max_count)
 			if (i>max_count) break;
 
-		if (boost::filesystem::exists(curr_name))
+		if (!cmd.has_option('o', "overwrite") && boost::filesystem::exists(curr_name))
 		{
 			i += 1;
 			zoom_cur *= zoom_step;
@@ -114,22 +118,31 @@ int main(int argc, char* argv[])
 			std::cout << "scale-x      : " << m.scale_x << std::endl;
 			std::cout << "scale-y      : " << m.scale_y << std::endl;
 		}
-
-		m.generate_init();
-		m.generate(update_cap, true);
-		float mod = mod_base / (float)pow(zoom_cur.get_d(), mod_pow);
-		m.makeimage(mod).Save(curr_name);
 		
-		if (cmd.has_option('p', "print"))
-		{
-			std::cout << "mod          : " << mod << std::endl;
-			std::cout << "Wrote: " << curr_name << std::endl;
-		} else {
-			std::cout << "Wrote: " << curr_name << "  zoom: " << std::setprecision(20) << zoom_cur << "                \r" << std::flush;
-		}
+		ModFunc mod_func = [](double d) { return mod_base / (float)pow(d, mod_pow); };
 
-		curr_name = mkname(++i);
-		zoom_cur *= zoom_step;
+		if (cmd.has_option('t', "ten"))
+		{
+			m.generate_10(update_cap, mod_func);
+			for (int j=0; j<10; ++j)
+			{
+				curr_name = mkname(i+j);
+				zoom_cur *= zoom_step;
+				if (!cmd.has_option('o', "overwrite") && boost::filesystem::exists(curr_name)) continue;
+				m.makeimage_N(j,mod_func).Save(curr_name);
+				std::cout << "Wrote: " << curr_name << std::endl;
+			}
+			i += 10;
+		}
+		else
+		{
+			m.generate_init();
+			m.generate(update_cap,true);
+			m.makeimage( mod_func(zoom_cur.get_d()) ).Save(curr_name);
+			zoom_cur *= zoom_step;
+			++i;
+		}
+		curr_name = mkname(i);
 	}
 
 	std::cout << "\ndone.\n";
