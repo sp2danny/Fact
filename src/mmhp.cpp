@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <chrono>
 
 #include <boost/filesystem.hpp>
 
@@ -84,11 +85,16 @@ int main(int argc, char* argv[])
 	if (cmd.has_option('p', "print"))
 	{
 		std::cout << std::setprecision(25) << std::defaultfloat;
-		std::cout << "center-x     : " << m.center_x  << std::endl;
-		std::cout << "center-y     : " << m.center_y  << std::endl;
-		std::cout << "update cap   : " << update_cap  << std::endl;
-		std::cout << "zoom step    : " << zoom_step   << std::endl;		
+		std::cout << "sizeof point   : " << sizeof(Point) << std::endl;
+		std::cout << "center-x       : " << m.center_x    << std::endl;
+		std::cout << "center-y       : " << m.center_y    << std::endl;
+		std::cout << "update cap     : " << update_cap    << std::endl;
+		std::cout << "zoom step      : " << zoom_step     << std::endl;		
 	}
+	
+	bool ten = cmd.has_option('t', "ten");
+	bool owr = cmd.has_option('o', "overwrite");
+	bool prt = cmd.has_option('p', "print");
 
 	while (true)
 	{
@@ -101,7 +107,7 @@ int main(int argc, char* argv[])
 		if (max_count)
 			if (i>max_count) break;
 
-		if (!cmd.has_option('o', "overwrite") && boost::filesystem::exists(curr_name))
+		if (!owr && boost::filesystem::exists(curr_name) && !ten)
 		{
 			i += 1;
 			zoom_cur *= zoom_step;
@@ -112,23 +118,32 @@ int main(int argc, char* argv[])
 		m.scale_x = zoom_cur;
 		m.scale_y = (zoom_cur * (Flt)image_height) / (Flt)image_width;
 
-		if (cmd.has_option('p', "print"))
+		if (prt)
 		{
 			std::cout << std::setprecision(25) << std::defaultfloat;
-			std::cout << "scale-x      : " << m.scale_x << std::endl;
-			std::cout << "scale-y      : " << m.scale_y << std::endl;
+			std::cout << "scale-x        : " << m.scale_x << std::endl;
+			std::cout << "scale-y        : " << m.scale_y << std::endl;
 		}
-		
+
 		ModFunc mod_func = [](double d) { return mod_base / (float)pow(d, mod_pow); };
 
-		if (cmd.has_option('t', "ten"))
+		if (ten)
 		{
-			m.generate_10(update_cap, mod_func);
+			auto t1 = std::chrono::high_resolution_clock::now();
+			UL maxout = m.generate_10_threaded(update_cap, mod_func);
+			//UL maxout = m.generate_10(update_cap, mod_func);
+			auto t2 = std::chrono::high_resolution_clock::now();
+			if (prt)
+			{
+				std::cout << "generate time  : " << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count() / 1000.0f << std::endl;
+				std::cout << "effective cap  : " << maxout << std::endl;
+				std::cout << "color mod      : " << mod_func(zoom_cur.get_d()) << std::endl;
+			}
 			for (int j=0; j<10; ++j)
 			{
 				curr_name = mkname(i+j);
 				zoom_cur *= zoom_step;
-				if (!cmd.has_option('o', "overwrite") && boost::filesystem::exists(curr_name)) continue;
+				if (!owr && boost::filesystem::exists(curr_name)) continue;
 				m.makeimage_N(j,mod_func).Save(curr_name);
 				std::cout << "Wrote: " << curr_name << std::endl;
 			}

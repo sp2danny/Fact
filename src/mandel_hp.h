@@ -28,15 +28,34 @@ typedef std::complex<Flt> Cmplx;
 
 Cmplx step(Cmplx c, Cmplx z);
 
+//struct XY { Flt x,y; };
+
 struct Point
 {
 	enum { in, calc, out } status = calc;
 	unsigned long iter = 0;
-	double over;
-	Cmplx z = {0.0,0.0};
+	float over;
+	//Cmplx z = {0.0,0.0};
 };
 
 typedef float (*ModFunc)(double);
+
+typedef std::vector<Point> Scanline;
+
+struct Map;
+
+struct LineCache
+{
+	UL cap;
+	UL eff_cap;
+	bool display;
+	std::vector<UL> scanlines;
+	Map& map;
+	std::vector<Flt>& vfx;
+	std::vector<Flt>& vfy;
+};
+
+void execute(LineCache*);
 
 struct Map
 {
@@ -45,16 +64,18 @@ struct Map
 	Flt center_x, center_y;
 	Flt zoom_mul;
 	bool map_all_done = false;
-	std::vector<Point> points;
+	std::vector<Scanline> points;
 	UL new_w, new_h;
-	std::size_t to_index(UL x, UL y) const;
+	//std::size_t to_index(UL x, UL y) const;
+	Point& get(UL x, UL y);
 	Flt to_xpos(UL x) const;
 	Flt to_ypos(UL y) const;
 	void generate_init();
 	enum Status { all_done, was_updated, no_change };
 	Status generate(UL cap, bool display=false);
 	Image makeimage(float mod);
-	void generate_10(UL cap, bool display=false);
+	UL generate_10(UL cap, bool display=false);
+	UL generate_10_threaded(UL cap, bool display=false);
 	Image makeimage_N(int n, ModFunc);
 	RGB extrapolate(float x, float y, float mod);
 };
@@ -67,7 +88,6 @@ T clamp(T val, T min, T max)
 	return val;
 }
 
-RGB col(Point p, float mod);
+RGB col(const Point& p, float mod);
 
-void movie_maker(Map& m, UL cap);
 
