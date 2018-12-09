@@ -11,9 +11,10 @@
 
 struct Flt : mpf_class
 {
-	Flt() : mpf_class(0.0, 256) { }
-	Flt(double d) : mpf_class(d, 256) { }
-	Flt(std::string s) : mpf_class(s.c_str(), 256) {}
+	static constexpr int N = 512;
+	Flt() : mpf_class(0.0, N) { }
+	Flt(double d) : mpf_class(d, N) { }
+	Flt(std::string s) : mpf_class(s.c_str(), N) {}
 	template<typename T>
 	Flt(T&& arg)
 		: Flt()
@@ -28,14 +29,12 @@ typedef std::complex<Flt> Cmplx;
 
 Cmplx step(Cmplx c, Cmplx z);
 
-//struct XY { Flt x,y; };
-
 struct Point
 {
 	enum { in, calc, out } status = calc;
 	unsigned long iter = 0;
 	float over;
-	//Cmplx z = {0.0,0.0};
+	Cmplx z = {0.0,0.0};
 };
 
 typedef float (*ModFunc)(double);
@@ -66,7 +65,6 @@ struct Map
 	bool map_all_done = false;
 	std::vector<Scanline> points;
 	UL new_w, new_h;
-	//std::size_t to_index(UL x, UL y) const;
 	Point& get(UL x, UL y);
 	Flt to_xpos(UL x) const;
 	Flt to_ypos(UL y) const;

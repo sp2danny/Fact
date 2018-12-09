@@ -14,16 +14,6 @@ Cmplx step(Cmplx c, Cmplx z)
 	return z*z + c;
 }
 
-/* std::size_t Map::to_index(UL x, UL y) const
-{
-	assert(x<width);
-	assert(y<height);
-	std::size_t idx = y;
-	idx *= width;
-	idx += x;
-	return idx;
-} */
-
 Point& Map::get(UL x, UL y)
 {
 	return points[y][x];
@@ -59,15 +49,14 @@ void Map::generate_init()
 	for (y=0; y<height; ++y)
 	{
 		points[y].resize(width);
-		//Flt yld = to_ypos(y);
+		Flt yld = to_ypos(y);
 		for (x=0; x<width; ++x)
 		{
-			//Flt xld = to_xpos(x);
-			//Cmplx z{xld, yld};
+			Flt xld = to_xpos(x);
+			Cmplx z{xld, yld};
 			get(x,y).status = Point::calc;
 			get(x,y).iter = 1;
-			//points[idx].z = z;
-			//++idx;
+			get(x,y).z = z;
 		}
 	}
 }
@@ -95,68 +84,70 @@ auto Map::generate(UL cap, bool display) -> Status
 		Flt yld = to_ypos(y);
 		for (x=0; x<width; ++x)
 		{
-			//auto idx = to_index(x, y);
 			Point& p = get(x,y);
 			if (p.status != Point::calc)
 				continue;
 			found_one = true;
 			Cmplx c{vfx[x], yld};
-			//Cmplx c{vfx[x], yld};
-			//Cmplx z = points[idx].z;
-			Cmplx z = c;
+			Cmplx z = p.z;
+			//Cmplx z = c;
 			UL n = p.iter;
+			if (n<=1)
+			{
+				// first bulb
+				Flt y2 = yld * yld;
+				Flt xldp1 = vfx[x]+1.0;
+				if (((xldp1*xldp1) + y2) < (Flt)0.0625)
+				{
+					did_smth = true;
+					p.status = Point::in;
+					p.iter = n;
+					p.z = z;
+					break;
+				}
+				// main cardoid
+				Flt xx = vfx[x]-0.25;
+				xx *= xx;
+				xx += y2;
+				Flt pp = sqrt(xx);
+				if (vfx[x] < (pp - 2.0*(pp*pp) + 0.25))
+				{
+					did_smth = true;
+					p.status = Point::in;
+					p.iter = n;
+					p.z = z;
+					break;
+				}
+			}
+
 			while (true)
 			{
 				if (n >= cap)
 				{
 					p.iter = n;
-					//points[idx].z = z;
+					p.z = z;
 					break;
 				}
-				//Flt z2 = z.x*z.x + z.y*z.y;
-				Flt az = abs(z);
-				//auto az2 = abs(z2.get_d());
-				if (az >= two)
+				
+				auto zre = z.real();
+				Flt  re_sq = zre * zre;
+				auto zim = z.imag();
+				Flt  im_sq = zim * zim;
+				auto az2 = re_sq.get_d() + im_sq.get_d();
+				if (az2 > 4.0)
 				{
-					did_smth = true;
 					p.status = Point::out;
 					p.iter = n;
-					//points[idx].z = z;
-					p.over = az.get_d();
+					p.over = sqrtf(az2);
 					break;
 				}
 
-				if (n<=1)
-				{
-					// first bulb
-					Flt y2 = yld * yld;
-					Flt xldp1 = vfx[x]+1.0;
-					if (((xldp1*xldp1) + y2) < (Flt)0.0625)
-					{
-						did_smth = true;
-						p.status = Point::in;
-						p.iter = n;
-						//points[idx].z = z;
-						break;
-					}
-					// main cardoid
-					Flt xx = vfx[x]-0.25;
-					xx *= xx;
-					xx += y2;
-					Flt pp = sqrt(xx);
-					if (vfx[x] < (pp - 2.0*(pp*pp) + 0.25))
-					{
-						did_smth = true;
-						p.status = Point::in;
-						p.iter = n;
-						//points[idx].z = z;
-						break;
-					}
-				}
-
-				//z.x = 
-				z = step(c, z);
+				z.real(re_sq-im_sq);
+				auto ab = zre * zim;
+				z.imag(ab+ab);
+				z += c;
 				++n;
+				
 			}
 		}
 	}
