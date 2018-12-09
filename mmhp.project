@@ -33,7 +33,7 @@
       </Compiler>
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(ProjectName)_dbg.out" IntermediateDirectory="./bin/Debug" Command="./$(ProjectName)_dbg.out" CommandArguments="center-x=-1.474528824386659714993156 center-y=-3.487076826169475459669973e-07 update-cap=1200 zoom-start=5 width=320 height=240 num-digits=3 lead=img- target=./tst zoom-end=5e-18 col-base=220 col-pow=-0.01 -p -t -o" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <General OutputFile="$(ProjectName)_dbg.out" IntermediateDirectory="./bin/Debug" Command="./$(ProjectName)_dbg.out" CommandArguments="center-x=-1.4745288243866597150005121240527838408721875 center-y=-3.4870768261694098233183896979924195325e-07 update-cap=15000 width=640 height=480 num-digits=3 lead=img- target=./tst zoom-start=1e-21 zoom-end=5e-35 col-base=220 col-pow=-0.01 -p -t -o" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>

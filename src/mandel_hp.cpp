@@ -376,7 +376,7 @@ Image Map::makeimage_N(int n, ModFunc mf)
 
 void execute(LineCache* lc)
 {
-	UL maxout = 1;
+	UL maxout = 1, skipcnt = 0;
 	const Flt two = 2.0;
 
 	for (UL y : lc->scanlines)
@@ -398,12 +398,17 @@ void execute(LineCache* lc)
 			p.init(c);
 		}
 
+		auto dc = [&](Point& p, const Cmplx& c) -> void
+		{
+			bool did = p.docalc(c, lc->cap);
+			if (did && p.iter>maxout) maxout=p.iter;			
+		};
+
 		for (UL x=0; x<w; x+=2)
 		{
 			auto& p = lc->map.get(x,y);
 			Cmplx c{lc->vfx[x], yld};
-			bool did = p.docalc(c, lc->cap);
-			if (did && p.iter>maxout) maxout=p.iter;
+			dc(p,c);
 		}
 		for (UL x=0; x<w; ++x)
 		{
@@ -414,18 +419,21 @@ void execute(LineCache* lc)
 			if (x==0) { p.docalc(c,lc->cap); continue; }
 			if (x==l) { p.docalc(c,lc->cap); continue; }
 			auto& pp = lc->map.get(x-1,y);
-			if (pp.status != Point::calc) { p.docalc(c,lc->cap); continue; }
+			if (pp.status != Point::out) { dc(p,c); continue; }
 			auto& pn = lc->map.get(x+1,y);
-			if (pn.status != Point::calc) { p.docalc(c,lc->cap); continue; }
-			if (pp.iter != pn.iter) { p.docalc(c,lc->cap); continue; }
+			if (pn.status != Point::out) { dc(p,c); continue; }
+			if (pp.iter != pn.iter) { dc(p,c); continue; }
+			p.status = Point::out;
 			p.iter = pp.iter;
 			p.over = (pp.over + pn.over)/2.0;
+			++skipcnt;
 		}
 
 	}
 
 	if (maxout > lc->eff_cap)
 		lc->eff_cap = maxout;
+	lc->skip_count = skipcnt;
 }
 
 UL Map::generate_10_threaded(UL cap, bool display)
@@ -456,10 +464,10 @@ UL Map::generate_10_threaded(UL cap, bool display)
 		vfy.push_back(y_start + y_step*y);
 
 	LineCache lc[4] = {
-		{ cap, 0, display, {}, *this, vfx, vfy },
-		{ cap, 0,   false, {}, *this, vfx, vfy },
-		{ cap, 0,   false, {}, *this, vfx, vfy },
-		{ cap, 0,   false, {}, *this, vfx, vfy },
+		{ cap, 0, 0, display, {}, *this, vfx, vfy },
+		{ cap, 0, 0,   false, {}, *this, vfx, vfy },
+		{ cap, 0, 0,   false, {}, *this, vfx, vfy },
+		{ cap, 0, 0,   false, {}, *this, vfx, vfy },
 	};
 
 	int i = 0;
@@ -480,11 +488,16 @@ UL Map::generate_10_threaded(UL cap, bool display)
 	{
 		tt[i].join();
 	}
+	UL sk = 0;
 	for (i=0; i<4; ++i)
 	{
 		if (lc[i].eff_cap > maxout)
 			maxout = lc[i].eff_cap;
+		sk += lc[i].skip_count;
 	}
+	
+	if (display)
+		std::cout << "skipped        : " << sk << " pixels  \n";
 
 	return maxout;
 }

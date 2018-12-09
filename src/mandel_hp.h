@@ -49,6 +49,7 @@ struct LineCache
 {
 	UL cap;
 	UL eff_cap;
+	UL skip_count;
 	bool display;
 	std::vector<UL> scanlines;
 	Map& map;
