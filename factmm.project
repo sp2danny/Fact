@@ -87,13 +87,13 @@
       </Completion>
     </Configuration>
     <Configuration Name="Release" CompilerType="clang( tags/RELEASE_600/final )" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
-      <Compiler Options="-O2;-Wall" C_Options="-O2;-Wall" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
+      <Compiler Options="-O3" C_Options="-O2;-Wall" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <IncludePath Value="."/>
         <Preprocessor Value="NDEBUG"/>
       </Compiler>
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(ProjectName).out" IntermediateDirectory="./bin/Release" Command="$(ProjectName).out" CommandArguments="width=320 height=240 center-x=-1.474528824386659715000512124052656249 center-y=-3.487076826169409823318385093750012345e-07 scale-x=6.3e-30  zoom-step=10 update-cap=7500 col-base=220 col-pow=-0.01" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <General OutputFile="$(ProjectName).out" IntermediateDirectory="./bin/Release" Command="$(ProjectName).out" CommandArguments="width=320 height=240 center-x=-1.4745288243866597150005121240527838408721875 center-y=-3.4870768261694098233183896979924195325e-07 scale-x=6.3e-38  zoom-step=10 update-cap=7500 col-base=220 col-pow=-0.01" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>

@@ -284,10 +284,10 @@ int main(int argc, char* argv[])
 	m.center_y = std::stold( cmd.get_parameter ("center-y",   "-0.0"  ));
 	m.scale_x  = std::stold( cmd.get_parameter ("scale-x",    "3.2"   ));
 	m.scale_y  = std::stold( cmd.get_parameter ("scale-y",    std::to_string((Flt)m.scale_x*3.0l/4.0l).c_str()));
-	fuc        = std::stoi(  cmd.get_parameter ("update-cap", "1200"  ));
-	zoom_step  = std::stoi(  cmd.get_parameter ("zoom-step",  "2"     ));
-	mod_base   = std::stof(  cmd.get_parameter ("col-base",   "100"   ));
-	mod_pow    = std::stof(  cmd.get_parameter ("col-pow",    "0.04"  ));
+	fuc        = std::stoi(  cmd.get_parameter ("update-cap", "2500"  ));
+	zoom_step  = std::stoi(  cmd.get_parameter ("zoom-step",  "3.16"  ));
+	mod_base   = std::stof(  cmd.get_parameter ("col-base",   "120"   ));
+	mod_pow    = std::stof(  cmd.get_parameter ("col-pow",    "-0.01" ));
 
 	m.generate_init();
 	float mod = mod_base / (float)pow(m.scale_x, mod_pow);

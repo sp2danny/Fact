@@ -103,7 +103,7 @@ auto Map::generate(UL cap, bool display) -> Status
 					p.status = Point::in;
 					p.iter = n;
 					p.z = z;
-					break;
+					continue;
 				}
 				// main cardoid
 				Flt xx = vfx[x]-0.25;
@@ -116,7 +116,7 @@ auto Map::generate(UL cap, bool display) -> Status
 					p.status = Point::in;
 					p.iter = n;
 					p.z = z;
-					break;
+					continue;
 				}
 			}
 

@@ -23,8 +23,8 @@ Map m;
 Image img;
 
 unsigned long fuc = 1200;
-unsigned long update_cap = 100;
-unsigned long update_step = 10;
+unsigned long update_cap = 500;
+unsigned long update_step = 50;
 float zoom_step = 2;
 float mod_base = 215.f;
 float mod_pow = 0.05f;
@@ -49,13 +49,13 @@ gboolean idle_func(gpointer data)
 
 	if (res == Map::was_updated )
 	{
-		std::cout << "        working            " << "\r" << std::flush;
+		std::cout << "        working            " << "     \r" << std::flush;
 		noupdatefor = 0;
 	}
 	if (res == Map::no_change)
 	{
 		noupdatefor += 1;
-		std::cout << "        unupdated " << noupdatefor << "\r" << std::flush;
+		std::cout << "        unupdated " << noupdatefor << "     \r" << std::flush;
 	}
 
 	float mod = mod_base / (float)std::pow(m.scale_x.get_d(), mod_pow);
@@ -126,8 +126,8 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 	switch (event->keyval)
 	{
 	case GDK_r:
-		update_cap = 100;
-		update_step = 10;
+		update_cap = 500;
+		update_step = 50;
 		mk_img((GtkImage*)data);
 		break;	
 	case GDK_S:
@@ -143,8 +143,8 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		zoom_step -= 1.0l;
 		break;
 	case GDK_space:
-		update_cap = 100;
-		update_step = 10;
+		update_cap = 500;
+		update_step = 50;
 		m.scale_x /= zoom_step;
 		m.scale_y /= zoom_step;
 		mk_img((GtkImage*)data);
@@ -229,8 +229,8 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 		m.scale_y /= zoom_step;
 	}
 
-	update_cap = 100;
-	update_step = 10;
+	update_cap = 500;
+	update_step = 50;
 
 	mk_img((GtkImage*)data);
 	return TRUE;
@@ -277,9 +277,6 @@ void gtk_app()
 
 int main(int argc, char* argv[])
 {
-	//mpf_class mm(10.0, 512);
-	//mm /= 3;
-	//std::cout << std::setprecision(100) << mm << std::endl;
 	
 	cmd.init(argc, argv);
 
@@ -289,10 +286,10 @@ int main(int argc, char* argv[])
 	m.center_y =             cmd.get_parameter ("center-y",   "-0.0"  ) ;
 	m.scale_x  =             cmd.get_parameter ("scale-x",    "3.2"   ) ;
 	m.scale_y  = m.scale_x*3.0/4.0;
-	fuc        = std::stol(  cmd.get_parameter ("update-cap", "1200"  ));
-	zoom_step  = std::stol(  cmd.get_parameter ("zoom-step",  "2"     ));
-	mod_base   = std::stof(  cmd.get_parameter ("col-base",   "100"   ));
-	mod_pow    = std::stof(  cmd.get_parameter ("col-pow",    "0.04"  ));
+	fuc        = std::stol(  cmd.get_parameter ("update-cap", "2500"  ));
+	zoom_step  = std::stol(  cmd.get_parameter ("zoom-step",  "3.16"  ));
+	mod_base   = std::stof(  cmd.get_parameter ("col-base",   "120"   ));
+	mod_pow    = std::stof(  cmd.get_parameter ("col-pow",    "-0.01" ));
 
 	m.generate_init();
 	float mod = mod_base / (float)pow(m.scale_x.get_d(), mod_pow);

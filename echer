@@ -1,1 +1,1 @@
-./mmhp.out center-x=-1.474528824386659715000512124052656249 center-y=-3.48707682616940982331838509375e-07 update-cap=5000 zoom-start=5 width=1024 height=768 num-digits=5 lead=img- target=./img zoom-end=5e-25 col-base=220 col-pow=-0.01 -p -t 
+./mmhp.out center-x=-1.4745288243866597150005121240527838408721875 center-y=-3.4870768261694098233183896979924195325e-07 update-cap=15000 zoom-start=5 width=1024 height=768 num-digits=5 lead=img- target=./img zoom-end=5e-35 col-base=220 col-pow=-0.01 -p -t 
