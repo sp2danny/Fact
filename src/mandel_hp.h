@@ -11,7 +11,7 @@
 
 struct Flt : mpf_class
 {
-	static constexpr int N = 512;
+	static constexpr int N = 1024;
 	Flt() : mpf_class(0.0, N) { }
 	Flt(double d) : mpf_class(d, N) { }
 	Flt(std::string s) : mpf_class(s.c_str(), N) {}

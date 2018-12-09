@@ -1,56 +1,39 @@
 
 #pragma once
 
-template<int N, int M>
-struct fixed
+#include <string>
+#include <iostream>
+
+struct fixed3
 {
-	unsigned char ip[N] = {0};
-	unsigned char fp[M] = {0};
+	fixed3();
+	fixed3(long);
+	fixed3(double);
+	fixed3(const std::string&);
 
-	fixed() = default;
-	fixed(int val)
-	{
-		for (int i = N - 1; i >= 0; --i)
-		{
-			ip[i] = val % 256;
-			val /= 256;
-		}
-	}
+	fixed3& operator += (const fixed3&);
+	fixed3& operator -= (const fixed3&);
+	fixed3& operator *= (const fixed3&);
+	
+	fixed3& sqr();
+	fixed3& dbl();
+	
+	std::string to_string() const;
 
+private:
+
+	void seti(unsigned short);
+
+	unsigned short ip;
+	unsigned short fp[3];
+	unsigned char mask;
 };
 
-template<int N, int M>
-fixed<N,M>& operator += (fixed<N, M>& lhs, const fixed<N,M>& rhs)
-{
-	short s, l, r, c=0;
-	for (int i = M - 1; i >= 0; --i)
-	{
-		l = lhs.fp[i];
-		r = rhs.fp[i];
-		s = l + r + c;
-		lhs.fp[i] = s % 256;
-		c = s / 256;
-	}
-	for (int i = N - 1; i >= 0; --i)
-	{
-		l = lhs.ip[i];
-		r = rhs.ip[i];
-		s = l + r + c;
-		lhs.ip[i] = s % 256;
-		c = s / 256;
-	}
-	return lhs;
-}
+fixed3 operator + (const fixed3& lhs, const fixed3& rhs) { fixed3 res = lhs; res += rhs; return res; }
+fixed3 operator - (const fixed3& lhs, const fixed3& rhs) { fixed3 res = lhs; res -= rhs; return res; }
+fixed3 operator * (const fixed3& lhs, const fixed3& rhs) { fixed3 res = lhs; res *= rhs; return res; }
 
-template<int N, int M>
-fixed<N, M> operator + (const fixed<N, M>& lhs, const fixed<N, M>& rhs)
-{
-	fixed<N, M> res = lhs;
-	res += rhs;
-	return res;
-}
-
-
+std::ostream& operator << (std::ostream& out, const fixed3& val) { out << val.to_string(); return out; }
 
 
 

@@ -42,7 +42,7 @@ gboolean idle_func(gpointer data)
 	auto res = m.generate(update_cap, true);
 	if (res == Map::all_done)
 	{
-		std::cout << " --- all done ---   " << std::endl << std::flush;
+		std::cout << " --- all done ---               " << std::endl << std::flush;
 		m.map_all_done = true;
 		return TRUE;
 	}
@@ -150,7 +150,7 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		mk_img((GtkImage*)data);
 		break;
 	case GDK_p:
-		std::cout << std::setprecision(50) ;
+		std::cout << std::setprecision(75) ;
 		std::cout << "center-x     : " << m.center_x  << std::endl;
 		std::cout << "center-y     : " << m.center_y  << std::endl;
 		std::cout << "scale-x      : " << m.scale_x   << std::endl;
@@ -277,9 +277,9 @@ void gtk_app()
 
 int main(int argc, char* argv[])
 {
-	mpf_class mm(10.0, 512);
-	mm /= 3;
-	std::cout << std::setprecision(100) << mm << std::endl;
+	//mpf_class mm(10.0, 512);
+	//mm /= 3;
+	//std::cout << std::setprecision(100) << mm << std::endl;
 	
 	cmd.init(argc, argv);
 

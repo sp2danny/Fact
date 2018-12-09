@@ -93,7 +93,7 @@
       </Compiler>
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(ProjectName).out" IntermediateDirectory="./bin/Release" Command="$(ProjectName).out" CommandArguments="width=320 height=240 center-x=-1.4745288243866597150005121240625 center-y=-3.487076826169409823316375e-07 scale-x=6.3e-25  zoom-step=10 update-cap=7500 col-base=220 col-pow=-0.01" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <General OutputFile="$(ProjectName).out" IntermediateDirectory="./bin/Release" Command="$(ProjectName).out" CommandArguments="width=320 height=240 center-x=-1.474528824386659715000512124052656249 center-y=-3.487076826169409823318385093750012345e-07 scale-x=6.3e-30  zoom-step=10 update-cap=7500 col-base=220 col-pow=-0.01" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
