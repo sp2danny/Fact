@@ -35,6 +35,8 @@ struct Point
 	unsigned long iter = 0;
 	float over;
 	Cmplx z = {0.0,0.0};
+	bool docalc(const Cmplx& c, UL cap);
+	void init(const Cmplx& c);
 };
 
 typedef float (*ModFunc)(double);
@@ -69,9 +71,10 @@ struct Map
 	Flt to_xpos(UL x) const;
 	Flt to_ypos(UL y) const;
 	void generate_init();
+	void generate_odd(UL cap);
 	enum Status { all_done, was_updated, no_change };
 	Status generate(UL cap, bool display=false);
-	Image makeimage(float mod);
+	Image makeimage(float mod, UL upc=0);
 	UL generate_10(UL cap, bool display=false);
 	UL generate_10_threaded(UL cap, bool display=false);
 	Image makeimage_N(int n, ModFunc);

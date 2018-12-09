@@ -22,9 +22,10 @@ cmdline cmd;
 Map m;
 Image img;
 
+unsigned long iter_init = 600;
 unsigned long fuc = 1200;
-unsigned long update_cap = 500;
-unsigned long update_step = 50;
+unsigned long update_cap = 200;
+unsigned long update_step = 20;
 float zoom_step = 2;
 float mod_base = 215.f;
 float mod_pow = 0.05f;
@@ -59,7 +60,7 @@ gboolean idle_func(gpointer data)
 	}
 
 	float mod = mod_base / (float)std::pow(m.scale_x.get_d(), mod_pow);
-	img = m.makeimage(mod);
+	img = m.makeimage(mod, fuc);
 
 	[[maybe_unused]]
 	GtkImage* image = (GtkImage*)data;
@@ -96,13 +97,70 @@ void mk_img(GtkImage* image)
 {
 	noupdatefor = 0;
 	m.generate_init();
-	m.generate(update_cap, true);
+	m.generate_odd(iter_init);
+	//m.generate(update_cap, true);
 
 	float mod = mod_base / (float)pow(m.scale_x.get_d(), mod_pow);
 
-	img = m.makeimage(mod);
+	img = m.makeimage(mod, fuc);
 
 	[[maybe_unused]]
+	GdkPixbuf* pbuf = gdk_pixbuf_new_from_data(
+		img.data(),
+		GDK_COLORSPACE_RGB,
+		FALSE,
+		8,
+		img.Width(),
+		img.Height(),
+		img.Width()*3,
+		nullptr,
+		nullptr
+	);
+
+	gtk_image_set_from_pixbuf(image, pbuf);
+}
+
+UL escape_min, escape_max;
+void find_escape()
+{
+	bool found = false;
+	UL x,y;
+	for (y=0; y<m.height; ++y) for (x=0; x<m.width; ++x)
+	{
+		auto& p = m.get(x,y);
+		if (p.status != Point::out) continue;
+		if (!found)
+		{
+			escape_min = escape_max = p.iter;
+			found = true;
+		} else {
+			if (p.iter < escape_min) escape_min = p.iter;
+			if (p.iter > escape_max) escape_max = p.iter;
+		}
+	}
+}
+
+void kross(GtkImage* image)
+{
+	UL w = img.Width();
+	UL h = img.Height();
+	UL w12 = w / 2;
+	UL w13 = w / 3;
+	UL w23 = 2 * w13;
+	UL h12 = h / 2;
+	UL h13 = h / 3;
+	UL h23 = 2 * h13;
+	UL x,y;
+	for (x=0; x<w13; ++x)
+		img.PutPixel(x, h12, {0,0,0});
+	for (x=w23; x<w; ++x)
+		img.PutPixel(x, h12, {0,0,0});
+		
+	for (y=0; y<h13; ++y)
+		img.PutPixel(w12, y, {0,0,0});
+	for (y=h23; y<h; ++y)
+		img.PutPixel(w12, y, {0,0,0});
+	
 	GdkPixbuf* pbuf = gdk_pixbuf_new_from_data(
 		img.data(),
 		GDK_COLORSPACE_RGB,
@@ -126,8 +184,8 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 	switch (event->keyval)
 	{
 	case GDK_r:
-		update_cap = 500;
-		update_step = 50;
+		update_cap = 200;
+		update_step = 20;
 		mk_img((GtkImage*)data);
 		break;	
 	case GDK_S:
@@ -136,6 +194,9 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 	case GDK_Q:
 		gtk_main_quit();
 		break;
+	case GDK_k:
+		kross((GtkImage*)data);
+		break;
 	case GDK_z:
 		zoom_step += 1.0l;
 		break;
@@ -143,13 +204,14 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		zoom_step -= 1.0l;
 		break;
 	case GDK_space:
-		update_cap = 500;
-		update_step = 50;
+		update_cap = 200;
+		update_step = 20;
 		m.scale_x /= zoom_step;
 		m.scale_y /= zoom_step;
 		mk_img((GtkImage*)data);
 		break;
 	case GDK_p:
+		find_escape();
 		std::cout << std::setprecision(75) ;
 		std::cout << "center-x     : " << m.center_x  << std::endl;
 		std::cout << "center-y     : " << m.center_y  << std::endl;
@@ -158,6 +220,8 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		std::cout << "update cap   : " << update_cap  << std::endl;
 		std::cout << "update step  : " << update_step << std::endl;
 		std::cout << "trigger cap  : " << fuc         << std::endl;
+		std::cout << "escape min   : " << escape_min  << std::endl;
+		std::cout << "escape max   : " << escape_max  << std::endl;
 		std::cout << "zoom step    : " << zoom_step   << std::endl;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
@@ -229,8 +293,8 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 		m.scale_y /= zoom_step;
 	}
 
-	update_cap = 500;
-	update_step = 50;
+	update_cap = 200;
+	update_step = 20;
 
 	mk_img((GtkImage*)data);
 	return TRUE;
@@ -287,13 +351,15 @@ int main(int argc, char* argv[])
 	m.scale_x  =             cmd.get_parameter ("scale-x",    "3.2"   ) ;
 	m.scale_y  = m.scale_x*3.0/4.0;
 	fuc        = std::stol(  cmd.get_parameter ("update-cap", "2500"  ));
-	zoom_step  = std::stol(  cmd.get_parameter ("zoom-step",  "3.16"  ));
+	zoom_step  = std::stof(  cmd.get_parameter ("zoom-step",  "3.16"  ));
 	mod_base   = std::stof(  cmd.get_parameter ("col-base",   "120"   ));
 	mod_pow    = std::stof(  cmd.get_parameter ("col-pow",    "-0.01" ));
+	iter_init  = std::stol(  cmd.get_parameter ("iter-init",  "600"   ));
 
 	m.generate_init();
+	m.generate_odd(iter_init);
 	float mod = mod_base / (float)pow(m.scale_x.get_d(), mod_pow);
-	img = m.makeimage(mod);
+	img = m.makeimage(mod, fuc);
 
 	gtk_init(&argc, &argv);
 	gtk_app();

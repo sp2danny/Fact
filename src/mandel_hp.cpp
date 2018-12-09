@@ -14,6 +14,70 @@ Cmplx step(Cmplx c, Cmplx z)
 	return z*z + c;
 }
 
+bool Point::docalc(const Cmplx& c, UL cap)
+{
+	UL& n = iter;
+	if (n<=1)
+	{
+		// first bulb
+		double xld = z.real().get_d();
+		double yld = z.imag().get_d();
+		double y2 = yld * yld;
+		double xldp1 = xld+1.0;
+		if (((xldp1*xldp1) + y2) < 0.0625)
+		{
+			status = Point::in;
+			return true;
+		}
+		// main cardoid
+		double xx = xld-0.25;
+		xx *= xx;
+		xx += y2;
+		double pp = sqrt(xx);
+		if (xld < (pp - 2.0*(pp*pp) + 0.25))
+		{
+			status = Point::in;
+			return true;
+		}
+	}
+	
+	bool did_smth = false;
+
+	while (true)
+	{
+		if (n >= cap)
+			break;
+		
+		auto zre = z.real();
+		Flt  re_sq = zre * zre;
+		auto zim = z.imag();
+		Flt  im_sq = zim * zim;
+		auto az2 = re_sq.get_d() + im_sq.get_d();
+		if (az2 > 4.0)
+		{
+			did_smth = true;
+			status = Point::out;
+			over = sqrtf(az2);
+			break;
+		}
+
+		z.real(re_sq-im_sq);
+		auto ab = zre * zim;
+		z.imag(ab+ab);
+		z += c;
+		++n;		
+	}
+
+	return did_smth;
+}
+
+void Point::init(const Cmplx& c)
+{
+	status = Point::calc;
+	iter = 1;
+	z = c;
+}
+
 Point& Map::get(UL x, UL y)
 {
 	return points[y][x];
@@ -46,6 +110,7 @@ void Map::generate_init()
 	map_all_done = false;
 	points.resize(height);
 	UL x,y;
+		
 	for (y=0; y<height; ++y)
 	{
 		points[y].resize(width);
@@ -53,10 +118,7 @@ void Map::generate_init()
 		for (x=0; x<width; ++x)
 		{
 			Flt xld = to_xpos(x);
-			Cmplx z{xld, yld};
-			get(x,y).status = Point::calc;
-			get(x,y).iter = 1;
-			get(x,y).z = z;
+			get(x,y).init({xld, yld});
 		}
 	}
 }
@@ -89,72 +151,41 @@ auto Map::generate(UL cap, bool display) -> Status
 				continue;
 			found_one = true;
 			Cmplx c{vfx[x], yld};
-			Cmplx z = p.z;
-			//Cmplx z = c;
-			UL n = p.iter;
-			if (n<=1)
-			{
-				// first bulb
-				Flt y2 = yld * yld;
-				Flt xldp1 = vfx[x]+1.0;
-				if (((xldp1*xldp1) + y2) < (Flt)0.0625)
-				{
-					did_smth = true;
-					p.status = Point::in;
-					p.iter = n;
-					p.z = z;
-					continue;
-				}
-				// main cardoid
-				Flt xx = vfx[x]-0.25;
-				xx *= xx;
-				xx += y2;
-				Flt pp = sqrt(xx);
-				if (vfx[x] < (pp - 2.0*(pp*pp) + 0.25))
-				{
-					did_smth = true;
-					p.status = Point::in;
-					p.iter = n;
-					p.z = z;
-					continue;
-				}
-			}
-
-			while (true)
-			{
-				if (n >= cap)
-				{
-					p.iter = n;
-					p.z = z;
-					break;
-				}
-				
-				auto zre = z.real();
-				Flt  re_sq = zre * zre;
-				auto zim = z.imag();
-				Flt  im_sq = zim * zim;
-				auto az2 = re_sq.get_d() + im_sq.get_d();
-				if (az2 > 4.0)
-				{
-					p.status = Point::out;
-					p.iter = n;
-					p.over = sqrtf(az2);
-					break;
-				}
-
-				z.real(re_sq-im_sq);
-				auto ab = zre * zim;
-				z.imag(ab+ab);
-				z += c;
-				++n;
-				
-			}
+			did_smth = p.docalc(c, p.iter+cap);
 		}
 	}
 	if (!found_one)
 		return all_done;
 	else
 		return did_smth ? was_updated : no_change;
+}
+
+void Map::generate_odd(UL cap)
+{
+	UL x,y;
+	std::vector<Flt> vfx;
+	for (x=0; x<width; ++x)
+		vfx.push_back(to_xpos(x));
+	const Flt two = 2.0;
+
+	for (y=0; y<height; y+=2)
+	{
+		{
+			float f = 100.0f;
+			f /= height;
+			f *= y;
+			std::cout << (int)f << "%\r" << std::flush;
+		}
+		Flt yld = to_ypos(y);
+		for (x=0; x<width; x+=2)
+		{
+			Point& p = get(x,y);
+			if (p.status != Point::calc)
+				continue;
+			Cmplx c{vfx[x], yld};
+			p.docalc(c, cap);
+		}
+	}
 }
 
 RGB col(const Point& p, float mod)
@@ -182,7 +213,7 @@ RGB col(const Point& p, float mod)
 	return {(UC)ri, (UC)gi, (UC)bi};
 }
 
-Image Map::makeimage(float mod)
+Image Map::makeimage(float mod, UL upc)
 {
 	Image img(width, height);
 	UL x,y;
@@ -196,7 +227,10 @@ Image Map::makeimage(float mod)
 			{
 				img.PutPixel(x,y,col(p, mod));
 			} else {
-				img.PutPixel(x,y,{0,0,0});
+				if (upc && (p.iter<upc))
+					img.PutPixel(x,y,{255,255,255});
+				else
+					img.PutPixel(x,y,{0,0,0});
 			}
 		}
 	}
@@ -231,9 +265,6 @@ UL Map::generate_10(UL cap, bool disp)
 	for (y=0; y<new_h; ++y)
 		vfy.push_back(y_start + y_step*y);
 	const Flt two = 2.0;
-	
-	static bool didlast = true;
-	bool didthis = false;
 
 	for (y=0; y<new_h; ++y)
 	{
@@ -250,71 +281,11 @@ UL Map::generate_10(UL cap, bool disp)
 			//auto idx = x + y*new_w;
 			auto& p = get(x,y);
 			Cmplx c{vfx[x], yld};
-			Cmplx z = c;
-			UL n = 1;
-			
-			// first bulb
-			if (didlast)
-			{
-				Flt y2 = yld * yld;
-				Flt xldp1 = vfx[x]+1.0;
-				if (((xldp1*xldp1) + y2) < (Flt)0.0625)
-				{
-					p.status = Point::in;
-					p.iter = n;
-					//points[idx].z = z;
-					didthis = true;
-					continue;
-				}
-				// main cardoid
-				Flt xx = vfx[x]-0.25;
-				xx *= xx;
-				xx += y2;
-				Flt pp = sqrt(xx);
-				if (vfx[x] < (pp - 2.0*(pp*pp) + 0.25))
-				{
-					p.status = Point::in;
-					p.iter = n;
-					//points[idx].z = z;
-					didthis = true;
-					continue;
-				}
-			}
-			while (true)
-			{
-				if (n >= cap)
-				{
-					p.status = Point::calc;
-					p.iter = n;
-					//points[idx].z = z;
-					maxout = cap;
-					break;
-				}
-				auto zre = z.real();
-				Flt  re_sq = zre * zre;
-				auto zim = z.imag();
-				Flt  im_sq = zim * zim;
-				auto az2 = re_sq.get_d() + im_sq.get_d();
-				if (az2 > 4.0)
-				{
-					p.status = Point::out;
-					p.iter = n;
-					//points[idx].z = z;
-					p.over = sqrtf(az2);
-					if (n>maxout) maxout=n;
-					break;
-				}
-
-				// (a2−b2)+(2ab)i
-				z.real(re_sq-im_sq);
-				auto ab = zre * zim;
-				z.imag(ab+ab);
-				z += c;
-				++n;
-			}
+			p.init(c);
+			bool out = p.docalc(c, cap);
+			if (out && p.iter>maxout) maxout=p.iter;
 		}
 	}
-	if (didlast&&!didthis) didlast=false;
 	return maxout;
 }
 
@@ -396,7 +367,6 @@ Image Map::makeimage_N(int n, ModFunc mf)
 		for (x=0; x<width; ++x)
 		{
 			float xf = xstart + x * xstep;
-			
 			img.PutPixel(x,y,extrapolate(xf,yf, mod));
 		}
 	}
@@ -419,49 +389,43 @@ void execute(LineCache* lc)
 			std::cout << (int)f << "%\r" << std::flush;
 		}
 		Flt yld = lc->vfy[y];
-		for (UL x=0; x<lc->map.new_w; ++x)
+		UL w = lc->map.new_w;
+		UL l = w-1;
+		for (UL x=0; x<w; ++x)
 		{
 			auto& p = lc->map.get(x,y);
 			Cmplx c{lc->vfx[x], yld};
-			Cmplx z = c;
-			UL n = 1;
-			
-			while (true)
-			{
-				if (n >= lc->cap)
-				{
-					p.status = Point::calc;
-					p.iter = n;
-					maxout = lc->cap;
-					break;
-				}
-				auto zre = z.real();
-				Flt  re_sq = zre * zre;
-				auto zim = z.imag();
-				Flt  im_sq = zim * zim;
-				auto az2 = re_sq.get_d() + im_sq.get_d();
-				if (az2 > 4.0)
-				{
-					p.status = Point::out;
-					p.iter = n;
-					p.over = sqrtf(az2);
-					if (n>maxout) maxout=n;
-					break;
-				}
-
-				// (a2−b2)+(2ab)i
-				z.real(re_sq-im_sq);
-				auto ab = zre * zim;
-				z.imag(ab+ab);
-				z += c;
-				++n;
-			}
+			p.init(c);
 		}
+
+		for (UL x=0; x<w; x+=2)
+		{
+			auto& p = lc->map.get(x,y);
+			Cmplx c{lc->vfx[x], yld};
+			bool did = p.docalc(c, lc->cap);
+			if (did && p.iter>maxout) maxout=p.iter;
+		}
+		for (UL x=0; x<w; ++x)
+		{
+			auto& p = lc->map.get(x,y);
+			if (p.status != Point::calc) continue;
+			if (p.iter != 1) continue;
+			Cmplx c{lc->vfx[x], yld};
+			if (x==0) { p.docalc(c,lc->cap); continue; }
+			if (x==l) { p.docalc(c,lc->cap); continue; }
+			auto& pp = lc->map.get(x-1,y);
+			if (pp.status != Point::calc) { p.docalc(c,lc->cap); continue; }
+			auto& pn = lc->map.get(x+1,y);
+			if (pn.status != Point::calc) { p.docalc(c,lc->cap); continue; }
+			if (pp.iter != pn.iter) { p.docalc(c,lc->cap); continue; }
+			p.iter = pp.iter;
+			p.over = (pp.over + pn.over)/2.0;
+		}
+
 	}
 
 	if (maxout > lc->eff_cap)
 		lc->eff_cap = maxout;
-
 }
 
 UL Map::generate_10_threaded(UL cap, bool display)
