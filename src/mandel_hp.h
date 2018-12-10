@@ -74,7 +74,7 @@ struct Map
 	void generate_init();
 	void generate_odd(UL cap);
 	enum Status { all_done, was_updated, no_change };
-	Status generate(UL cap, bool display=false);
+	Status generate(UL cap, bool display=false, bool extrap=false);
 	Image makeimage(float mod, UL upc=0);
 	UL generate_10(UL cap, bool display=false);
 	UL generate_10_threaded(UL cap, bool display=false);

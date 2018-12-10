@@ -9,6 +9,8 @@
 #include <iomanip>
 #include <ios>
 
+#include <stdio.h>
+
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -40,7 +42,7 @@ gboolean idle_func(gpointer data)
 	update_step += (update_step/10);
 	update_cap += update_step;
 
-	auto res = m.generate(update_cap, true);
+	auto res = m.generate(update_cap, true, true);
 	if (res == Map::all_done)
 	{
 		std::cout << " --- all done ---               " << std::endl << std::flush;
@@ -99,6 +101,7 @@ void mk_img(GtkImage* image)
 	m.generate_init();
 	m.generate_odd(iter_init);
 	//m.generate(update_cap, true);
+	std::cout << "        quad pix           " << "     \r" << std::flush;
 
 	float mod = mod_base / (float)pow(m.scale_x.get_d(), mod_pow);
 
@@ -176,6 +179,19 @@ void kross(GtkImage* image)
 	gtk_image_set_from_pixbuf(image, pbuf);
 }
 
+std::string make_string(const Flt& flt)
+{
+	std::string str;
+	constexpr std::size_t sz = 1024;
+	char buff[sz];
+	FILE* fp = fmemopen(buff, sz, "w");
+	auto w = mpf_out_str(fp, 10, 120, flt.get_mpf_t());
+	buff[w] = 0;
+	str.assign(buff, w);
+	fclose(fp);
+	return str;
+}
+
 gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 {
 	(void)widget;
@@ -208,15 +224,16 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		update_step = 20;
 		m.scale_x /= zoom_step;
 		m.scale_y /= zoom_step;
+		std::cout << "        new zoom           " << "     \r" << std::flush;
 		mk_img((GtkImage*)data);
 		break;
 	case GDK_p:
 		find_escape();
-		std::cout << std::setprecision(75) ;
-		std::cout << "center-x     : " << m.center_x  << std::endl;
-		std::cout << "center-y     : " << m.center_y  << std::endl;
-		std::cout << "scale-x      : " << m.scale_x   << std::endl;
-		std::cout << "scale-y      : " << m.scale_y   << std::endl;
+		std::cout << std::setprecision(120) ;
+		std::cout << "center-x     : " << m.center_x  << " (" << m.center_x .get_prec() << ") " << std::endl;
+		std::cout << "center-y     : " << m.center_y  << " (" << m.center_y .get_prec() << ") " << std::endl;
+		std::cout << "scale-x      : " << m.scale_x   << " (" << m.scale_x  .get_prec() << ") " << std::endl;
+		std::cout << "scale-y      : " << m.scale_y   << " (" << m.scale_y  .get_prec() << ") " << std::endl;
 		std::cout << "update cap   : " << update_cap  << std::endl;
 		std::cout << "update step  : " << update_step << std::endl;
 		std::cout << "trigger cap  : " << fuc         << std::endl;
@@ -280,6 +297,7 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
     {
        	m.scale_x *= zoom_step;
 		m.scale_y *= zoom_step;
+		std::cout << "        new zoom           " << "     \r" << std::flush;
     }
 
     if (event->button == 1)
@@ -291,6 +309,7 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 		m.center_y = ldy;
 		m.scale_x /= zoom_step;
 		m.scale_y /= zoom_step;
+		std::cout << "        new zoom & center  " << "     \r" << std::flush;
 	}
 
 	update_cap = 200;

@@ -123,7 +123,7 @@ void Map::generate_init()
 	}
 }
 
-auto Map::generate(UL cap, bool display) -> Status
+auto Map::generate(UL cap, bool display, bool extrap) -> Status
 {
 	bool found_one = false;
 	bool did_smth = false;
@@ -150,8 +150,42 @@ auto Map::generate(UL cap, bool display) -> Status
 			if (p.status != Point::calc)
 				continue;
 			found_one = true;
+			if (extrap)
+			{
+				UL w = width-1, h = height-1;
+				if (x && x<w)
+				{
+					Point& pp = get(x-1,y);
+					Point& pn = get(x+1,y);					
+					if ( (pp.status == Point::out) &&
+					     (pn.status == Point::out) &&
+					     (pp.iter == pn.iter) )
+					{
+						p.status = Point::out;
+						p.iter = pp.iter;
+						p.over = (pp.over + pn.over)/2.0;
+						did_smth = true;
+						continue;
+					}
+				}
+				if (y && y<h)
+				{
+					Point& pp = get(x,y-1);
+					Point& pn = get(x,y+1);					
+					if ( (pp.status == Point::out) &&
+					     (pn.status == Point::out) &&
+					     (pp.iter == pn.iter) )
+					{
+						p.status = Point::out;
+						p.iter = pp.iter;
+						p.over = (pp.over + pn.over)/2.0;
+						did_smth = true;
+						continue;
+					}
+				}
+			}
 			Cmplx c{vfx[x], yld};
-			did_smth = p.docalc(c, p.iter+cap);
+			did_smth = p.docalc(c, p.iter+cap) || did_smth;
 		}
 	}
 	if (!found_one)
