@@ -51,7 +51,7 @@ struct LineCache
 	UL eff_cap;
 	UL skip_count;
 	bool display;
-	std::vector<UL> scanlines;
+	UL y_start, y_count;
 	Map& map;
 	std::vector<Flt>& vfx;
 	std::vector<Flt>& vfy;

@@ -412,57 +412,125 @@ void execute(LineCache* lc)
 {
 	UL maxout = 1, skipcnt = 0;
 	const Flt two = 2.0;
+	UL i, n=lc->y_count;
+	UL w = lc->map.new_w;
 
-	for (UL y : lc->scanlines)
+	for (i=0; i<n; ++i)
 	{
-		if (lc->display)
-		{
-			float f = 100.0f;
-			f /= lc->map.new_h;
-			f *= y;
-			std::cout << (int)f << "%\r" << std::flush;
-		}
-		Flt yld = lc->vfy[y];
-		UL w = lc->map.new_w;
-		UL l = w-1;
+		UL y = lc->y_start + i;
+		Flt& yld = lc->vfy[y];
 		for (UL x=0; x<w; ++x)
 		{
 			auto& p = lc->map.get(x,y);
 			Cmplx c{lc->vfx[x], yld};
 			p.init(c);
 		}
+	}
+	
+	auto dc = [&](Point& p, const Cmplx& c) -> void
+	{
+		bool did = p.docalc(c, lc->cap);
+		if (did && p.iter>maxout) maxout=p.iter;			
+	};
 
-		auto dc = [&](Point& p, const Cmplx& c) -> void
+	for (i=0; i<n; i+=2)
+	{
+		UL y = lc->y_start + i;
+		if (lc->display)
 		{
-			bool did = p.docalc(c, lc->cap);
-			if (did && p.iter>maxout) maxout=p.iter;			
-		};
-
+			float f = 50.0f;
+			f /= n;
+			f *= i;
+			std::cout << (int)f << "%\r" << std::flush;
+		}
+		Flt& yld = lc->vfy[y];
 		for (UL x=0; x<w; x+=2)
 		{
 			auto& p = lc->map.get(x,y);
 			Cmplx c{lc->vfx[x], yld};
 			dc(p,c);
 		}
+	}
+
+	auto ep_x = [&](UL x, UL y, UL lo, UL hi) -> bool
+	{
+		auto& p = lc->map.get(x,y);
+		if (p.status != Point::calc) return false;
+		if (p.iter != 1) return false;
+		if (x==lo) return false;
+		if (x==hi) return false;
+		auto& pp = lc->map.get(x-1,y);
+		if (pp.status != Point::out) return false;
+		auto& pn = lc->map.get(x+1,y);
+		if (pn.status != Point::out) return false;
+		if (pp.iter != pn.iter) return false;
+		p.status = Point::out;
+		p.iter = pp.iter;
+		p.over = (pp.over + pn.over)/2.0;
+		++skipcnt;
+		return true;
+	};
+
+	auto ep_y = [&](UL x, UL y, UL lo, UL hi) -> bool
+	{
+		auto& p = lc->map.get(x,y);
+		if (p.status != Point::calc) return false;
+		if (p.iter != 1) return false;
+		if (y==lo) return false;
+		if (y==hi) return false;
+		auto& pp = lc->map.get(x,y-1);
+		if (pp.status != Point::out) return false;
+		auto& pn = lc->map.get(x,y+1);
+		if (pn.status != Point::out) return false;
+		if (pp.iter != pn.iter) return false;
+		p.status = Point::out;
+		p.iter = pp.iter;
+		p.over = (pp.over + pn.over)/2.0;
+		++skipcnt;
+		return true;
+	};
+
+	auto all_ep_x = [&]() -> void
+	{
+		for (i=0; i<n; i+=1)
+		{
+			UL y = lc->y_start + i;
+			for (UL x=0; x<w; x+=1)
+				ep_x(x,y , 0,lc->map.new_w-1);
+		}
+	};
+
+	auto all_ep_y = [&]() -> void
+	{
+		for (i=0; i<n; i+=1)
+		{
+			UL y = lc->y_start + i;
+			for (UL x=0; x<w; x+=1)
+				ep_y(x,y , lc->y_start,lc->y_start+n-1);
+		}
+	};
+	
+	all_ep_x(); all_ep_y(); all_ep_x();
+
+	for (i=0; i<n; i+=1)
+	{
+		if (lc->display)
+		{
+			float f = 50.0f;
+			f /= n;
+			f *= i;
+			f += 50;
+			std::cout << (int)f << "%\r" << std::flush;
+		}
+		UL y = lc->y_start + i;
 		for (UL x=0; x<w; ++x)
 		{
 			auto& p = lc->map.get(x,y);
 			if (p.status != Point::calc) continue;
 			if (p.iter != 1) continue;
-			Cmplx c{lc->vfx[x], yld};
-			if (x==0) { p.docalc(c,lc->cap); continue; }
-			if (x==l) { p.docalc(c,lc->cap); continue; }
-			auto& pp = lc->map.get(x-1,y);
-			if (pp.status != Point::out) { dc(p,c); continue; }
-			auto& pn = lc->map.get(x+1,y);
-			if (pn.status != Point::out) { dc(p,c); continue; }
-			if (pp.iter != pn.iter) { dc(p,c); continue; }
-			p.status = Point::out;
-			p.iter = pp.iter;
-			p.over = (pp.over + pn.over)/2.0;
-			++skipcnt;
+			Cmplx c{lc->vfx[x], lc->vfy[y]};
+			p.docalc(c,lc->cap);
 		}
-
 	}
 
 	if (maxout > lc->eff_cap)
@@ -498,18 +566,20 @@ UL Map::generate_10_threaded(UL cap, bool display)
 		vfy.push_back(y_start + y_step*y);
 
 	LineCache lc[4] = {
-		{ cap, 0, 0, display, {}, *this, vfx, vfy },
-		{ cap, 0, 0,   false, {}, *this, vfx, vfy },
-		{ cap, 0, 0,   false, {}, *this, vfx, vfy },
-		{ cap, 0, 0,   false, {}, *this, vfx, vfy },
+		{ cap, 0, 0, display, 0, 0, *this, vfx, vfy },
+		{ cap, 0, 0,   false, 0, 0, *this, vfx, vfy },
+		{ cap, 0, 0,   false, 0, 0, *this, vfx, vfy },
+		{ cap, 0, 0,   false, 0, 0, *this, vfx, vfy },
 	};
 
-	int i = 0;
-	for (y=0; y<new_h; ++y)
-	{
-		lc[i].scanlines.push_back(y);
-		i = (i+1) % 4;
-	}
+	UL i = 0;
+	UL num = new_h / 4;
+	UL ovr = new_h - (num*4);
+	y=0;
+	lc[0].y_start = y; y += (lc[0].y_count = num + ovr);
+	lc[1].y_start = y; y += (lc[1].y_count = num);
+	lc[2].y_start = y; y += (lc[2].y_count = num);
+	lc[3].y_start = y; y += (lc[3].y_count = num);
 
 	UL maxout = 0;
 	std::thread tt[4];
