@@ -78,6 +78,7 @@ struct Map
 	Image makeimage(float mod, UL upc=0);
 	UL generate_10(UL cap, bool display=false);
 	UL generate_10_threaded(UL cap, bool display=false);
+	UL generate_threaded_param(UL cap, bool display=false);
 	Image makeimage_N(int n, ModFunc);
 	RGB extrapolate(float x, float y, float mod);
 };

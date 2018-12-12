@@ -261,7 +261,7 @@ Image Map::makeimage(float mod, UL upc)
 			{
 				img.PutPixel(x,y,col(p, mod));
 			} else {
-				if (upc && (p.iter<upc))
+				if ((p.status==Point::calc) && upc && (p.iter<upc))
 					img.PutPixel(x,y,{255,255,255});
 				else
 					img.PutPixel(x,y,{0,0,0});
@@ -538,14 +538,8 @@ void execute(LineCache* lc)
 	lc->skip_count = skipcnt;
 }
 
-UL Map::generate_10_threaded(UL cap, bool display)
+UL Map::generate_threaded_param(UL cap, bool display)
 {
-	double zm = zoom_mul.get_d();
-	double tm = pow(zm, -10);
-
-	new_w = ceil(width  * tm);
-	new_h = ceil(height * tm);
-
 	UL x,y;
 
 	points.resize(new_h);
@@ -604,4 +598,15 @@ UL Map::generate_10_threaded(UL cap, bool display)
 		std::cout << "skipped        : " << sk << " pixels  \n";
 
 	return maxout;
+}
+
+UL Map::generate_10_threaded(UL cap, bool display)
+{
+	double zm = zoom_mul.get_d();
+	double tm = pow(zm, -10);
+
+	new_w = ceil(width  * tm);
+	new_h = ceil(height * tm);
+	
+	return generate_threaded_param(cap, display);
 }

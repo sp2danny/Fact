@@ -92,12 +92,9 @@ gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
 	return TRUE;
 }
 
-void mk_img(GtkImage* image)
-{
-	noupdatefor = 0;
-	m.generate_init();
-	m.generate(update_cap);
 
+void disp_img(GtkImage* image)
+{
 	float mod = mod_base / (float)pow(m.scale_x, mod_pow);
 
 	img = m.makeimage(mod, fuc);
@@ -115,7 +112,15 @@ void mk_img(GtkImage* image)
 		nullptr
 	);
 
-	gtk_image_set_from_pixbuf(image, pbuf);
+	gtk_image_set_from_pixbuf(image, pbuf);	
+}
+
+void mk_img(GtkImage* image)
+{
+	noupdatefor = 0;
+	m.generate_init();
+	m.generate(update_cap);
+	disp_img(image);
 }
 
 gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
@@ -167,12 +172,14 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		std::cout << "update cap   : " << update_cap  << std::endl;
 		std::cout << "update step  : " << update_step << std::endl;
 		std::cout << "trigger cap  : " << fuc         << std::endl;
+		disp_img((GtkImage*)data);
 		break;
 	case GDK_v:
 		fuc *= 0.9;
 		std::cout << "update cap   : " << update_cap  << std::endl;
 		std::cout << "update step  : " << update_step << std::endl;
 		std::cout << "trigger cap  : " << fuc         << std::endl;
+		disp_img((GtkImage*)data);
 		break;
 	case GDK_m:
 		movie_maker(m, update_cap);
@@ -181,21 +188,25 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		mod_base *= 0.99f;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
+		disp_img((GtkImage*)data);
 		break;
 	case GDK_w:
 		mod_base *= 1.01f;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
+		disp_img((GtkImage*)data);
 		break;
 	case GDK_a:
 		mod_pow *= 0.99f;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
+		disp_img((GtkImage*)data);
 		break;
 	case GDK_s:
 		mod_pow *= 1.01f;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
+		disp_img((GtkImage*)data);
 		break;
 	}
 

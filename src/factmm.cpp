@@ -95,14 +95,8 @@ gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
 	return TRUE;
 }
 
-void mk_img(GtkImage* image)
+void disp_img(GtkImage* image)
 {
-	noupdatefor = 0;
-	m.generate_init();
-	m.generate_odd(iter_init);
-	//m.generate(update_cap, true);
-	std::cout << "        quad pix           " << "     \r" << std::flush;
-
 	float mod = mod_base / (float)pow(m.scale_x.get_d(), mod_pow);
 
 	img = m.makeimage(mod, fuc);
@@ -120,7 +114,17 @@ void mk_img(GtkImage* image)
 		nullptr
 	);
 
-	gtk_image_set_from_pixbuf(image, pbuf);
+	gtk_image_set_from_pixbuf(image, pbuf);	
+}
+
+void mk_img(GtkImage* image)
+{
+	noupdatefor = 0;
+	m.generate_init();
+	m.generate_odd(iter_init);
+	//m.generate(update_cap, true);
+	std::cout << "        quad pix           " << "     \r" << std::flush;
+	disp_img(image);
 }
 
 UL escape_min, escape_max;
@@ -215,9 +219,11 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		break;
 	case GDK_z:
 		zoom_step += 1.0l;
+		std::cout << "zoom step    : " << zoom_step   << std::endl;
 		break;
 	case GDK_x:
 		zoom_step -= 1.0l;
+		std::cout << "zoom step    : " << zoom_step   << std::endl;
 		break;
 	case GDK_space:
 		update_cap = 200;
@@ -229,7 +235,7 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		break;
 	case GDK_p:
 		find_escape();
-		std::cout << std::setprecision(120) ;
+		std::cout << std::setprecision(120) << std::endl;
 		std::cout << "center-x     : " << m.center_x  << " (" << m.center_x .get_prec() << ") " << std::endl;
 		std::cout << "center-y     : " << m.center_y  << " (" << m.center_y .get_prec() << ") " << std::endl;
 		std::cout << "scale-x      : " << m.scale_x   << " (" << m.scale_x  .get_prec() << ") " << std::endl;
@@ -249,12 +255,14 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		std::cout << "update cap   : " << update_cap  << std::endl;
 		std::cout << "update step  : " << update_step << std::endl;
 		std::cout << "trigger cap  : " << fuc         << std::endl;
+		disp_img((GtkImage*)data);
 		break;
 	case GDK_v:
 		fuc *= 0.9;
 		std::cout << "update cap   : " << update_cap  << std::endl;
 		std::cout << "update step  : " << update_step << std::endl;
 		std::cout << "trigger cap  : " << fuc         << std::endl;
+		disp_img((GtkImage*)data);
 		break;
 	//case GDK_m:
 	//	movie_maker(m, update_cap);
@@ -263,21 +271,25 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		mod_base *= 0.99f;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
+		disp_img((GtkImage*)data);
 		break;
 	case GDK_w:
 		mod_base *= 1.01f;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
+		disp_img((GtkImage*)data);
 		break;
 	case GDK_a:
 		mod_pow *= 0.99f;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
+		disp_img((GtkImage*)data);
 		break;
 	case GDK_s:
 		mod_pow *= 1.01f;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
+		disp_img((GtkImage*)data);
 		break;
 	}
 
@@ -360,7 +372,6 @@ void gtk_app()
 
 int main(int argc, char* argv[])
 {
-	
 	cmd.init(argc, argv);
 
 	m.width    = std::stol(  cmd.get_parameter ("width",      "640"   ));
