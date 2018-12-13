@@ -81,17 +81,16 @@ int main(int argc, char* argv[])
 	m.center_x = center_x;
 	m.center_y = center_y;
 	m.zoom_mul = zoom_step;
-	
+
 	if (cmd.has_option('p', "print"))
 	{
-		std::cout << std::setprecision(25) << std::defaultfloat;
-		std::cout << "sizeof point   : " << sizeof(Point) << std::endl;
+		std::cout << std::setprecision(75);
 		std::cout << "center-x       : " << m.center_x    << std::endl;
 		std::cout << "center-y       : " << m.center_y    << std::endl;
 		std::cout << "update cap     : " << update_cap    << std::endl;
 		std::cout << "zoom step      : " << zoom_step     << std::endl;		
 	}
-	
+
 	bool ten = cmd.has_option('t', "ten");
 	bool owr = cmd.has_option('o', "overwrite");
 	bool prt = cmd.has_option('p', "print");
@@ -120,7 +119,7 @@ int main(int argc, char* argv[])
 
 		if (prt)
 		{
-			std::cout << std::setprecision(25) << std::defaultfloat;
+			std::cout << std::setprecision(25);
 			std::cout << "scale-x        : " << m.scale_x << std::endl;
 			std::cout << "scale-y        : " << m.scale_y << std::endl;
 		}

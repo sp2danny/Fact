@@ -11,7 +11,7 @@
 
 struct Flt : mpf_class
 {
-	static constexpr int N = 256;
+	static constexpr int N = 512;
 	Flt() : mpf_class(0.0, N) { }
 	Flt(double d) : mpf_class(d, N) { }
 	Flt(std::string s) : mpf_class(s.c_str(), N) {}
@@ -33,7 +33,7 @@ struct Point
 {
 	enum { in, calc, out } status = calc;
 	unsigned long iter = 0;
-	float over;
+	float over = 0.0f;
 	Cmplx z = {0.0,0.0};
 	bool docalc(const Cmplx& c, UL cap);
 	void init(const Cmplx& c);

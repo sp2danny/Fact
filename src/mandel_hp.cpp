@@ -373,34 +373,34 @@ RGB Map::extrapolate(float x, float y, float mod)
 Image Map::makeimage_N(int n, ModFunc mf)
 {
 	Image img(width, height);
-	float sx = scale_x.get_d();
+	double sx = scale_x.get_d();
 	
 	++n;
-	float t0  = (float)zoom_mul.get_d();
-	float tm  = powf(t0, -1);
-	float tn  = powf(t0, -n);
-	float t10 = powf(t0, -11); (void)t10;
-	float dif = t10-tm;
-	float per = (tn-tm)/dif;
+	double t0  = (double)zoom_mul.get_d();
+	double tm  = powf(t0, -1);
+	double tn  = powf(t0, -n);
+	double t10 = powf(t0, -11); (void)t10;
+	double dif = t10-tm;
+	double per = (tn-tm)/dif;
 	
-	float mod = mf(sx/tn);
+	double mod = mf(sx/tn);
 
-	float xstart = (new_w - width)/2;
+	double xstart = (new_w - width)/2;
 	xstart *= per;
-	float ystart = (new_h - height)/2;
+	double ystart = (new_h - height)/2;
 	ystart *= per;
-	float xstep = float(new_w) / float(width);
+	double xstep = double(new_w) / double(width);
 	xstep = 1.0f + (xstep-1.0f)*(1.0f-per);
-	float ystep = float(new_h) / float(height);
+	double ystep = double(new_h) / double(height);
 	ystep = 1.0f + (ystep-1.0f)*(1.0f-per);
 	
 	UL x,y;
 	for (y=0; y<height; ++y)
 	{
-		float yf = ystart + y * ystep;
+		double yf = ystart + y * ystep;
 		for (x=0; x<width; ++x)
 		{
-			float xf = xstart + x * xstep;
+			double xf = xstart + x * xstep;
 			img.PutPixel(x,y,extrapolate(xf,yf, mod));
 		}
 	}
@@ -510,7 +510,7 @@ void execute(LineCache* lc)
 		}
 	};
 	
-	all_ep_x(); all_ep_y(); all_ep_x();
+	all_ep_x(); all_ep_y(); //all_ep_x();
 
 	for (i=0; i<n; i+=1)
 	{
@@ -593,7 +593,7 @@ UL Map::generate_threaded_param(UL cap, bool display)
 			maxout = lc[i].eff_cap;
 		sk += lc[i].skip_count;
 	}
-	
+
 	if (display)
 		std::cout << "skipped        : " << sk << " pixels  \n";
 
@@ -607,6 +607,8 @@ UL Map::generate_10_threaded(UL cap, bool display)
 
 	new_w = ceil(width  * tm);
 	new_h = ceil(height * tm);
-	
-	return generate_threaded_param(cap, display);
+
+	UL maxout = generate_threaded_param(cap, display);
+
+	return maxout;
 }

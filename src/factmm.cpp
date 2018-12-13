@@ -127,14 +127,20 @@ void mk_img(GtkImage* image)
 	disp_img(image);
 }
 
-UL escape_min, escape_max;
+UL escape_min, escape_max, non_escape;
 void find_escape()
 {
+	non_escape = 0;
 	bool found = false;
 	UL x,y;
 	for (y=0; y<m.height; ++y) for (x=0; x<m.width; ++x)
 	{
 		auto& p = m.get(x,y);
+		if (p.status == Point::calc)
+		{
+			if (p.iter > non_escape) non_escape = p.iter;
+			continue;
+		}
 		if (p.status != Point::out) continue;
 		if (!found)
 		{
@@ -233,6 +239,10 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		std::cout << "        new zoom           " << "     \r" << std::flush;
 		mk_img((GtkImage*)data);
 		break;
+	case GDK_f:
+		m.map_all_done = true;
+		std::cout << "        fake done          " << "     \r" << std::flush;
+		break;
 	case GDK_p:
 		find_escape();
 		std::cout << std::setprecision(120) << std::endl;
@@ -245,6 +255,7 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		std::cout << "trigger cap  : " << fuc         << std::endl;
 		std::cout << "escape min   : " << escape_min  << std::endl;
 		std::cout << "escape max   : " << escape_max  << std::endl;
+		std::cout << "non escape   : " << non_escape  << std::endl;
 		std::cout << "zoom step    : " << zoom_step   << std::endl;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
@@ -271,24 +282,28 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		mod_base *= 0.99f;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
+		std::cout << "col-calc     : " << mod_base / (float)pow(m.scale_x.get_d(), mod_pow) << std::endl;
 		disp_img((GtkImage*)data);
 		break;
 	case GDK_w:
 		mod_base *= 1.01f;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
+		std::cout << "col-calc     : " << mod_base / (float)pow(m.scale_x.get_d(), mod_pow) << std::endl;
 		disp_img((GtkImage*)data);
 		break;
 	case GDK_a:
 		mod_pow *= 0.99f;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
+		std::cout << "col-calc     : " << mod_base / (float)pow(m.scale_x.get_d(), mod_pow) << std::endl;
 		disp_img((GtkImage*)data);
 		break;
 	case GDK_s:
 		mod_pow *= 1.01f;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
+		std::cout << "col-calc     : " << mod_base / (float)pow(m.scale_x.get_d(), mod_pow) << std::endl;
 		disp_img((GtkImage*)data);
 		break;
 	}
