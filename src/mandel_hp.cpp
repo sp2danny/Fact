@@ -7,7 +7,13 @@
 #include <cstdlib>
 #include <iomanip>
 #include <cmath>
-#include <thread>
+//#include <thread>
+#include <mutex>
+
+#include <boost/thread.hpp>
+#include <boost/chrono.hpp>
+
+using namespace std::literals;
 
 Cmplx step(Cmplx c, Cmplx z)
 {
@@ -40,14 +46,14 @@ bool Point::docalc(const Cmplx& c, UL cap)
 			return true;
 		}
 	}
-	
+
 	bool did_smth = false;
 
 	while (true)
 	{
 		if (n >= cap)
 			break;
-		
+
 		auto zre = z.real();
 		Flt  re_sq = zre * zre;
 		auto zim = z.imag();
@@ -65,7 +71,7 @@ bool Point::docalc(const Cmplx& c, UL cap)
 		auto ab = zre * zim;
 		z.imag(ab+ab);
 		z += c;
-		++n;		
+		++n;
 	}
 
 	return did_smth;
@@ -110,7 +116,7 @@ void Map::generate_init()
 	map_all_done = false;
 	points.resize(height);
 	UL x,y;
-		
+
 	for (y=0; y<height; ++y)
 	{
 		points[y].resize(width);
@@ -374,7 +380,7 @@ Image Map::makeimage_N(int n, ModFunc mf)
 {
 	Image img(width, height);
 	double sx = scale_x.get_d();
-	
+
 	++n;
 	double t0  = (double)zoom_mul.get_d();
 	double tm  = powf(t0, -1);
@@ -382,7 +388,7 @@ Image Map::makeimage_N(int n, ModFunc mf)
 	double t10 = powf(t0, -11); (void)t10;
 	double dif = t10-tm;
 	double per = (tn-tm)/dif;
-	
+
 	double mod = mf(sx/tn);
 
 	double xstart = (new_w - width)/2;
@@ -393,7 +399,7 @@ Image Map::makeimage_N(int n, ModFunc mf)
 	xstep = 1.0f + (xstep-1.0f)*(1.0f-per);
 	double ystep = double(new_h) / double(height);
 	ystep = 1.0f + (ystep-1.0f)*(1.0f-per);
-	
+
 	UL x,y;
 	for (y=0; y<height; ++y)
 	{
@@ -404,8 +410,52 @@ Image Map::makeimage_N(int n, ModFunc mf)
 			img.PutPixel(x,y,extrapolate(xf,yf, mod));
 		}
 	}
-		
+
 	return img;
+}
+
+struct Updater
+{
+	static void Init(UL);
+	static void Tick();
+	static void Display();
+	static int Get();
+private:
+	static std::mutex lck;
+	static UL count, max;
+};
+
+std::mutex Updater::lck;
+UL Updater::count, Updater::max;
+
+void Updater::Init(UL m)
+{
+	count = 0;
+	max = m;
+}
+
+void Updater::Tick()
+{
+	std::lock_guard guard(lck);
+	++count;
+}
+
+void Updater::Display()
+{
+	std::lock_guard guard(lck);
+	float f = 100.0f;
+	f /= max;
+	f *= count;
+	std::cout << (int)f << "%\r" << std::flush;
+}
+
+int Updater::Get()
+{
+	std::lock_guard guard(lck);
+	float f = 100.0f;
+	f /= max;
+	f *= count;
+	return (int)f;
 }
 
 void execute(LineCache* lc)
@@ -430,19 +480,16 @@ void execute(LineCache* lc)
 	auto dc = [&](Point& p, const Cmplx& c) -> void
 	{
 		bool did = p.docalc(c, lc->cap);
-		if (did && p.iter>maxout) maxout=p.iter;			
+		if (did && p.iter>maxout) maxout=p.iter;
 	};
 
-	for (i=0; i<n; i+=2)
+	for (i=0; i<n; i+=1)
 	{
-		UL y = lc->y_start + i;
+		Updater::Tick();
 		if (lc->display)
-		{
-			float f = 50.0f;
-			f /= n;
-			f *= i;
-			std::cout << (int)f << "%\r" << std::flush;
-		}
+			Updater::Display();
+		if (i%2) continue;
+		UL y = lc->y_start + i;
 		Flt& yld = lc->vfy[y];
 		for (UL x=0; x<w; x+=2)
 		{
@@ -509,19 +556,15 @@ void execute(LineCache* lc)
 				ep_y(x,y , lc->y_start,lc->y_start+n-1);
 		}
 	};
-	
+
 	all_ep_x(); all_ep_y(); //all_ep_x();
 
 	for (i=0; i<n; i+=1)
 	{
+		Updater::Tick();
 		if (lc->display)
-		{
-			float f = 50.0f;
-			f /= n;
-			f *= i;
-			f += 50;
-			std::cout << (int)f << "%\r" << std::flush;
-		}
+			Updater::Display();
+
 		UL y = lc->y_start + i;
 		for (UL x=0; x<w; ++x)
 		{
@@ -559,6 +602,9 @@ UL Map::generate_threaded_param(UL cap, bool display)
 	for (y=0; y<new_h; ++y)
 		vfy.push_back(y_start + y_step*y);
 
+	Updater::Init(new_h*2+4);
+	Updater::Display();
+
 	LineCache lc[4] = {
 		{ cap, 0, 0, display, 0, 0, *this, vfx, vfy },
 		{ cap, 0, 0,   false, 0, 0, *this, vfx, vfy },
@@ -576,15 +622,25 @@ UL Map::generate_threaded_param(UL cap, bool display)
 	lc[3].y_start = y; y += (lc[3].y_count = num);
 
 	UL maxout = 0;
-	std::thread tt[4];
+	boost::thread tt[4];
 	for (i=1; i<4; ++i)
 	{
-		tt[i] = std::thread{&execute, lc+i};
+		tt[i] = boost::thread{&execute, lc+i};
 	}
 	execute(lc);
+	boost::chrono::nanoseconds ns{150'000};
+	while (true)
+	{
+		int i = Updater::Get();
+		if (i>=98) break;
+		Updater::Display();
+		boost::this_thread::sleep_for(ns);
+	}
 	for (i=1; i<4; ++i)
 	{
 		tt[i].join();
+		Updater::Tick();
+		Updater::Display();
 	}
 	UL sk = 0;
 	for (i=0; i<4; ++i)
@@ -593,6 +649,9 @@ UL Map::generate_threaded_param(UL cap, bool display)
 			maxout = lc[i].eff_cap;
 		sk += lc[i].skip_count;
 	}
+
+	Updater::Tick();
+	Updater::Display();
 
 	if (display)
 		std::cout << "skipped        : " << sk << " pixels  \n";

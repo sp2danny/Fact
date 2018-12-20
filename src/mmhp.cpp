@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 	cmd.init(argc, argv);
 
 	static Flt   zoom_cur        = cmd.get_parameter( "zoom-start",   "3.2"     );
-	static Flt   zoom_end        = cmd.get_parameter( "zoom-end",     "0.32"    );
+	static Flt   zoom_end        = cmd.get_parameter( "zoom-end",     "0"       );
 	static Flt   zoom_step       = cmd.get_parameter( "zoom-step",    "0.99"    );
 	static Flt   center_x        = cmd.get_parameter( "center-x",     "0.5"     );
 	static Flt   center_y        = cmd.get_parameter( "center-y",     "0.0"     );
@@ -97,16 +97,19 @@ int main(int argc, char* argv[])
 
 	while (true)
 	{
-		if (zoom_step < 1) {
-			if (zoom_cur < zoom_end) break;
-		} else {
-			if (zoom_cur > zoom_end) break;
+		if (zoom_end)
+		{
+			if (zoom_step < 1) {
+				if (zoom_cur < zoom_end) break;
+			} else {
+				if (zoom_cur > zoom_end) break;
+			}
 		}
-		
+
 		if (max_count)
 			if (i>max_count) break;
 
-		if (!owr && boost::filesystem::exists(curr_name) && !ten)
+		if (!owr && boost::filesystem::exists(curr_name))
 		{
 			i += 1;
 			zoom_cur *= zoom_step;
