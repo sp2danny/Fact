@@ -629,18 +629,18 @@ UL Map::generate_threaded_param(UL cap, bool display)
 	}
 	execute(lc);
 	boost::chrono::nanoseconds ns{150'000};
+	int joined = 1;
 	while (true)
 	{
-		int i = Updater::Get();
-		if (i>=98) break;
 		Updater::Display();
-		boost::this_thread::sleep_for(ns);
-	}
-	for (i=1; i<4; ++i)
-	{
-		tt[i].join();
-		Updater::Tick();
-		Updater::Display();
+
+		bool j = tt[joined].try_join_for(ns);
+		if (j)
+		{
+			++joined;
+			Updater::Tick();
+			if (joined >= 4) break;
+		}
 	}
 	UL sk = 0;
 	for (i=0; i<4; ++i)

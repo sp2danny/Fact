@@ -39,8 +39,8 @@ LinkOptions            :=
 IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch). 
 IncludePCH             := 
 RcIncludePath          := 
-Libs                   := $(LibrarySwitch)boost_system $(LibrarySwitch)boost_filesystem $(LibrarySwitch)pthread $(LibrarySwitch)gmp $(LibrarySwitch)gmpxx 
-ArLibs                 :=  "boost_system" "boost_filesystem" "pthread" "gmp" "gmpxx" 
+Libs                   := $(LibrarySwitch)boost_system $(LibrarySwitch)boost_filesystem $(LibrarySwitch)boost_thread $(LibrarySwitch)boost_chrono $(LibrarySwitch)pthread $(LibrarySwitch)gmp $(LibrarySwitch)gmpxx 
+ArLibs                 :=  "boost_system" "boost_filesystem" "boost_thread" "boost_chrono" "pthread" "gmp" "gmpxx" 
 LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)/usr/lib/x86_64-linux-gnu/ 
 
 ##

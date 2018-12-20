@@ -1,2 +1,2 @@
 # ffmpeg -framerate 50 -i img/img-%05d.bmp -r 50 out.mp4
-avconv -framerate 50 -i img/img-002%03d.bmp -r 50 movpart/out_002.mp4
+avconv -framerate 50 -i img/img-003%03d.bmp -r 50 movpart/out_003.mp4
