@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 		std::cout << "center-x       : " << m.center_x    << std::endl;
 		std::cout << "center-y       : " << m.center_y    << std::endl;
 		std::cout << "update cap     : " << update_cap    << std::endl;
-		std::cout << "zoom step      : " << zoom_step     << std::endl;		
+		std::cout << "zoom step      : " << zoom_step     << std::endl;
 	}
 
 	bool ten = cmd.has_option('t', "ten");
