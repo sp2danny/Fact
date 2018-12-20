@@ -156,7 +156,7 @@ auto Map::generate(UL cap, bool display, bool extrap) -> Status
 				if (x && x<w)
 				{
 					Point& pp = get(x-1,y);
-					Point& pn = get(x+1,y);					
+					Point& pn = get(x+1,y);
 					if ( (pp.status == Point::out) &&
 					     (pn.status == Point::out) &&
 					     (pp.iter == pn.iter) )
@@ -171,7 +171,7 @@ auto Map::generate(UL cap, bool display, bool extrap) -> Status
 				if (y && y<h)
 				{
 					Point& pp = get(x,y-1);
-					Point& pn = get(x,y+1);					
+					Point& pn = get(x,y+1);
 					if ( (pp.status == Point::out) &&
 					     (pn.status == Point::out) &&
 					     (pp.iter == pn.iter) )

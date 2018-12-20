@@ -154,7 +154,7 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		mk_img((GtkImage*)data);
 		break;
 	case GDK_p:
-		std::cout << std::setprecision(22) << std::defaultfloat;
+		std::cout << std::setprecision(22);// << std::defaultfloat;
 		std::cout << "center-x     : " << m.center_x  << std::endl;
 		std::cout << "center-y     : " << m.center_y  << std::endl;
 		std::cout << "scale-x      : " << m.scale_x   << std::endl;

@@ -45,13 +45,20 @@ void Map::generate_init()
 	map_all_done = false;
 	points.resize(width*height);
 	UL x,y, idx = 0;
+	xlds.clear(); xlds.reserve(width);
+	for (x=0; x<width; ++x)
+		xlds.push_back(to_xpos(x));
+	ylds.clear(); ylds.reserve(height);
+	for (y=0; y<height; ++y)
+		ylds.push_back(to_ypos(y));
 	for (y=0; y<height; ++y)
 	{
-		Flt yld = to_ypos(y);
+		Flt& yld = ylds[y];
 		for (x=0; x<width; ++x)
 		{
-			Flt xld = to_xpos(x);
+			Flt& xld = xlds[x];
 			Cmplx z{xld, yld};
+			idx = to_index(x,y);
 			points[idx].status = Point::calc;
 			points[idx].iter = 1;
 			points[idx].z = z;
@@ -60,68 +67,111 @@ void Map::generate_init()
 	}
 }
 
-auto Map::generate(UL cap) -> Status
+bool Map::do_one(UL x, UL y, UL cap)
 {
-	bool found_one = false;
-	bool did_smth = false;
+	auto idx = to_index(x, y);
+	Point& p = points[idx];
+	if (p.status != Point::calc)
+		return false;
+
+	UL n = p.iter;
+	if (n >= cap)
+		return false;
+	Flt& xld = xlds[x];
+	Flt& yld = ylds[y];
+	Cmplx c{xld, yld};
+	Cmplx z = p.z;
+	if (n == 1)
+	{
+		// first bulb
+		Flt y2 = std::pow(yld, 2);
+		if ((std::pow(xld+1.0l, 2.0l) + y2) < 0.0625l)
+		{
+			p.status = Point::in;
+			p.iter = n;
+			p.z = z;
+			return true;
+		}
+		// main cardoid
+		Flt pt = std::sqrt( std::pow(xld-0.25l, 2.0l) + y2 );
+		if (xld < (pt - 2.0l*std::pow(pt, 2.0l) + 0.25l))
+		{
+			p.status = Point::in;
+			p.iter = n;
+			p.z = z;
+			return true;
+		}
+	}
+
+	while (true)
+	{
+		if (n >= cap)
+		{
+			p.iter = cap;
+			p.z = z;
+			return false;
+		}
+
+		auto zre = z.real();
+		Flt  re_sq = zre * zre;
+		auto zim = z.imag();
+		Flt  im_sq = zim * zim;
+		auto az2 = re_sq + im_sq;
+		if (az2 > 4.0)
+		{
+			p.status = Point::out;
+			p.over = sqrtf(az2);
+			p.iter = n;
+			return true;
+		}
+
+		z.real(re_sq-im_sq);
+		auto ab = zre * zim;
+		z.imag(ab+ab);
+		z += c;
+		++n;
+	}
+
+}
+
+void Map::dothething(UL startx,UL starty)
+{
+	(void)startx;
+	(void)starty;
 
 	UL x,y;
 	for (y=0; y<height; ++y)
 	{
-		Flt yld = to_ypos(y);
+		for (x=0; x<width; ++x)
+		{
+			UL idx = to_index(x,y);
+			points[idx].visited = false;
+		}
+	}
+	x = startx; y = starty;
+	// part one : find edge
+	
+}
+
+auto Map::generate(UL cap, bool isfinal) -> Status
+{
+	bool found_one = false;
+	bool did_smth = false;
+	
+	UL x,y;
+	for (y=0; y<height; ++y)
+	{
 		for (x=0; x<width; ++x)
 		{
 			auto idx = to_index(x, y);
-			if (points[idx].status != Point::calc)
+			Point& p = points[idx];
+			if (p.status != Point::calc)
 				continue;
 			found_one = true;
-			Flt xld = to_xpos(x);
-			Cmplx c{xld, yld};
-			Cmplx z = points[idx].z;
-			UL n = points[idx].iter;
-			while (true)
+			did_smth = do_one(x,y,cap) || did_smth;
+			if (isfinal && (p.status == Point::calc) && (p.iter == cap))
 			{
-				if (n >= cap)
-				{
-					points[idx].iter = n;
-					points[idx].z = z;
-					break;
-				}
-				if (std::abs(z) > 2.0l)
-				{
-					did_smth = true;
-					points[idx].status = Point::out;
-					points[idx].iter = n;
-					points[idx].z = z;
-					break;
-				}
-
-				if (n<=1)
-				{
-					// first bulb
-					Flt y2 = std::pow(yld, 2);
-					if ((std::pow(xld+1.0l, 2.0l) + y2) < 0.0625l)
-					{
-						did_smth = true;
-						points[idx].status = Point::in;
-						points[idx].iter = n;
-						points[idx].z = z;
-						break;
-					}
-					// main cardoid
-					Flt p = std::sqrt( std::pow(xld-0.25l, 2.0l) + y2 );
-					if (xld < (p - 2.0l*std::pow(p, 2.0l) + 0.25l))
-					{
-						did_smth = true;
-						points[idx].status = Point::in;
-						points[idx].iter = n;
-						points[idx].z = z;
-						break;
-					}
-				}
-
-				z = step(c, z);
-				++n;
+				dothething(x, y);
 			}
 		}
 	}
@@ -134,14 +184,13 @@ auto Map::generate(UL cap) -> Status
 RGB col(Point p, float mod)
 {
 	auto x = p.iter;
-	auto over = abs(p.z) ;
 
 	static const float pi2 = 3.1415926536f * 2;
 	static const float ilg2 = 1.0f / log(2.0f);
 	float f = fmod((float)x, mod) + 1.0f;
 	f /= mod;
 
-	f -= (float)log(log(over) * ilg2) * ilg2 / mod;
+	f -= (float)log(log((float)p.over) * ilg2) * ilg2 / mod;
 	f *= pi2;
 	float r = 0.5f + 0.5f*std::sin(f + pi2 * 0.00000f);
 	float g = 0.5f + 0.5f*std::sin(f + pi2 * 0.33333f);

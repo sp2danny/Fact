@@ -19,6 +19,8 @@ struct Point
 	enum { in, calc, out } status = calc;
 	unsigned long iter = 0;
 	Cmplx z = {0,0};
+	float over;
+	bool visited;
 };
 
 struct Map
@@ -33,8 +35,12 @@ struct Map
 	Flt to_ypos(UL y) const;
 	void generate_init();
 	enum Status { all_done, was_updated, no_change };
-	Status generate(UL cap);
+	Status generate(UL cap, bool isfinal=false);
 	Image makeimage(float mod, UL fuc = 0);
+	void dothething(UL,UL);
+	std::vector<Flt> xlds;
+	std::vector<Flt> ylds;
+	bool do_one(UL,UL,UL);
 };
 
 template<typename T>

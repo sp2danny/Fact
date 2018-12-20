@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <ios>
 
 #include <boost/filesystem.hpp>
 
@@ -8,7 +9,7 @@
 #include "cmdline.h"
 #include "mandel.h"
 
-#include "fixed.hpp"
+//#include "fixed.hpp"
 
 cmdline cmd;
 
@@ -81,7 +82,7 @@ int main(int argc, char* argv[])
 	
 	if (cmd.has_option('p', "print"))
 	{
-		std::cout << std::setprecision(25) << std::defaultfloat;
+		std::cout << std::setprecision(25); // << std::defaultfloat;
 		std::cout << "center-x     : " << m.center_x  << std::endl;
 		std::cout << "center-y     : " << m.center_y  << std::endl;
 		std::cout << "update cap   : " << update_cap  << std::endl;
@@ -111,7 +112,7 @@ int main(int argc, char* argv[])
 		m.scale_y = (zoom_cur * (Flt)image_height) / (Flt)image_width;
 		if (cmd.has_option('p', "print"))
 		{
-			std::cout << std::setprecision(25) << std::defaultfloat;
+			std::cout << std::setprecision(25);// << std::defaultfloat;
 			std::cout << "scale-x      : " << m.scale_x << std::endl;
 			std::cout << "scale-y      : " << m.scale_y << std::endl;
 		}
