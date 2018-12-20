@@ -13,14 +13,21 @@ struct Flt : mpf_class
 {
 	static constexpr int N = 512;
 	Flt() : mpf_class(0.0, N) { }
-	Flt(double d) : mpf_class(d, N) { }
-	Flt(std::string s) : mpf_class(s.c_str(), N) {}
+	explicit Flt(double d) : mpf_class(d, N) { }
+	explicit Flt(std::string s) : mpf_class(s.c_str(), N) {}
 	template<typename T>
 	Flt(T&& arg)
 		: Flt()
 	{
 		((mpf_class&)*this) = std::forward<T>(arg);
 	}
+	template<typename T>
+	Flt& operator=(T&& arg)
+	{
+		((mpf_class&)*this) = std::forward<T>(arg);
+		return *this;
+	}
+	explicit operator double() { return get_d(); }
 };
 
 typedef unsigned long UL;
