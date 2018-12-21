@@ -348,7 +348,7 @@ RGB Map::extrapolate(float x, float y, float mod)
 	float dx = x-xr;
 	float dy = y-yr;
 	UL x1,x2,y1,y2; float fx, fy;
-	if (fabs(dx)<0.05f) {
+	if (fabs(dx) < 0.05f) {
 		x1 = x2 = roundl(x);
 		fx = 0.5f;
 	} else {
@@ -356,7 +356,7 @@ RGB Map::extrapolate(float x, float y, float mod)
 		x2 = ceill(x);
 		fx = x2-x;
 	}
-	if (fabs(dy)<0.05f) {
+	if (fabs(dy) < 0.05f) {
 		y1 = y2 = roundl(y);
 		fy = 0.5f;
 	} else {
@@ -481,7 +481,7 @@ void execute(LineCache* lc)
 		if (did && p.iter>maxout) maxout=p.iter;
 	};
 
-	for (i=0; i<n; i+=1)
+	for (i=0; i<n; ++i)
 	{
 		Updater::Tick();
 		if (lc->display)
@@ -555,7 +555,7 @@ void execute(LineCache* lc)
 		}
 	};
 
-	all_ep_x(); all_ep_y(); //all_ep_x();
+	all_ep_x(); all_ep_y();
 
 	for (i=0; i<n; i+=1)
 	{
@@ -626,7 +626,7 @@ UL Map::generate_threaded_param(UL cap, bool display)
 		tt[i] = boost::thread{&execute, lc+i};
 	}
 	execute(lc);
-	boost::chrono::nanoseconds ns{150'000};
+	boost::chrono::nanoseconds ns{250'000};
 	int joined = 1;
 	while (true)
 	{
