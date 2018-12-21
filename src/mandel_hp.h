@@ -93,8 +93,8 @@ struct Map
 template<typename T>
 T clamp(T val, T min, T max)
 {
-	if (val<min) val=min;
-	if (val>max) val=max;
+	if (val < min) val = min;
+	if (val > max) val = max;
 	return val;
 }
 

@@ -23,7 +23,7 @@ Cmplx step(Cmplx c, Cmplx z)
 bool Point::docalc(const Cmplx& c, UL cap)
 {
 	UL& n = iter;
-	if (n<=1)
+	if (n <= 1)
 	{
 		// first bulb
 		double xld = z.real().get_d();
@@ -36,7 +36,7 @@ bool Point::docalc(const Cmplx& c, UL cap)
 			return true;
 		}
 		// main cardoid
-		double xx = xld-0.25;
+		double xx = xld - 0.25;
 		xx *= xx;
 		xx += y2;
 		double pp = sqrt(xx);
@@ -241,8 +241,7 @@ RGB col(const Point& p, float mod)
 	float f = fmod((float)x, mod) + 1.0f;
 	f /= mod;
 
-	float fover = p.over;
-	f -= (float)log(log(fover) * ilg2) * ilg2 / mod;
+	f -= (float)log(log(p.over) * ilg2) * ilg2 / mod;
 	f *= pi2;
 	float r = 0.5f + 0.5f*std::sin(f + pi2 * 0.00000f);
 	float g = 0.5f + 0.5f*std::sin(f + pi2 * 0.33333f);
@@ -261,8 +260,7 @@ Image Map::makeimage(float mod, UL upc)
 	{
 		for (x=0; x<width; ++x)
 		{
-			//auto idx = to_index(x, y);
-			auto& p = get(x,y); //points[idx];
+			auto& p = get(x,y);
 			if (p.status == Point::out)
 			{
 				img.PutPixel(x,y,col(p, mod));
@@ -318,7 +316,6 @@ UL Map::generate_10(UL cap, bool disp)
 		Flt yld = vfy[y];
 		for (x=0; x<new_w; ++x)
 		{
-			//auto idx = x + y*new_w;
 			auto& p = get(x,y);
 			Cmplx c{vfx[x], yld};
 			p.init(c);
@@ -331,6 +328,7 @@ UL Map::generate_10(UL cap, bool disp)
 
 RGB mix(const RGB& p1,const RGB& p2, float f)
 {
+	assert( (f >= 0.0f) && (f <= 1.0f) );
 	const float inv = 1.0f-f;
 	float r = p1.r * f + p2.r * inv;
 	float g = p1.g * f + p2.g * inv;
@@ -379,10 +377,10 @@ RGB Map::extrapolate(float x, float y, float mod)
 Image Map::makeimage_N(int n, ModFunc mf)
 {
 	Image img(width, height);
-	double sx = scale_x.get_d();
+	double sx{scale_x};
 
 	++n;
-	double t0  = (double)zoom_mul.get_d();
+	double t0{zoom_mul};
 	double tm  = powf(t0, -1);
 	double tn  = powf(t0, -n);
 	double t10 = powf(t0, -11); (void)t10;
@@ -476,7 +474,7 @@ void execute(LineCache* lc)
 			p.init(c);
 		}
 	}
-	
+
 	auto dc = [&](Point& p, const Cmplx& c) -> void
 	{
 		bool did = p.docalc(c, lc->cap);
@@ -615,7 +613,7 @@ UL Map::generate_threaded_param(UL cap, bool display)
 	UL i = 0;
 	UL num = new_h / 4;
 	UL ovr = new_h - (num*4);
-	y=0;
+	y = 0;
 	lc[0].y_start = y; y += (lc[0].y_count = num + ovr);
 	lc[1].y_start = y; y += (lc[1].y_count = num);
 	lc[2].y_start = y; y += (lc[2].y_count = num);
@@ -661,7 +659,7 @@ UL Map::generate_threaded_param(UL cap, bool display)
 
 UL Map::generate_10_threaded(UL cap, bool display)
 {
-	double zm = zoom_mul.get_d();
+	double zm{zoom_mul};
 	double tm = pow(zm, -10);
 
 	new_w = ceil(width  * tm);
