@@ -1,26 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Session Name="/home/sp2danny/extra/Fact/Fact.workspace">
-  <int Value="0" Name="m_selectedTab"/>
-  <wxString Value="/home/sp2danny/extra/Fact/Fact.workspace" Name="m_workspaceName"/>
+<Session Name="/home/daniel/project/Fact/Fact.workspace">
+  <int Value="1" Name="m_selectedTab"/>
+  <wxString Value="/home/daniel/project/Fact/Fact.workspace" Name="m_workspaceName"/>
   <TabInfoArray Name="TabInfoArray">
     <TabInfo>
-      <wxString Value="/home/sp2danny/extra/Fact/src/mandel_hp.cpp" Name="FileName"/>
-      <int Value="612" Name="FirstVisibleLine"/>
-      <int Value="637" Name="CurrentLine"/>
+      <wxString Value="/home/daniel/project/Fact/src/mandel_hp.h" Name="FileName"/>
+      <int Value="27" Name="FirstVisibleLine"/>
+      <int Value="1" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
     <TabInfo>
-      <wxString Value="/home/sp2danny/extra/Fact/src/mandel_hp.h" Name="FileName"/>
-      <int Value="71" Name="FirstVisibleLine"/>
-      <int Value="88" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/sp2danny/extra/Fact/src/mmhp.cpp" Name="FileName"/>
-      <int Value="91" Name="FirstVisibleLine"/>
-      <int Value="107" Name="CurrentLine"/>
+      <wxString Value="/home/daniel/project/Fact/src/mandel_hp.cpp" Name="FileName"/>
+      <int Value="277" Name="FirstVisibleLine"/>
+      <int Value="238" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
