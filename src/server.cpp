@@ -98,7 +98,7 @@ void gtk_app()
 	gtk_widget_set_events(eventbox, GDK_BUTTON1_MASK);
 	g_signal_connect(GTK_OBJECT(eventbox), "button-press-event", G_CALLBACK(button_press), nullptr);
 
-	//gtk_container_add(GTK_CONTAINER(eventbox), image);
+	gtk_container_add(GTK_CONTAINER(eventbox), nullptr);//image);
 
     gtk_widget_show(eventbox);
 	//gtk_widget_show(image);
