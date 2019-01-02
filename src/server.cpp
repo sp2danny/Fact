@@ -14,9 +14,44 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 
+#include <boost/asio.hpp>
+
 #include "cmdline.h"
 
 cmdline cmd;
+
+
+using boost::asio::ip::tcp;
+
+class tcp_connection
+{
+public:
+
+  tcp_connection(boost::asio::io_service& io_service)
+    : m_socket(io_service)
+  {
+  }
+
+private:
+  tcp::socket m_socket;
+  std::string m_message;
+};
+
+class tcp_server
+{
+public:
+  tcp_server(boost::asio::io_service& io_service)
+    : m_acceptor(io_service, tcp::endpoint(tcp::v4(), 13))
+  {
+  }
+
+private:
+
+
+  tcp::acceptor m_acceptor;
+};
+
+
 
 gboolean idle_func(gpointer data)
 {
