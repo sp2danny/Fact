@@ -6,6 +6,7 @@
     <File Name="src/server.cpp"/>
     <File Name="src/cmdline.cpp"/>
     <File Name="src/cmdline.h"/>
+    <File Name="src/connector.h"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
