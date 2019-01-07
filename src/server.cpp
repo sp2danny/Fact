@@ -57,6 +57,8 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 	return TRUE;
 }
 
+gboolean nil_cb(GtkWidget*, gpointer) { return TRUE; }
+
 gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 {
 	(void)widget;
@@ -65,6 +67,19 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 
 	if (event->type != GDK_BUTTON_PRESS)
 		return TRUE;
+		
+	if (data == (void*)1)
+	{
+		printf("Start\n");
+	}
+	if (data == (void*)2)
+	{
+		printf("Stop\n");
+	}
+	if (data == (void*)3)
+	{
+		gtk_main_quit();
+	}
 
 	return TRUE;
 }
@@ -72,25 +87,58 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 void gtk_app()
 {
 	GtkWidget* window;
-	//GtkWidget* image;
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(delete_event), nullptr);
 
 	gtk_container_set_border_width(GTK_CONTAINER(window), 8);
-	
+
 	GtkWidget* pane = gtk_vpaned_new();
-	
-	GtkWidget* frame_main  = gtk_vbutton_box_new ();
+
+	GtkWidget* frame_main = gtk_hpaned_new();
 	gtk_widget_show(frame_main);
-	
-	GtkWidget* btn_start = gtk_button_new_with_label("start");
-	GtkWidget* btn_stop  = gtk_button_new_with_label("stop");
+
+	GtkWidget* inputbox = gtk_vbox_new (TRUE, 8);
+	gtk_widget_show(inputbox);
+
+	GtkWidget* inp[4];
+	GtkEntryBuffer* eb[4];
+	for (int i=0; i<4; ++i)
+	{
+		inp[i] = gtk_entry_new();
+		gtk_entry_set_visibility(GTK_ENTRY(inp[i]), TRUE);
+		gtk_widget_set_events(inp[i], GDK_KEY_PRESS_MASK);
+		//g_signal_connect(G_OBJECT(inp[i]), "key-press-event", G_CALLBACK(key_press), nullptr);
+		g_signal_connect (inp[i], "activate", G_CALLBACK (nil_cb), inp[i]);
+		gtk_widget_set_can_focus(inp[i], TRUE);
+		eb[i] = gtk_entry_buffer_new("", 0);
+		gtk_entry_buffer_set_max_length(eb[i], 500);
+		gtk_entry_set_max_length (GTK_ENTRY (inp[i]), 500);
+		gtk_entry_set_buffer (GTK_ENTRY(inp[i]), eb[i]);
+		gtk_entry_set_editable(GTK_ENTRY(inp[i]), TRUE);
+		gtk_widget_show(inp[i]);
+		gtk_container_add(GTK_CONTAINER(inputbox), inp[i]);
+	}
+
+	GtkWidget* buttons = gtk_vbutton_box_new();
+	gtk_widget_show(buttons);
+
+	GtkWidget* btn_start = gtk_button_new_with_label("Start");
+	GtkWidget* btn_stop  = gtk_button_new_with_label("Stop");
+	GtkWidget* btn_exit  = gtk_button_new_with_label("Exit");
 
 	gtk_widget_show(btn_start);
 	gtk_widget_show(btn_stop);
-	gtk_container_add(GTK_CONTAINER(frame_main), btn_start);
-	gtk_container_add(GTK_CONTAINER(frame_main), btn_stop);
+	gtk_widget_show(btn_exit);
+	gtk_container_add(GTK_CONTAINER(buttons), btn_start);
+	gtk_container_add(GTK_CONTAINER(buttons), btn_stop);
+	gtk_container_add(GTK_CONTAINER(buttons), btn_exit);
+	g_signal_connect(GTK_OBJECT(btn_start), "button-press-event", G_CALLBACK(button_press), (void*)1);
+	g_signal_connect(GTK_OBJECT(btn_stop),  "button-press-event", G_CALLBACK(button_press), (void*)2);
+	g_signal_connect(GTK_OBJECT(btn_exit),  "button-press-event", G_CALLBACK(button_press), (void*)3);
+	
+	gtk_paned_pack1(GTK_PANED (frame_main), inputbox, TRUE, TRUE);
+	gtk_paned_pack2(GTK_PANED (frame_main), buttons, FALSE, FALSE);
 
 	GtkWidget *frame_lower = gtk_frame_new (NULL);
 	gtk_widget_show(frame_lower);
@@ -103,29 +151,13 @@ void gtk_app()
 	gtk_container_add(GTK_CONTAINER(window), pane);
 	gtk_widget_show(pane);
 
-	//GtkWidget* eventbox = gtk_event_box_new();
-	//gtk_container_add(GTK_CONTAINER(window), eventbox);
 
-	/*
-	GdkPixbuf* pbuf = gdk_pixbuf_new_from_data(
-		img.data(),
-		GDK_COLORSPACE_RGB,
-		FALSE,
-		8,
-		img.Width(),
-		img.Height(),
-		img.Width()*3,
-		nullptr,
-		nullptr
-	);
-	image = gtk_image_new_from_pixbuf(pbuf);
-*/
 
 	g_signal_connect(G_OBJECT(window), "key-press-event", G_CALLBACK(key_press), nullptr);
+	
 	//gtk_widget_set_events(eventbox, GDK_BUTTON1_MASK);
 	//g_signal_connect(GTK_OBJECT(eventbox), "button-press-event", G_CALLBACK(button_press), nullptr);
 
-	//gtk_container_add(GTK_CONTAINER(eventbox), nullptr);//image);
 
     //gtk_widget_show(eventbox);
 	///gtk_widget_show(image);
