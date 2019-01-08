@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Session Name="/home/sp2danny/extra/Fact/Fact.workspace">
+<Session Name="/home/daniel/project/Fact/Fact.workspace">
   <int Value="0" Name="m_selectedTab"/>
-  <wxString Value="/home/sp2danny/extra/Fact/Fact.workspace" Name="m_workspaceName"/>
-  <TabInfoArray Name="TabInfoArray"/>
+  <wxString Value="/home/daniel/project/Fact/Fact.workspace" Name="m_workspaceName"/>
+  <TabInfoArray Name="TabInfoArray">
+    <TabInfo>
+      <wxString Value="/home/daniel/project/Fact/src/server.cpp" Name="FileName"/>
+      <int Value="0" Name="FirstVisibleLine"/>
+      <int Value="10" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+  </TabInfoArray>
   <SerializedObject Name="m_breakpoints">
     <long Value="2" Name="Count"/>
     <SerializedObject Name="Breakpoint0">
