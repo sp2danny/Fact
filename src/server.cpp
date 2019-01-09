@@ -55,6 +55,24 @@ gboolean nil_cb(GtkWidget*, gpointer) { return TRUE; }
 
 extern void Save(), Load();
 
+GtkWidget* log3[3];
+std::vector<std::string> logs;
+
+void add_log(std::string s)
+{
+	logs.push_back(std::move(s));
+	int j, i, n = logs.size();
+	i = n-3;
+	if (i<0) i=0;
+	for (j=0;i<n;++i)
+	{
+		auto str = logs[i];
+		if ((i+1)==n)
+			str = ">>> " + str + " <<<";
+		gtk_label_set_text(GTK_LABEL(log3[j++]), str.c_str());
+	}
+}
+
 gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 {
 	(void)widget;
@@ -66,15 +84,15 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 
 	if (data == (void*)1)
 	{
-		printf("Start\n");
+		add_log("Start");
 	}
 	if (data == (void*)2)
 	{
-		printf("Stop\n");
+		add_log("Stop");
 	}
 	if (data == (void*)3)
 	{
-		printf("Log\n");
+		add_log("Log");
 	}
 	if (data == (void*)4)
 	{
@@ -92,7 +110,10 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 	return TRUE;
 }
 
-const char* caps[] = { "center-x", "center-y", "update-cap", "zoom-start", "zoom-end", "width", "height", "col-base", "col-pow" };	
+const char* caps[] = {
+	"center-x", "center-y", "update-cap", "zoom-start", "zoom-end",
+	"width", "height", "col-base", "col-pow", "port"
+};
 const int N = sizeof(caps) / sizeof(char*);
 GtkWidget* inp[N];
 GtkWidget* lbl[N];
@@ -106,6 +127,7 @@ void Save()
 		const char* str = gtk_entry_get_text(GTK_ENTRY(inp[i]));
 		ofs << str << std::endl;
 	}
+	add_log("Saved 'Server.save'");
 }
 
 void Load()
@@ -119,6 +141,7 @@ void Load()
 		std::getline(ifs,str);
 		gtk_entry_set_text(GTK_ENTRY(inp[i]),str.c_str());
 	}
+	add_log("Loaded 'Server.save'");
 }
 
 void gtk_app()
@@ -170,8 +193,14 @@ void gtk_app()
 	gtk_paned_pack1(GTK_PANED (frame_main), inputbox, TRUE, TRUE);
 	gtk_paned_pack2(GTK_PANED (frame_main), buttons, FALSE, FALSE);
 
-	GtkWidget *frame_lower = gtk_frame_new (NULL);
+	GtkWidget *frame_lower = gtk_vbox_new(TRUE,1);
 	gtk_widget_show(frame_lower);
+
+	for (int i=0; i<3; ++i)
+	{
+		log3[i] = gtk_label_new("");
+		gtk_box_pack_start(GTK_BOX(frame_lower), log3[i], TRUE, TRUE, 0);
+	}
 
 	gtk_paned_pack1 (GTK_PANED (pane), frame_main, TRUE, TRUE);
 
