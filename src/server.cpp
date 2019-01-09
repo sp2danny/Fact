@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <ios>
+#include <fstream>
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
@@ -52,6 +53,8 @@ gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
 
 gboolean nil_cb(GtkWidget*, gpointer) { return TRUE; }
 
+extern void Save(), Load();
+
 gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 {
 	(void)widget;
@@ -75,10 +78,47 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 	}
 	if (data == (void*)4)
 	{
+		Save();
+	}
+	if (data == (void*)5)
+	{
+		Load();
+	}
+	if (data == (void*)6)
+	{
 		gtk_main_quit();
 	}
 
 	return TRUE;
+}
+
+const char* caps[] = { "center-x", "center-y", "update-cap", "zoom-start", "zoom-end", "width", "height", "col-base", "col-pow" };	
+const int N = sizeof(caps) / sizeof(char*);
+GtkWidget* inp[N];
+GtkWidget* lbl[N];
+
+void Save()
+{
+	std::ofstream ofs{"Server.save"};
+	for (int i=0; i<N; ++i)
+	{
+		ofs << caps[i] << ":";
+		const char* str = gtk_entry_get_text(GTK_ENTRY(inp[i]));
+		ofs << str << std::endl;
+	}
+}
+
+void Load()
+{
+	std::ifstream ifs{"Server.save"};
+	for (int i=0; i<N; ++i)
+	{
+		std::string str;
+		std::getline(ifs,str,':');
+		assert( str == caps[i] );
+		std::getline(ifs,str);
+		gtk_entry_set_text(GTK_ENTRY(inp[i]),str.c_str());
+	}
 }
 
 void gtk_app()
@@ -94,11 +134,6 @@ void gtk_app()
 
 	GtkWidget* frame_main = gtk_hpaned_new();
 	gtk_widget_show(frame_main);
-	
-	const char* caps[] = { "center-x", "center-y", "update-cap", "zoom-start", "zoom-end", "width", "height", "col-base", "col-pow" };	
-	const int N = sizeof(caps) / sizeof(char*);
-	GtkWidget* inp[N];
-	GtkWidget* lbl[N];
 
 	GtkWidget* inputbox = gtk_table_new (2, N, FALSE);
 	gtk_widget_show(inputbox);
@@ -119,11 +154,13 @@ void gtk_app()
 	GtkWidget* btn_start = gtk_button_new_with_label("Start");
 	GtkWidget* btn_stop  = gtk_button_new_with_label("Stop");
 	GtkWidget* btn_log   = gtk_button_new_with_label("Log");
+	GtkWidget* btn_save  = gtk_button_new_with_label("Save");
+	GtkWidget* btn_load  = gtk_button_new_with_label("Load");
 	GtkWidget* btn_exit  = gtk_button_new_with_label("Exit");
 
-	GtkWidget* btns[] = {btn_start, btn_stop, btn_log, btn_exit };
+	GtkWidget* btns[] = {btn_start, btn_stop, btn_log, btn_save, btn_load, btn_exit };
 
-	for (int i=0; i<4; ++i)
+	for (int i=0; i<6; ++i)
 	{
 		gtk_widget_show(btns[i]);
 		gtk_container_add(GTK_CONTAINER(buttons), btns[i]);
