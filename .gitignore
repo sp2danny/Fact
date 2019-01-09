@@ -12,5 +12,5 @@ mm.txt
 *.exe
 .vs
 *.mp4
-
-
+*.session
+.codelite
