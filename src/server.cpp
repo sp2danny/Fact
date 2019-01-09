@@ -1,5 +1,4 @@
 
-
 #include <iostream>
 #include <cmath>
 #include <complex>
@@ -15,11 +14,9 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "connector.h"
-
 #include "cmdline.h"
 
 cmdline cmd;
-
 
 gboolean idle_func(gpointer data)
 {
@@ -37,16 +34,12 @@ gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
 	return TRUE;
 }
 
-
-
-gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
+/*gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 {
 	(void)widget;
 	(void)data;
 	switch (event->keyval)
 	{
-	case GDK_Q:
-	case GDK_q:
 	case GDK_Escape:
 		gtk_main_quit();
 		break;
@@ -55,7 +48,7 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 	}
 
 	return TRUE;
-}
+}*/
 
 gboolean nil_cb(GtkWidget*, gpointer) { return TRUE; }
 
@@ -67,7 +60,7 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 
 	if (event->type != GDK_BUTTON_PRESS)
 		return TRUE;
-		
+
 	if (data == (void*)1)
 	{
 		printf("Start\n");
@@ -77,6 +70,10 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 		printf("Stop\n");
 	}
 	if (data == (void*)3)
+	{
+		printf("Log\n");
+	}
+	if (data == (void*)4)
 	{
 		gtk_main_quit();
 	}
@@ -98,26 +95,38 @@ void gtk_app()
 	GtkWidget* frame_main = gtk_hpaned_new();
 	gtk_widget_show(frame_main);
 
-	GtkWidget* inputbox = gtk_vbox_new (TRUE, 8);
+	GtkWidget* inputbox = gtk_vbox_new (FALSE, 8);
 	gtk_widget_show(inputbox);
 
 	GtkWidget* inp[4];
-	GtkEntryBuffer* eb[4];
+	//GtkEntryBuffer* eb[4];
 	for (int i=0; i<4; ++i)
 	{
+
+		inp[i] = gtk_entry_new ();
+		//gtk_entry_set_max_length (GTK_ENTRY (inp[i]), 50);
+		//gtk_editable_set_editable (GTK_EDITABLE (inp[i]), TRUE);
+		//g_object_set (inp[i], "can-focus", TRUE, NULL);
+		//g_signal_connect (inp[i], "activate", G_CALLBACK (enter_callback), inp[i]);
+		//gtk_entry_set_text (GTK_ENTRY (inp[i]), "123");
+		gtk_box_pack_start (GTK_BOX (inputbox), inp[i], TRUE, TRUE, 0);
+		gtk_widget_show (inp[i]);
+		
+		/*
 		inp[i] = gtk_entry_new();
 		gtk_entry_set_visibility(GTK_ENTRY(inp[i]), TRUE);
-		gtk_widget_set_events(inp[i], GDK_KEY_PRESS_MASK);
-		//g_signal_connect(G_OBJECT(inp[i]), "key-press-event", G_CALLBACK(key_press), nullptr);
-		g_signal_connect (inp[i], "activate", G_CALLBACK (nil_cb), inp[i]);
+		//gtk_widget_set_events(inp[i], GDK_KEY_PRESS_MASK);
+		//g_signal_connect (inp[i], "activate", G_CALLBACK (nil_cb), inp[i]);
 		gtk_widget_set_can_focus(inp[i], TRUE);
-		eb[i] = gtk_entry_buffer_new("", 0);
-		gtk_entry_buffer_set_max_length(eb[i], 500);
-		gtk_entry_set_max_length (GTK_ENTRY (inp[i]), 500);
-		gtk_entry_set_buffer (GTK_ENTRY(inp[i]), eb[i]);
+		//eb[i] = gtk_entry_buffer_new("", 0);
+		//g_signal_connect(inp[i], "key-press-event", G_CALLBACK(key_press), eb[i]);
+		//gtk_entry_buffer_set_max_length(eb[i], 500);
+		gtk_entry_set_max_length (GTK_ENTRY(inp[i]), 500);
+		//gtk_entry_set_buffer (GTK_ENTRY(inp[i]), eb[i]);
 		gtk_entry_set_editable(GTK_ENTRY(inp[i]), TRUE);
 		gtk_widget_show(inp[i]);
 		gtk_container_add(GTK_CONTAINER(inputbox), inp[i]);
+		*/
 	}
 
 	GtkWidget* buttons = gtk_vbutton_box_new();
@@ -125,18 +134,18 @@ void gtk_app()
 
 	GtkWidget* btn_start = gtk_button_new_with_label("Start");
 	GtkWidget* btn_stop  = gtk_button_new_with_label("Stop");
+	GtkWidget* btn_log   = gtk_button_new_with_label("Log");
 	GtkWidget* btn_exit  = gtk_button_new_with_label("Exit");
-
-	gtk_widget_show(btn_start);
-	gtk_widget_show(btn_stop);
-	gtk_widget_show(btn_exit);
-	gtk_container_add(GTK_CONTAINER(buttons), btn_start);
-	gtk_container_add(GTK_CONTAINER(buttons), btn_stop);
-	gtk_container_add(GTK_CONTAINER(buttons), btn_exit);
-	g_signal_connect(GTK_OBJECT(btn_start), "button-press-event", G_CALLBACK(button_press), (void*)1);
-	g_signal_connect(GTK_OBJECT(btn_stop),  "button-press-event", G_CALLBACK(button_press), (void*)2);
-	g_signal_connect(GTK_OBJECT(btn_exit),  "button-press-event", G_CALLBACK(button_press), (void*)3);
 	
+	GtkWidget* btns[] = {btn_start, btn_stop, btn_log, btn_exit };
+
+	for (int i=0; i<4; ++i)
+	{
+		gtk_widget_show(btns[i]);
+		gtk_container_add(GTK_CONTAINER(buttons), btns[i]);
+		g_signal_connect(GTK_OBJECT(btns[i]), "button-press-event", G_CALLBACK(button_press), (void*)(intptr_t)(i+1));
+	}
+
 	gtk_paned_pack1(GTK_PANED (frame_main), inputbox, TRUE, TRUE);
 	gtk_paned_pack2(GTK_PANED (frame_main), buttons, FALSE, FALSE);
 
@@ -151,16 +160,9 @@ void gtk_app()
 	gtk_container_add(GTK_CONTAINER(window), pane);
 	gtk_widget_show(pane);
 
+	//g_signal_connect(G_OBJECT(window), "key-press-event", G_CALLBACK(key_press), nullptr);
 
-
-	g_signal_connect(G_OBJECT(window), "key-press-event", G_CALLBACK(key_press), nullptr);
-	
-	//gtk_widget_set_events(eventbox, GDK_BUTTON1_MASK);
-	//g_signal_connect(GTK_OBJECT(eventbox), "button-press-event", G_CALLBACK(button_press), nullptr);
-
-
-    //gtk_widget_show(eventbox);
-	///gtk_widget_show(image);
+	gtk_widget_show_all(window);
 	gtk_widget_show(window);
 	gtk_idle_add(&idle_func, nullptr);
 	gtk_main();
