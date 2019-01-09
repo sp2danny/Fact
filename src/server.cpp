@@ -73,6 +73,23 @@ void add_log(std::string s)
 	}
 }
 
+void do_log()
+{
+	GtkWidget* subwin;
+	subwin = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title((GtkWindow*)subwin, "Log");
+	gtk_window_set_modal((GtkWindow*)subwin, TRUE);
+
+	GtkWidget* txt = gtk_text_view_new();
+	GtkTextBuffer* buf = gtk_text_view_get_buffer((GtkTextView*)txt);
+	std::string ss;
+	for (auto&& s : logs)
+		ss += s + "\n";
+	gtk_text_buffer_set_text(buf, ss.c_str(), ss.length());
+	gtk_container_add(GTK_CONTAINER(subwin), txt);
+	gtk_widget_show_all(subwin);
+}
+
 gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 {
 	(void)widget;
@@ -92,7 +109,7 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 	}
 	if (data == (void*)3)
 	{
-		add_log("Log");
+		do_log();
 	}
 	if (data == (void*)4)
 	{
@@ -224,3 +241,4 @@ int main(int argc, char* argv[])
 	gtk_app();
 }
 
+l
