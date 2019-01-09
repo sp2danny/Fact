@@ -37,21 +37,21 @@ gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
 
 gboolean nil_cb(GtkWidget*, gpointer) { return TRUE; }
 
-GtkWidget* log3[3];
+GtkWidget* log13[13];
 std::vector<std::string> logs;
 
 void add_log(std::string s)
 {
 	logs.push_back(std::move(s));
 	int j, i, n = logs.size();
-	i = n-3;
+	i = n-13;
 	if (i<0) i=0;
-	for (j=0;i<n;++i)
+	for (j=0; i<n; ++i)
 	{
 		auto str = logs[i];
 		if ((i+1)==n)
 			str = ">>> " + str + " <<<";
-		gtk_label_set_text(GTK_LABEL(log3[j++]), str.c_str());
+		gtk_label_set_text(GTK_LABEL(log13[j++]), str.c_str());
 	}
 }
 
@@ -94,6 +94,8 @@ void gtk_app()
 
 	gtk_container_set_border_width(GTK_CONTAINER(window), 8);
 
+	GtkWidget* pane = gtk_hpaned_new();
+
 	GtkWidget* buttons = gtk_vbutton_box_new();
 	gtk_widget_show(buttons);
 
@@ -102,7 +104,7 @@ void gtk_app()
 	GtkWidget* btn_log   = gtk_button_new_with_label("Log");
 	GtkWidget* btn_exit  = gtk_button_new_with_label("Exit");
 
-	GtkWidget* btns[] = {btn_start, btn_stop, btn_log, btn_save, btn_load, btn_exit };
+	GtkWidget* btns[] = {btn_start, btn_stop, btn_log, btn_exit };
 
 	for (int i=0; i<4; ++i)
 	{
@@ -111,7 +113,19 @@ void gtk_app()
 		g_signal_connect(GTK_OBJECT(btns[i]), "button-press-event", G_CALLBACK(button_press), (void*)(intptr_t)(i+1));
 	}
 
-	gtk_container_add(GTK_CONTAINER(window), buttons);
+	GtkWidget *frame_log = gtk_vbox_new(TRUE,1);
+	gtk_widget_show(frame_log);
+
+	for (int i=0; i<13; ++i)
+	{
+		log13[i] = gtk_label_new("");
+		gtk_box_pack_start(GTK_BOX(frame_log), log13[i], TRUE, TRUE, 0);
+	}
+
+	gtk_paned_pack1 (GTK_PANED (pane), frame_log, TRUE, TRUE);
+	gtk_paned_pack2 (GTK_PANED (pane), buttons, FALSE, FALSE);
+
+	gtk_container_add(GTK_CONTAINER(window), pane);
 	gtk_widget_show(pane);
 
 	gtk_widget_show_all(window);
