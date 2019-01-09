@@ -94,39 +94,23 @@ void gtk_app()
 
 	GtkWidget* frame_main = gtk_hpaned_new();
 	gtk_widget_show(frame_main);
+	
+	const char* caps[] = { "center-x", "center-y", "update-cap", "zoom-start", "zoom-end", "width", "height", "col-base", "col-pow" };	
+	const int N = sizeof(caps) / sizeof(char*);
+	GtkWidget* inp[N];
+	GtkWidget* lbl[N];
 
-	GtkWidget* inputbox = gtk_vbox_new (FALSE, 8);
+	GtkWidget* inputbox = gtk_table_new (2, N, FALSE);
 	gtk_widget_show(inputbox);
 
-	GtkWidget* inp[4];
-	//GtkEntryBuffer* eb[4];
-	for (int i=0; i<4; ++i)
+	for (int i=0; i<N; ++i)
 	{
-
-		inp[i] = gtk_entry_new ();
-		//gtk_entry_set_max_length (GTK_ENTRY (inp[i]), 50);
-		//gtk_editable_set_editable (GTK_EDITABLE (inp[i]), TRUE);
-		//g_object_set (inp[i], "can-focus", TRUE, NULL);
-		//g_signal_connect (inp[i], "activate", G_CALLBACK (enter_callback), inp[i]);
-		//gtk_entry_set_text (GTK_ENTRY (inp[i]), "123");
-		gtk_box_pack_start (GTK_BOX (inputbox), inp[i], TRUE, TRUE, 0);
-		gtk_widget_show (inp[i]);
-		
-		/*
+		lbl[i] = gtk_label_new(caps[i]);
+		gtk_widget_show(lbl[i]);
+		gtk_table_attach(GTK_TABLE(inputbox), lbl[i], 0, 1, i, i+1, GTK_SHRINK, GTK_SHRINK, 2,2);
 		inp[i] = gtk_entry_new();
-		gtk_entry_set_visibility(GTK_ENTRY(inp[i]), TRUE);
-		//gtk_widget_set_events(inp[i], GDK_KEY_PRESS_MASK);
-		//g_signal_connect (inp[i], "activate", G_CALLBACK (nil_cb), inp[i]);
-		gtk_widget_set_can_focus(inp[i], TRUE);
-		//eb[i] = gtk_entry_buffer_new("", 0);
-		//g_signal_connect(inp[i], "key-press-event", G_CALLBACK(key_press), eb[i]);
-		//gtk_entry_buffer_set_max_length(eb[i], 500);
-		gtk_entry_set_max_length (GTK_ENTRY(inp[i]), 500);
-		//gtk_entry_set_buffer (GTK_ENTRY(inp[i]), eb[i]);
-		gtk_entry_set_editable(GTK_ENTRY(inp[i]), TRUE);
 		gtk_widget_show(inp[i]);
-		gtk_container_add(GTK_CONTAINER(inputbox), inp[i]);
-		*/
+		gtk_table_attach(GTK_TABLE(inputbox), inp[i], 1, 2, i, i+1, (GtkAttachOptions)(GTK_FILL|GTK_EXPAND), GTK_SHRINK, 2,2);
 	}
 
 	GtkWidget* buttons = gtk_vbutton_box_new();
@@ -136,7 +120,7 @@ void gtk_app()
 	GtkWidget* btn_stop  = gtk_button_new_with_label("Stop");
 	GtkWidget* btn_log   = gtk_button_new_with_label("Log");
 	GtkWidget* btn_exit  = gtk_button_new_with_label("Exit");
-	
+
 	GtkWidget* btns[] = {btn_start, btn_stop, btn_log, btn_exit };
 
 	for (int i=0; i<4; ++i)
@@ -159,8 +143,6 @@ void gtk_app()
 
 	gtk_container_add(GTK_CONTAINER(window), pane);
 	gtk_widget_show(pane);
-
-	//g_signal_connect(G_OBJECT(window), "key-press-event", G_CALLBACK(key_press), nullptr);
 
 	gtk_widget_show_all(window);
 	gtk_widget_show(window);
