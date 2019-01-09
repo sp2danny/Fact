@@ -4,7 +4,8 @@
   <Project Name="mm" Path="mm.project" Active="No"/>
   <Project Name="mmhp" Path="mmhp.project" Active="No"/>
   <Project Name="factmm" Path="factmm.project" Active="No"/>
-  <Project Name="Server" Path="Server.project" Active="Yes"/>
+  <Project Name="Server" Path="Server.project" Active="No"/>
+  <Project Name="Client" Path="Client.project" Active="Yes"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="no">
       <Project Name="Fact" ConfigName="Debug"/>
@@ -12,6 +13,7 @@
       <Project Name="mmhp" ConfigName="Debug"/>
       <Project Name="factmm" ConfigName="Debug"/>
       <Project Name="Server" ConfigName="Debug"/>
+      <Project Name="Client" ConfigName="Debug"/>
     </WorkspaceConfiguration>
     <WorkspaceConfiguration Name="Release" Selected="yes">
       <Project Name="Fact" ConfigName="Release"/>
@@ -19,6 +21,7 @@
       <Project Name="mmhp" ConfigName="Release"/>
       <Project Name="factmm" ConfigName="Release"/>
       <Project Name="Server" ConfigName="Release"/>
+      <Project Name="Client" ConfigName="Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>
