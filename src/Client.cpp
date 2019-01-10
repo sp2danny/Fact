@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <ios>
 #include <fstream>
+#include <deque>
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
@@ -39,21 +40,40 @@ gboolean nil_cb(GtkWidget*, gpointer) { return TRUE; }
 
 GtkWidget* log13[13];
 std::vector<std::string> logs;
+std::deque<std::string> logtop(13);
+
+std::string add_time(std::string s)
+{
+	auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&in_time_t), "%F %T > ") << s;
+    return ss.str();
+}
 
 void add_log(std::string s)
 {
-	logs.push_back(std::move(s));
-	int j, i, n = logs.size();
-	i = n-13;
-	if (i<0) i=0;
-	for (j=0; i<n; ++i)
+	logtop.push_back(s);
+	logtop.pop_front();
+
+	logs.push_back(add_time(s));
+	
+	for (int i=0; i<13; ++i)
 	{
-		auto str = logs[i];
-		if ((i+1)==n)
+		auto str = logtop[i];
+		if (i==12)
 			str = ">>> " + str + " <<<";
-		gtk_label_set_text(GTK_LABEL(log13[j++]), str.c_str());
+		gtk_label_set_text(GTK_LABEL(log13[i]), str.c_str());
 	}
 }
+
+void add_note(std::string s)
+{
+	logs.push_back(add_time(s));
+}
+
+
+
 
 GtkWidget* window;
 
