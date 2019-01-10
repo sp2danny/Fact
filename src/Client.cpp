@@ -57,7 +57,7 @@ void add_log(std::string s)
 	logtop.pop_front();
 
 	logs.push_back(add_time(s));
-	
+
 	for (int i=0; i<13; ++i)
 	{
 		auto str = logtop[i];
@@ -71,9 +71,6 @@ void add_note(std::string s)
 {
 	logs.push_back(add_time(s));
 }
-
-
-
 
 GtkWidget* window;
 
@@ -126,7 +123,6 @@ void do_log()
 
 void gtk_app()
 {
-
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(delete_event), nullptr);
 
