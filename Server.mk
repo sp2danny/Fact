@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Daniel Nyström
-Date                   :=01/09/19
+Date                   :=01/10/19
 CodeLitePath           :="/home/sp2danny/.codelite"
 LinkerName             :=/usr/bin/clang++ 
 SharedObjectLinkerName :=/usr/bin/clang++ -shared -fPIC
@@ -35,7 +35,7 @@ PreprocessOnlySwitch   :=-E
 ObjectsFileList        :="Server.txt"
 PCHCompileFlags        :=
 MakeDirCommand         :=mkdir -p
-LinkOptions            :=  
+LinkOptions            := -std=c++17 -stdlib=libc++ 
 IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch)/usr/include/gtk-2.0 $(IncludeSwitch)/usr/include/glib-2.0 $(IncludeSwitch)/usr/lib/x86_64-linux-gnu/glib-2.0/include $(IncludeSwitch)/usr/include/cairo $(IncludeSwitch)/usr/include/pango-1.0 $(IncludeSwitch)/usr/lib/x86_64-linux-gnu/gtk-2.0/include $(IncludeSwitch)/usr/include/gdk-pixbuf-2.0 $(IncludeSwitch)/usr/include/atk-1.0 $(IncludeSwitch). 
 IncludePCH             := 
 RcIncludePath          := 
@@ -50,8 +50,8 @@ LibPath                := $(LibraryPathSwitch).
 AR       := /usr/bin/ar rcu
 CXX      := /usr/bin/clang++ 
 CC       := /usr/bin/clang 
-CXXFLAGS := -std=c++17 -Wall -Wextra -Werror -pedantic -g -O0 -Wall $(Preprocessors)
-CFLAGS   :=  -g -O0 -Wall $(Preprocessors)
+CXXFLAGS := -std=c++17 -Wall -Wextra -Werror -pedantic -stdlib=libc++ -g -O0 $(Preprocessors)
+CFLAGS   :=  -g -O0 $(Preprocessors)
 ASFLAGS  := 
 AS       := /usr/bin/as 
 

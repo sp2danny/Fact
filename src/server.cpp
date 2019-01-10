@@ -9,6 +9,10 @@
 #include <iomanip>
 #include <ios>
 #include <fstream>
+#include <deque>
+#include <chrono>
+#include <ctime>
+#include <sstream> 
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
@@ -16,6 +20,8 @@
 
 #include "connector.h"
 #include "cmdline.h"
+
+using namespace std::literals;
 
 cmdline cmd;
 
@@ -57,20 +63,36 @@ extern void Save(), Load();
 
 GtkWidget* log3[3];
 std::vector<std::string> logs;
+std::deque<std::string> logtop = { ""s, ""s, ""s };
+
+std::string add_time(std::string s)
+{
+	auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&in_time_t), "%F %T > ") << s;
+    return ss.str();
+}
 
 void add_log(std::string s)
 {
-	logs.push_back(std::move(s));
-	int j, i, n = logs.size();
-	i = n-3;
-	if (i<0) i=0;
-	for (j=0;i<n;++i)
+	logtop.push_back(s);
+	logtop.pop_front();
+
+	logs.push_back(add_time(s));
+	
+	for (int i=0; i<3; ++i)
 	{
-		auto str = logs[i];
-		if ((i+1)==n)
+		auto str = logtop[i];
+		if (i==2)
 			str = ">>> " + str + " <<<";
-		gtk_label_set_text(GTK_LABEL(log3[j++]), str.c_str());
+		gtk_label_set_text(GTK_LABEL(log3[i]), str.c_str());
 	}
+}
+
+void add_note(std::string s)
+{
+	logs.push_back(add_time(s));
 }
 
 void do_log()
@@ -79,8 +101,10 @@ void do_log()
 	subwin = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title((GtkWindow*)subwin, "Log");
 	gtk_window_set_modal((GtkWindow*)subwin, TRUE);
+	gtk_window_set_default_size((GtkWindow*)subwin, 240,250);
 
 	GtkWidget* txt = gtk_text_view_new();
+	gtk_text_view_set_editable((GtkTextView*)txt, FALSE);
 	GtkTextBuffer* buf = gtk_text_view_get_buffer((GtkTextView*)txt);
 	std::string ss;
 	for (auto&& s : logs)
@@ -109,6 +133,7 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 	}
 	if (data == (void*)3)
 	{
+		add_note("Open Log");
 		do_log();
 	}
 	if (data == (void*)4)
@@ -241,4 +266,3 @@ int main(int argc, char* argv[])
 	gtk_app();
 }
 
-l
