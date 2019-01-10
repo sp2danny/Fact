@@ -13,6 +13,7 @@
 #include <chrono>
 #include <ctime>
 #include <sstream> 
+#include <memory>
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
@@ -25,9 +26,28 @@ using namespace std::literals;
 
 cmdline cmd;
 
+struct Server
+{
+    boost::asio::io_service io_service;
+    server serv;
+	
+	Server(short p)
+		: io_service()
+		, serv(io_service, p)
+	{}
+};
+
+std::unique_ptr<Server> server_instance;
+
 gboolean idle_func(gpointer data)
 {
 	(void)data;
+	
+	if (server_instance)
+	{
+		server_instance->io_service.poll();
+	}
+	
 	return TRUE;
 }
 
@@ -126,6 +146,8 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 	if (data == (void*)1)
 	{
 		add_log("Start");
+		extern void start_server();
+		start_server();
 	}
 	if (data == (void*)2)
 	{
@@ -159,6 +181,16 @@ const char* caps[] = {
 const int N = sizeof(caps) / sizeof(char*);
 GtkWidget* inp[N];
 GtkWidget* lbl[N];
+
+void start_server()
+{
+    boost::asio::io_service io_service;
+
+	const char* str = gtk_entry_get_text(GTK_ENTRY(inp[9]));
+ 
+	server_instance = std::make_unique<Server>(std::atoi(str));
+
+}
 
 void Save()
 {
@@ -223,7 +255,7 @@ void gtk_app()
 	GtkWidget* btn_load  = gtk_button_new_with_label("Load");
 	GtkWidget* btn_exit  = gtk_button_new_with_label("Exit");
 
-	GtkWidget* btns[] = {btn_start, btn_stop, btn_log, btn_save, btn_load, btn_exit };
+	GtkWidget* btns[] = { btn_start, btn_stop, btn_log, btn_save, btn_load, btn_exit };
 
 	for (int i=0; i<6; ++i)
 	{

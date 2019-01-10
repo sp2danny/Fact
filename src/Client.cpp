@@ -73,6 +73,7 @@ void add_note(std::string s)
 }
 
 GtkWidget* window;
+GtkWidget* edit;
 
 gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 {
@@ -149,6 +150,11 @@ void gtk_app()
 
 	GtkWidget *frame_log = gtk_vbox_new(TRUE,1);
 	gtk_widget_show(frame_log);
+	
+	edit = gtk_entry_new();
+	gtk_widget_show(edit);
+	gtk_entry_set_text(GTK_ENTRY(edit),"127.0.0.1:9090");
+	gtk_box_pack_start(GTK_BOX(frame_log), edit, TRUE, TRUE, 0);
 
 	for (int i=0; i<13; ++i)
 	{

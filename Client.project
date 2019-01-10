@@ -37,6 +37,7 @@
         <Library Value="fontconfig"/>
         <Library Value="freetype"/>
         <Library Value="boost_system"/>
+        <Library Value="c++"/>
       </Linker>
       <ResourceCompiler Options=""/>
     </GlobalSettings>

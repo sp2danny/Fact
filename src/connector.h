@@ -2,32 +2,103 @@
 #pragma once
 
 #include <string>
+#include <cstdlib>
+#include <iostream>
 
+#include <boost/bind.hpp>
 #include <boost/asio.hpp>
+
+
 
 using boost::asio::ip::tcp;
 
-class tcp_connection
+
+
+class session
 {
 public:
+	session(boost::asio::io_service& io_service)
+		: m_socket(io_service)
+	{
+	}
 
-  tcp_connection(boost::asio::io_service&);
+	tcp::socket& socket()
+	{
+		return m_socket;
+	}
+
+	void start()
+	{
+		m_socket.async_read_some(boost::asio::buffer(m_data, max_length),
+			boost::bind(&session::handle_read, this,
+			boost::asio::placeholders::error,
+			boost::asio::placeholders::bytes_transferred));
+	}
 
 private:
-  boost::asio::ip::tcp::socket m_socket;
-  std::string m_message;
+	void handle_read(const boost::system::error_code& error, std::size_t bytes_transferred)
+	{
+		if (!error)
+		{
+			boost::asio::async_write(m_socket,
+				boost::asio::buffer(m_data, bytes_transferred),
+				boost::bind(&session::handle_write, this,
+				boost::asio::placeholders::error));
+		} else {
+			delete this;
+		}
+	}
+
+	void handle_write(const boost::system::error_code& error)
+	{
+		if (!error)
+		{
+			m_socket.async_read_some(boost::asio::buffer(m_data, max_length),
+				boost::bind(&session::handle_read, this,
+				boost::asio::placeholders::error,
+				boost::asio::placeholders::bytes_transferred));
+		} else {
+		  delete this;
+		}
+	}
+
+  tcp::socket m_socket;
+  static constexpr int max_length = 1024;
+  char m_data[max_length];
 };
 
-class tcp_server
+
+class server
 {
 public:
-  tcp_server(boost::asio::io_service&);
+	server(boost::asio::io_service& io_service, short port)
+		: m_io_service(io_service)
+		, m_acceptor(io_service, tcp::endpoint(tcp::v4(), port))
+	{
+		start_accept();
+	}
 
 private:
+	void start_accept()
+	{
+		session* new_session = new session(m_io_service);
+		m_acceptor.async_accept(new_session->socket(),
+			boost::bind(&server::handle_accept, this, new_session,
+			boost::asio::placeholders::error));
+	}
 
+	void handle_accept(session* new_session, const boost::system::error_code& error)
+	{
+		if (!error)
+			new_session->start();
+		else
+			delete new_session;
 
-  boost::asio::ip::tcp::acceptor m_acceptor;
+		start_accept();
+	}
+
+	boost::asio::io_service& m_io_service;
+	tcp::acceptor m_acceptor;
 };
-
 
 

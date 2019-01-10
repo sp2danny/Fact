@@ -2,12 +2,12 @@
 ## Auto Generated makefile by CodeLite IDE
 ## any manual changes will be erased      
 ##
-## Debug
+## Release
 ProjectName            :=Server
-ConfigurationName      :=Debug
+ConfigurationName      :=Release
 WorkspacePath          := "/home/sp2danny/extra/Fact"
 ProjectPath            := "/home/sp2danny/extra/Fact"
-IntermediateDirectory  :=./bin/Debug
+IntermediateDirectory  :=./bin/Release
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
 CurrentFilePath        :=
@@ -27,8 +27,8 @@ OutputSwitch           :=-o
 LibraryPathSwitch      :=-L
 PreprocessorSwitch     :=-D
 SourceSwitch           :=-c 
-OutputFile             :=./$(ProjectName)_dbg.out
-Preprocessors          :=
+OutputFile             :=./$(ProjectName).out
+Preprocessors          :=$(PreprocessorSwitch)NDEBUG 
 ObjectSwitch           :=-o 
 ArchiveOutputSwitch    := 
 PreprocessOnlySwitch   :=-E
@@ -39,8 +39,8 @@ LinkOptions            := -std=c++17 -stdlib=libc++
 IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch)/usr/include/gtk-2.0 $(IncludeSwitch)/usr/include/glib-2.0 $(IncludeSwitch)/usr/lib/x86_64-linux-gnu/glib-2.0/include $(IncludeSwitch)/usr/include/cairo $(IncludeSwitch)/usr/include/pango-1.0 $(IncludeSwitch)/usr/lib/x86_64-linux-gnu/gtk-2.0/include $(IncludeSwitch)/usr/include/gdk-pixbuf-2.0 $(IncludeSwitch)/usr/include/atk-1.0 $(IncludeSwitch). 
 IncludePCH             := 
 RcIncludePath          := 
-Libs                   := $(LibrarySwitch)gtk-x11-2.0 $(LibrarySwitch)gdk-x11-2.0 $(LibrarySwitch)pangocairo-1.0 $(LibrarySwitch)atk-1.0 $(LibrarySwitch)cairo $(LibrarySwitch)gdk_pixbuf-2.0 $(LibrarySwitch)gio-2.0 $(LibrarySwitch)pangoft2-1.0 $(LibrarySwitch)pango-1.0 $(LibrarySwitch)gobject-2.0 $(LibrarySwitch)glib-2.0 $(LibrarySwitch)fontconfig $(LibrarySwitch)freetype $(LibrarySwitch)boost_system 
-ArLibs                 :=  "gtk-x11-2.0" "gdk-x11-2.0" "pangocairo-1.0" "atk-1.0" "cairo" "gdk_pixbuf-2.0" "gio-2.0" "pangoft2-1.0" "pango-1.0" "gobject-2.0" "glib-2.0" "fontconfig" "freetype" "boost_system" 
+Libs                   := $(LibrarySwitch)gtk-x11-2.0 $(LibrarySwitch)gdk-x11-2.0 $(LibrarySwitch)pangocairo-1.0 $(LibrarySwitch)atk-1.0 $(LibrarySwitch)cairo $(LibrarySwitch)gdk_pixbuf-2.0 $(LibrarySwitch)gio-2.0 $(LibrarySwitch)pangoft2-1.0 $(LibrarySwitch)pango-1.0 $(LibrarySwitch)gobject-2.0 $(LibrarySwitch)glib-2.0 $(LibrarySwitch)fontconfig $(LibrarySwitch)freetype $(LibrarySwitch)boost_system $(LibrarySwitch)c++ 
+ArLibs                 :=  "gtk-x11-2.0" "gdk-x11-2.0" "pangocairo-1.0" "atk-1.0" "cairo" "gdk_pixbuf-2.0" "gio-2.0" "pangoft2-1.0" "pango-1.0" "gobject-2.0" "glib-2.0" "fontconfig" "freetype" "boost_system" "c++" 
 LibPath                := $(LibraryPathSwitch). 
 
 ##
@@ -50,8 +50,8 @@ LibPath                := $(LibraryPathSwitch).
 AR       := /usr/bin/ar rcu
 CXX      := /usr/bin/clang++ 
 CC       := /usr/bin/clang 
-CXXFLAGS := -std=c++17 -Wall -Wextra -Werror -pedantic -stdlib=libc++ -g -O0 $(Preprocessors)
-CFLAGS   :=  -g -O0 $(Preprocessors)
+CXXFLAGS := -std=c++17 -Wall -Wextra -Werror -pedantic -stdlib=libc++ -O2 $(Preprocessors)
+CFLAGS   :=  -O2 $(Preprocessors)
 ASFLAGS  := 
 AS       := /usr/bin/as 
 
@@ -78,7 +78,7 @@ $(OutputFile): $(IntermediateDirectory)/.d $(Objects)
 	$(LinkerName) $(OutputSwitch)$(OutputFile) @$(ObjectsFileList) $(LibPath) $(Libs) $(LinkOptions)
 
 $(IntermediateDirectory)/.d:
-	@test -d ./bin/Debug || $(MakeDirCommand) ./bin/Debug
+	@test -d ./bin/Release || $(MakeDirCommand) ./bin/Release
 
 PreBuild:
 
@@ -108,9 +108,9 @@ $(IntermediateDirectory)/src_cmdline.cpp$(PreprocessSuffix): src/cmdline.cpp
 ## Clean
 ##
 clean:
-	$(RM) ./bin/Debug/*$(ObjectSuffix)
-	$(RM) ./bin/Debug/*$(DependSuffix)
+	$(RM) ./bin/Release/*$(ObjectSuffix)
+	$(RM) ./bin/Release/*$(DependSuffix)
 	$(RM) $(OutputFile)
-	$(RM) ".build-debug/Server"
+	$(RM) ".build-release/Server"
 
 
