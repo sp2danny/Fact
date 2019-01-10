@@ -28,6 +28,12 @@ cmdline cmd;
 
 std::string message(const std::string&);
 
+struct JobSession
+{
+	int frame_start;
+	int frame_count;
+};
+
 struct Server
 {
     boost::asio::io_service io_service;

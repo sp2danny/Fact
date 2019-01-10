@@ -7,10 +7,11 @@
     <File Name="src/cmdline.cpp"/>
     <File Name="src/cmdline.h"/>
     <File Name="src/connector.h"/>
+    <File Name="src/connector.cpp"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
-      <Compiler Options="-std=c++17 -Wall -Wextra -Werror -pedantic -stdlib=libstdc++" C_Options="" Assembler="">
+      <Compiler Options="-std=c++17 -Wall -Wextra -Werror -pedantic -stdlib=libc++" C_Options="" Assembler="">
         <IncludePath Value="."/>
         <IncludePath Value="/usr/include/gtk-2.0"/>
         <IncludePath Value="/usr/include/glib-2.0"/>
@@ -21,7 +22,7 @@
         <IncludePath Value="/usr/include/gdk-pixbuf-2.0"/>
         <IncludePath Value="/usr/include/atk-1.0"/>
       </Compiler>
-      <Linker Options="-std=c++17 -stdlib=libstdc++">
+      <Linker Options="-std=c++17 -stdlib=libc++">
         <LibraryPath Value="."/>
         <Library Value="gtk-x11-2.0"/>
         <Library Value="gdk-x11-2.0"/>
@@ -48,7 +49,6 @@
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="./$(ProjectName)_dbg.out" IntermediateDirectory="./bin/Debug" Command="./$(ProjectName)_dbg.out" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
-      <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>
@@ -73,7 +73,7 @@
         <CustomPostBuild/>
         <CustomPreBuild/>
       </AdditionalRules>
-      <Completion EnableCpp11="no" EnableCpp14="no">
+      <Completion EnableCpp11="no">
         <ClangCmpFlagsC/>
         <ClangCmpFlags/>
         <ClangPP/>
@@ -88,7 +88,6 @@
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="./$(ProjectName).out" IntermediateDirectory="./bin/Release" Command="./$(ProjectName).out" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="yes" IsEnabled="yes"/>
-      <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>
@@ -113,7 +112,7 @@
         <CustomPostBuild/>
         <CustomPreBuild/>
       </AdditionalRules>
-      <Completion EnableCpp11="no" EnableCpp14="no">
+      <Completion EnableCpp11="no">
         <ClangCmpFlagsC/>
         <ClangCmpFlags/>
         <ClangPP/>

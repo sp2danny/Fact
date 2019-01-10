@@ -1,1 +1,1 @@
-./bin/Release/src_server.cpp.o ./bin/Release/src_cmdline.cpp.o
+./bin/Debug/src_server.cpp.o ./bin/Debug/src_cmdline.cpp.o ./bin/Debug/src_connector.cpp.o

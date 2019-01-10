@@ -16,7 +16,11 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 
-#include "connector.h"
+#include <boost/bind.hpp>
+#include <boost/asio.hpp>
+
+using boost::asio::ip::tcp;
+
 #include "cmdline.h"
 
 using namespace std::literals;
