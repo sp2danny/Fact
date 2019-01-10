@@ -26,7 +26,7 @@ using namespace std::literals;
 
 cmdline cmd;
 
-void message(const std::string&);
+std::string message(const std::string&);
 
 struct Server
 {
@@ -112,9 +112,46 @@ void add_log(std::string s)
 	}
 }
 
-void message(const std::string& msg)
+const char* caps[] = {
+	"center-x", "center-y", "update-cap", "zoom-start", "zoom-end",
+	"width", "height", "col-base", "col-pow", "port"
+};
+const int N = sizeof(caps) / sizeof(char*);
+GtkWidget* inp[N];
+GtkWidget* lbl[N];
+
+unsigned int clients = 0;
+
+std::string message(const std::string& msg)
 {
-	add_log("got message : "s + msg);
+	auto p = msg.find(":");
+	std::string command = msg.substr(0, p);
+	std::string detail = msg.substr(p+1);
+	if (command == "send")
+	{
+		if (detail=="client_id")
+		{
+			++clients;
+			return std::to_string(clients);
+		}
+		else
+		{
+			for (int i=0; i<N; ++i)
+			{
+				if (detail == caps[i])
+				{
+					const char* str = gtk_entry_get_text(GTK_ENTRY(inp[i]));
+					add_log("did reply : "s + str);
+					return str;
+				}
+			}
+		}
+	}
+	else if (command == "close")
+	{
+		return "OK";
+	}
+	return "NOK";
 }
 
 void add_note(std::string s)
@@ -180,14 +217,6 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 
 	return TRUE;
 }
-
-const char* caps[] = {
-	"center-x", "center-y", "update-cap", "zoom-start", "zoom-end",
-	"width", "height", "col-base", "col-pow", "port"
-};
-const int N = sizeof(caps) / sizeof(char*);
-GtkWidget* inp[N];
-GtkWidget* lbl[N];
 
 void start_server()
 {

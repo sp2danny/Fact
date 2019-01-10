@@ -8,11 +8,9 @@
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 
-
-
 using boost::asio::ip::tcp;
 
-typedef void (*message_callback)(const std::string&);
+typedef std::string (*message_callback)(const std::string&);
 
 class session
 {
@@ -42,9 +40,9 @@ private:
 		if (!error)
 		{
 			std::string msg(m_data, m_data+bytes_transferred);
-			m_mcb(msg);
+			std::string ret = m_mcb(msg);
 			boost::asio::async_write(m_socket,
-				boost::asio::buffer(m_data, bytes_transferred),
+				boost::asio::buffer(ret.c_str(), ret.size()),
 				boost::bind(&session::handle_write, this,
 				boost::asio::placeholders::error));
 		} else {

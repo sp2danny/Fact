@@ -18,6 +18,8 @@
 #include "connector.h"
 #include "cmdline.h"
 
+using namespace std::literals;
+
 cmdline cmd;
 
 gboolean idle_func(gpointer data)
@@ -72,6 +74,8 @@ void add_note(std::string s)
 	logs.push_back(add_time(s));
 }
 
+static constexpr int max_length = 1024;
+
 void client_start()
 {
 	boost::asio::io_service io_service;
@@ -82,19 +86,29 @@ void client_start()
 
     tcp::socket s(io_service);
     boost::asio::connect(s, iterator);
+	
+	auto snd_rcv = [&](std::string msg) -> std::string
+	{
+		add_log("Sending : "s + msg);
+		
+		boost::asio::write(s, boost::asio::buffer(msg.c_str(), msg.size()));
 
-	const char* request = "send:client_id";
-	auto request_length = strlen(request);
+		char reply[max_length];
+		size_t reply_length = boost::asio::read(s, boost::asio::buffer(reply, max_length));
 
-    boost::asio::write(s, boost::asio::buffer(request, request_length));
+		std::string ret(reply, reply+reply_length);
+		add_log("Got answer : "s + ret);
+		return ret;
+	};
 
-    //char reply[max_length];
-    //size_t reply_length = boost::asio::read(s,
-    //    boost::asio::buffer(reply, request_length));
-    //std::cout << "Reply is: ";
-    //std::cout.write(reply, reply_length);
-    //std::cout << "\n";
+	std::string repl;
+	
+	repl = snd_rcv("send:client_id");
+	repl = snd_rcv("send:center-x");
+	repl = snd_rcv("send:center-y");
 }
+
+
 
 GtkWidget* window;
 GtkWidget* edit;
