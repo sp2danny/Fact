@@ -12,13 +12,14 @@
 
 using boost::asio::ip::tcp;
 
-
+typedef void (*message_callback)(const std::string&);
 
 class session
 {
 public:
-	session(boost::asio::io_service& io_service)
+	session(boost::asio::io_service& io_service, message_callback mcb)
 		: m_socket(io_service)
+		, m_mcb(mcb)
 	{
 	}
 
@@ -40,6 +41,8 @@ private:
 	{
 		if (!error)
 		{
+			std::string msg(m_data, m_data+bytes_transferred);
+			m_mcb(msg);
 			boost::asio::async_write(m_socket,
 				boost::asio::buffer(m_data, bytes_transferred),
 				boost::bind(&session::handle_write, this,
@@ -62,18 +65,19 @@ private:
 		}
 	}
 
-  tcp::socket m_socket;
-  static constexpr int max_length = 1024;
-  char m_data[max_length];
+	tcp::socket m_socket;
+	static constexpr int max_length = 1024;
+	char m_data[max_length];
+	message_callback m_mcb;
 };
-
 
 class server
 {
 public:
-	server(boost::asio::io_service& io_service, short port)
+	server(boost::asio::io_service& io_service, short port, message_callback mcb)
 		: m_io_service(io_service)
 		, m_acceptor(io_service, tcp::endpoint(tcp::v4(), port))
+		, m_mcb(mcb)
 	{
 		start_accept();
 	}
@@ -81,7 +85,7 @@ public:
 private:
 	void start_accept()
 	{
-		session* new_session = new session(m_io_service);
+		session* new_session = new session(m_io_service, m_mcb);
 		m_acceptor.async_accept(new_session->socket(),
 			boost::bind(&server::handle_accept, this, new_session,
 			boost::asio::placeholders::error));
@@ -99,6 +103,7 @@ private:
 
 	boost::asio::io_service& m_io_service;
 	tcp::acceptor m_acceptor;
+	message_callback m_mcb;
 };
 
 

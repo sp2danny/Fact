@@ -26,6 +26,8 @@ using namespace std::literals;
 
 cmdline cmd;
 
+void message(const std::string&);
+
 struct Server
 {
     boost::asio::io_service io_service;
@@ -33,7 +35,7 @@ struct Server
 	
 	Server(short p)
 		: io_service()
-		, serv(io_service, p)
+		, serv(io_service, p, &message)
 	{}
 };
 
@@ -108,6 +110,11 @@ void add_log(std::string s)
 			str = ">>> " + str + " <<<";
 		gtk_label_set_text(GTK_LABEL(log3[i]), str.c_str());
 	}
+}
+
+void message(const std::string& msg)
+{
+	add_log("got message : "s + msg);
 }
 
 void add_note(std::string s)

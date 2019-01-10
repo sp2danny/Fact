@@ -38,6 +38,7 @@
         <Library Value="freetype"/>
         <Library Value="boost_system"/>
         <Library Value="c++"/>
+        <Library Value="pthread"/>
       </Linker>
       <ResourceCompiler Options=""/>
     </GlobalSettings>

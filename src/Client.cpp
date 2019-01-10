@@ -72,6 +72,30 @@ void add_note(std::string s)
 	logs.push_back(add_time(s));
 }
 
+void client_start()
+{
+	boost::asio::io_service io_service;
+
+    tcp::resolver resolver(io_service);
+    tcp::resolver::query query(tcp::v4(), "127.0.0.1", "9090");
+    tcp::resolver::iterator iterator = resolver.resolve(query);
+
+    tcp::socket s(io_service);
+    boost::asio::connect(s, iterator);
+
+	const char* request = "send:client_id";
+	auto request_length = strlen(request);
+
+    boost::asio::write(s, boost::asio::buffer(request, request_length));
+
+    //char reply[max_length];
+    //size_t reply_length = boost::asio::read(s,
+    //    boost::asio::buffer(reply, request_length));
+    //std::cout << "Reply is: ";
+    //std::cout.write(reply, reply_length);
+    //std::cout << "\n";
+}
+
 GtkWidget* window;
 GtkWidget* edit;
 
@@ -87,6 +111,7 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 	if (data == (void*)1)
 	{
 		add_log("Start");
+		client_start();
 	}
 	if (data == (void*)2)
 	{
