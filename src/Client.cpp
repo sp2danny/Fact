@@ -76,7 +76,7 @@ void add_note(std::string s)
 	logs.push_back(add_time(s));
 }
 
-static constexpr int max_length = 1024;
+[[maybe_unused]] constexpr int max_length = 1024;
 
 void client_start()
 {
@@ -108,6 +108,7 @@ void client_start()
 	repl = snd_rcv("send:client_id");
 	repl = snd_rcv("send:center-x");
 	repl = snd_rcv("send:center-y");
+	
 }
 
 

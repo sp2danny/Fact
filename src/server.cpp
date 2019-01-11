@@ -127,11 +127,13 @@ std::string message(const std::string& msg)
 	auto p = msg.find(":");
 	std::string command = msg.substr(0, p);
 	std::string detail = msg.substr(p+1);
+	add_log("got command '"s + command + "' with operand '" + detail +"'");
 	if (command == "send")
 	{
 		if (detail=="client_id")
 		{
 			++clients;
+			add_log("did reply : "s + std::to_string(clients));
 			return std::to_string(clients);
 		}
 		else

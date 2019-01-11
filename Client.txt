@@ -1,1 +1,1 @@
-./bin/Debug/src_cmdline.cpp.o ./bin/Debug/src_Client.cpp.o
+./bin/Release/src_cmdline.cpp.o ./bin/Release/src_Client.cpp.o

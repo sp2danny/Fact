@@ -2,12 +2,12 @@
 ## Auto Generated makefile by CodeLite IDE
 ## any manual changes will be erased      
 ##
-## Debug
+## Release
 ProjectName            :=Client
-ConfigurationName      :=Debug
+ConfigurationName      :=Release
 WorkspacePath          :=/home/daniel/project/Fact
 ProjectPath            :=/home/daniel/project/Fact
-IntermediateDirectory  :=./bin/Debug
+IntermediateDirectory  :=./bin/Release
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
 CurrentFilePath        :=
@@ -27,8 +27,8 @@ OutputSwitch           :=-o
 LibraryPathSwitch      :=-L
 PreprocessorSwitch     :=-D
 SourceSwitch           :=-c 
-OutputFile             :=./$(ProjectName)_dbg.out
-Preprocessors          :=
+OutputFile             :=./$(ProjectName).out
+Preprocessors          :=$(PreprocessorSwitch)NDEBUG 
 ObjectSwitch           :=-o 
 ArchiveOutputSwitch    := 
 PreprocessOnlySwitch   :=-E
@@ -50,8 +50,8 @@ LibPath                := $(LibraryPathSwitch).
 AR       := /usr/bin/ar rcu
 CXX      := /usr/bin/clang++
 CC       := /usr/bin/clang
-CXXFLAGS := -std=c++17 -Wall -Wextra -Werror -pedantic -stdlib=libstdc++ -g -O0 $(Preprocessors)
-CFLAGS   :=  -g -O0 $(Preprocessors)
+CXXFLAGS := -std=c++17 -Wall -Wextra -Werror -pedantic -stdlib=libstdc++ -O2 $(Preprocessors)
+CFLAGS   :=  -O2 $(Preprocessors)
 ASFLAGS  := 
 AS       := /usr/bin/as
 
@@ -79,11 +79,11 @@ $(OutputFile): $(IntermediateDirectory)/.d $(Objects)
 	$(LinkerName) $(OutputSwitch)$(OutputFile) @$(ObjectsFileList) $(LibPath) $(Libs) $(LinkOptions)
 
 MakeIntermediateDirs:
-	@test -d ./bin/Debug || $(MakeDirCommand) ./bin/Debug
+	@test -d ./bin/Release || $(MakeDirCommand) ./bin/Release
 
 
 $(IntermediateDirectory)/.d:
-	@test -d ./bin/Debug || $(MakeDirCommand) ./bin/Debug
+	@test -d ./bin/Release || $(MakeDirCommand) ./bin/Release
 
 PreBuild:
 
@@ -113,6 +113,6 @@ $(IntermediateDirectory)/src_Client.cpp$(PreprocessSuffix): src/Client.cpp
 ## Clean
 ##
 clean:
-	$(RM) -r ./bin/Debug/
+	$(RM) -r ./bin/Release/
 
 

@@ -41,8 +41,10 @@ private:
 		{
 			std::string msg(m_data, m_data+bytes_transferred);
 			std::string ret = m_mcb(msg);
+			char buffer[max_length] = {0};
+			strcpy(buffer, ret.c_str());
 			boost::asio::async_write(m_socket,
-				boost::asio::buffer(ret.c_str(), ret.size()),
+				boost::asio::buffer(buffer, max_length),
 				boost::bind(&session::handle_write, this,
 				boost::asio::placeholders::error));
 		} else {
