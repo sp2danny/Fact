@@ -10,6 +10,8 @@
 #include <ios>
 #include <fstream>
 #include <deque>
+#include <chrono>
+
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
