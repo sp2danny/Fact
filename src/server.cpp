@@ -130,7 +130,7 @@ std::string message(const std::string& msg)
 	add_log("got command '"s + command + "' with operand '" + detail +"'");
 	if (command == "send")
 	{
-		if (detail=="client_id")
+		if (detail=="client-id")
 		{
 			++clients;
 			add_log("did reply : "s + std::to_string(clients));

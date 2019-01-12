@@ -12,7 +12,6 @@
 #include <deque>
 #include <chrono>
 
-
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -66,7 +65,7 @@ void add_log(std::string s)
 	{
 		auto str = logtop[i];
 		if (i==12)
-			str = ">>> " + str + " <<<";
+			str = ">>> "s + str.c_str() + " <<<"s;
 		gtk_label_set_text(GTK_LABEL(log13[i]), str.c_str());
 	}
 }
@@ -78,43 +77,77 @@ void add_note(std::string s)
 
 [[maybe_unused]] constexpr int max_length = 1024;
 
+struct Item
+{
+	Item(std::string name)
+		: name(name), value()
+	{}
+	std::string name;
+	std::string value;	
+};
+
+std::vector<Item> params = {
+	"client-id"s, "center-x"s, "center-y"s, "update-cap"s, "zoom-start"s,
+	"width"s, "height"s, "col-base"s, "col-pow"s
+};
+
+struct Connection
+{
+	Connection(std::string addr, std::string port)
+		: io_service()
+		, resolver(io_service)
+		, query(tcp::v4(), addr, port)
+		, iterator(resolver.resolve(query))
+		, sock(io_service)
+	{
+		boost::asio::connect(sock, iterator);
+	}
+
+	boost::asio::io_service io_service;
+    tcp::resolver resolver;
+    tcp::resolver::query query;
+    tcp::resolver::iterator iterator;
+    tcp::socket sock;
+};
+
+std::unique_ptr<Connection> connection;
+
+GtkWidget* window;
+GtkWidget* edit;
+
 void client_start()
 {
-	boost::asio::io_service io_service;
-
-    tcp::resolver resolver(io_service);
-    tcp::resolver::query query(tcp::v4(), "127.0.0.1", "9090");
-    tcp::resolver::iterator iterator = resolver.resolve(query);
-
-    tcp::socket s(io_service);
-    boost::asio::connect(s, iterator);
+	std::string ed = gtk_entry_get_text(GTK_ENTRY(edit));
+	auto p = ed.find(':');
+	std::string addr = ed.substr(0,p);
+	std::string port = ed.substr(p+1);
+	
+	connection = std::make_unique<Connection>(addr,port);
 	
 	auto snd_rcv = [&](std::string msg) -> std::string
 	{
 		add_log("Sending : "s + msg);
 		
-		boost::asio::write(s, boost::asio::buffer(msg.c_str(), msg.size()));
+		boost::asio::write(connection->sock, boost::asio::buffer(msg.c_str(), msg.size()));
 
 		char reply[max_length];
-		size_t reply_length = boost::asio::read(s, boost::asio::buffer(reply, max_length));
+		[[maybe_unused]] size_t reply_length;
+		reply_length = boost::asio::read(connection->sock, boost::asio::buffer(reply, max_length));
 
-		std::string ret(reply, reply+reply_length);
+		std::string ret((char*)reply);
 		add_log("Got answer : "s + ret);
 		return ret;
 	};
 
 	std::string repl;
 	
-	repl = snd_rcv("send:client_id");
-	repl = snd_rcv("send:center-x");
-	repl = snd_rcv("send:center-y");
+	for (auto& itm : params)
+	{
+		itm.value = snd_rcv("send:"s + itm.name);
+	}
+	
 	
 }
-
-
-
-GtkWidget* window;
-GtkWidget* edit;
 
 gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 {

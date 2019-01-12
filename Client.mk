@@ -2,18 +2,18 @@
 ## Auto Generated makefile by CodeLite IDE
 ## any manual changes will be erased      
 ##
-## Release
+## Debug
 ProjectName            :=Client
-ConfigurationName      :=Release
+ConfigurationName      :=Debug
 WorkspacePath          :=/home/daniel/project/Fact
 ProjectPath            :=/home/daniel/project/Fact
-IntermediateDirectory  :=./bin/Release
+IntermediateDirectory  :=./bin/Debug
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=daniel
-Date                   :=11/01/19
+Date                   :=13/01/19
 CodeLitePath           :=/home/daniel/.codelite
 LinkerName             :=/usr/bin/clang++
 SharedObjectLinkerName :=/usr/bin/clang++ -shared -fPIC
@@ -27,8 +27,8 @@ OutputSwitch           :=-o
 LibraryPathSwitch      :=-L
 PreprocessorSwitch     :=-D
 SourceSwitch           :=-c 
-OutputFile             :=./$(ProjectName).out
-Preprocessors          :=$(PreprocessorSwitch)NDEBUG 
+OutputFile             :=./$(ProjectName)_dbg.out
+Preprocessors          :=
 ObjectSwitch           :=-o 
 ArchiveOutputSwitch    := 
 PreprocessOnlySwitch   :=-E
@@ -50,8 +50,8 @@ LibPath                := $(LibraryPathSwitch).
 AR       := /usr/bin/ar rcu
 CXX      := /usr/bin/clang++
 CC       := /usr/bin/clang
-CXXFLAGS := -std=c++17 -Wall -Wextra -Werror -pedantic -stdlib=libstdc++ -O2 $(Preprocessors)
-CFLAGS   :=  -O2 $(Preprocessors)
+CXXFLAGS := -std=c++17 -Wall -Wextra -Werror -pedantic -stdlib=libstdc++ -g -O0 $(Preprocessors)
+CFLAGS   :=  -g -O0 $(Preprocessors)
 ASFLAGS  := 
 AS       := /usr/bin/as
 
@@ -79,11 +79,11 @@ $(OutputFile): $(IntermediateDirectory)/.d $(Objects)
 	$(LinkerName) $(OutputSwitch)$(OutputFile) @$(ObjectsFileList) $(LibPath) $(Libs) $(LinkOptions)
 
 MakeIntermediateDirs:
-	@test -d ./bin/Release || $(MakeDirCommand) ./bin/Release
+	@test -d ./bin/Debug || $(MakeDirCommand) ./bin/Debug
 
 
 $(IntermediateDirectory)/.d:
-	@test -d ./bin/Release || $(MakeDirCommand) ./bin/Release
+	@test -d ./bin/Debug || $(MakeDirCommand) ./bin/Debug
 
 PreBuild:
 
@@ -113,6 +113,6 @@ $(IntermediateDirectory)/src_Client.cpp$(PreprocessSuffix): src/Client.cpp
 ## Clean
 ##
 clean:
-	$(RM) -r ./bin/Release/
+	$(RM) -r ./bin/Debug/
 
 
