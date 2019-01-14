@@ -170,7 +170,7 @@ auto get_param(pick_2, std::string name)
 		{
 			T ret;
 			std::stringstream ss;
-			ss.str(x.value);
+			ss.str(x.value.c_str());
 			ss >> ret;
 			return ret;
 		}
@@ -186,8 +186,8 @@ auto get_param(pick_1, std::string name)
 	{
 		if (name == x.name)
 		{
-			std::cout << "'" << x.value << "'" << std::endl;
-			T ret{x.value};
+			std::cout << name << " : '" << x.value << "'" << std::endl;
+			T ret{x.value.c_str()};
 			return ret;
 		}
 	}
@@ -201,7 +201,7 @@ auto get_param(pick_3, std::string name) -> T
 	{
 		if (name == x.name)
 		{
-			return (T)x.value;
+			return (T)x.value.c_str();
 		}
 	}
 	return {};
@@ -265,6 +265,8 @@ gboolean idle_func([[maybe_unused]] gpointer data)
 		auto ret = snd_rcv("request:"s + params[0].value);
 		auto c = ret.c_str();
 		add_log(c);
+		add_log(std::to_string(ret.length()));
+		std::cout << c << std::endl << ret.length() << std::endl;
 		auto p = ret.find(',');
 		job_start = std::stoi( ret.substr(0,p) );
 		job_len = std::stoi( ret.substr(p+1) );
