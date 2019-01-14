@@ -14,6 +14,7 @@
 #include <ctime>
 #include <sstream> 
 #include <memory>
+#include <map>
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
@@ -33,6 +34,9 @@ struct JobSession
 	int frame_start;
 	int frame_count;
 };
+
+std::map<int, JobSession> jobs;
+
 
 struct Server
 {
@@ -126,7 +130,10 @@ const int N = sizeof(caps) / sizeof(char*);
 GtkWidget* inp[N];
 GtkWidget* lbl[N];
 
-unsigned int clients = 0;
+int clients = 0;
+int frames = 0;
+
+std::mutex lock;
 
 std::string message(const std::string& msg)
 {
@@ -154,6 +161,15 @@ std::string message(const std::string& msg)
 				}
 			}
 		}
+	}
+	else if (command == "request")
+	{
+		lock.lock();
+		JobSession js { frames, 100 };
+		frames += 100;
+		jobs[ std::stoi(detail) ] = js;
+		lock.unlock();
+		return std::to_string(js.frame_start) + "," + std::to_string(js.frame_count);
 	}
 	else if (command == "close")
 	{

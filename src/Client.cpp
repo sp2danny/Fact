@@ -27,11 +27,7 @@ using namespace std::literals;
 
 cmdline cmd;
 
-gboolean idle_func(gpointer data)
-{
-	(void)data;
-	return TRUE;
-}
+gboolean idle_func(gpointer data);
 
 gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
 {
@@ -119,6 +115,21 @@ std::unique_ptr<Connection> connection;
 GtkWidget* window;
 GtkWidget* edit;
 
+auto snd_rcv(std::string msg) -> std::string
+{
+	add_log("Sending : "s + msg);
+	
+	boost::asio::write(connection->sock, boost::asio::buffer(msg.c_str(), msg.size()));
+
+	char reply[max_length];
+	[[maybe_unused]] size_t reply_length;
+	reply_length = boost::asio::read(connection->sock, boost::asio::buffer(reply, max_length));
+
+	std::string ret((char*)reply);
+	add_log("Got answer : "s + ret);
+	return ret;
+}
+
 void client_start()
 {
 	std::string ed = gtk_entry_get_text(GTK_ENTRY(edit));
@@ -127,24 +138,7 @@ void client_start()
 	std::string port = ed.substr(p+1);
 	
 	connection = std::make_unique<Connection>(addr,port);
-	
-	auto snd_rcv = [&](std::string msg) -> std::string
-	{
-		add_log("Sending : "s + msg);
-		
-		boost::asio::write(connection->sock, boost::asio::buffer(msg.c_str(), msg.size()));
 
-		char reply[max_length];
-		[[maybe_unused]] size_t reply_length;
-		reply_length = boost::asio::read(connection->sock, boost::asio::buffer(reply, max_length));
-
-		std::string ret((char*)reply);
-		add_log("Got answer : "s + ret);
-		return ret;
-	};
-
-	std::string repl;
-	
 	for (auto& itm : params)
 	{
 		itm.value = snd_rcv("send:"s + itm.name);
@@ -152,6 +146,27 @@ void client_start()
 	
 	
 }
+
+bool have_job = false;
+int job_start, job_len;
+
+gboolean idle_func([[maybe_unused]] gpointer data)
+{
+	if (connection && !have_job)
+	{
+		auto ret = snd_rcv("request:"s + params[0].value);
+		auto c = ret.c_str();
+		add_log(c);
+		auto p = ret.find(',');
+		job_start = std::stoi( ret.substr(0,p) );
+		job_len = std::stoi( ret.substr(p+1) );
+		add_log("Starting job : "s + ret );
+		have_job = true;
+	}
+	
+	return TRUE;
+}
+
 
 gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 {
