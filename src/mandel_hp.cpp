@@ -13,6 +13,16 @@
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
 
+Flt copysign(const Flt& a,const Flt& b)
+{
+	bool aneg = a<0;
+	bool bneg = b<0;
+	if (aneg==bneg)
+		return a;
+	else
+		return -a;
+}
+
 using namespace std::literals;
 
 Cmplx step(Cmplx c, Cmplx z)

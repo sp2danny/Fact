@@ -19,10 +19,10 @@
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 
-using boost::asio::ip::tcp;
-
 #include "cmdline.h"
+#include "mandel_hp.h"
 
+using boost::asio::ip::tcp;
 using namespace std::literals;
 
 cmdline cmd;
@@ -148,7 +148,116 @@ void client_start()
 }
 
 bool have_job = false;
-int job_start, job_len;
+int job_start, job_len, job_curr;
+
+//std::vector<Item> params = {
+//	"client-id"s, "center-x"s, "center-y"s, "update-cap"s, "zoom-start"s,
+//	"width"s, "height"s, "col-base"s, "col-pow"s
+//};
+
+#define DV std::declval
+
+struct pick_3          {};
+struct pick_2 : pick_3 {};
+struct pick_1 : pick_2 {};
+
+template<typename T>
+auto get_param(pick_2, std::string name)
+	-> decltype( DV<std::istream&>() >> DV<T&>() , T{} )
+{
+	for (auto&& x : params)
+	{
+		if (name == x.name)
+		{
+			T ret;
+			std::stringstream ss;
+			ss.str(x.value);
+			ss >> ret;
+			return ret;
+		}
+	}
+	return {};
+}
+
+template<typename T>
+auto get_param(pick_1, std::string name)
+	-> decltype( T{std::string{}}, T{} )
+{
+	for (auto&& x : params)
+	{
+		if (name == x.name)
+		{
+			T ret{x.value};
+			return ret;
+		}
+	}
+	return {};
+}
+
+template<typename T>
+auto get_param(pick_3, std::string name) -> T
+{
+	for (auto&& x : params)
+	{
+		if (name == x.name)
+		{
+			return (T)x.value;
+		}
+	}
+	return {};
+}
+
+
+template<typename T>
+auto get_param(std::string name) -> auto
+{
+	return get_param<T>(pick_1{}, name);
+}
+
+auto mkname(int i) -> std::string
+{
+	std::string name = "./temp/img_";
+	static char buff[32];
+	sprintf(buff, "%05d", i);
+	name += buff;
+	name += ".bmp";
+	return name;
+};
+
+void make_10(int f)
+{
+	Map m;
+	m.width    = get_param<int>("width"s);
+	m.height   = get_param<int>("height"s);
+	m.center_x = get_param<Flt>("center-x"s);
+	m.center_y = get_param<Flt>("center-y"s);
+	m.zoom_mul = 0.99;
+	
+	static double mod_base = get_param<double>("col-base"s);
+	static double mod_pow  = get_param<double>("col-pow"s);
+	
+	Flt z = get_param<Flt>("zoom-start"s);
+	for (int i=0; i<f; ++i)
+		z *= m.zoom_mul;
+
+	m.scale_x = z;
+	m.scale_y = (z * (Flt)m.height) / (Flt)m.width;
+
+	ModFunc mod_func = [](double d) -> float { return mod_base / (float)pow(d, mod_pow); };
+
+	UL update_cap = get_param<UL>("update-cap"s);
+	UL maxout = m.generate_10_threaded(update_cap, mod_func);
+
+	for (int j=0; j<10; ++j)
+	{
+		auto curr_name = mkname(f+j);
+		m.makeimage_N(j,mod_func).Save(curr_name);
+	}
+	
+	add_log("wrote 10 images");
+
+	(void)maxout;
+}
 
 gboolean idle_func([[maybe_unused]] gpointer data)
 {
@@ -161,7 +270,15 @@ gboolean idle_func([[maybe_unused]] gpointer data)
 		job_start = std::stoi( ret.substr(0,p) );
 		job_len = std::stoi( ret.substr(p+1) );
 		add_log("Starting job : "s + ret );
+		job_curr = job_start;
 		have_job = true;
+		return TRUE;
+	}
+	
+	if (have_job && job_curr < (job_start+job_len))
+	{
+		make_10(job_curr);
+		job_curr += 10;
 	}
 	
 	return TRUE;

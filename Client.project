@@ -6,6 +6,10 @@
     <File Name="src/cmdline.cpp"/>
     <File Name="src/cmdline.h"/>
     <File Name="src/Client.cpp"/>
+    <File Name="src/graph.cpp"/>
+    <File Name="src/graph.h"/>
+    <File Name="src/mandel_hp.cpp"/>
+    <File Name="src/mandel_hp.h"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
@@ -37,6 +41,12 @@
         <Library Value="freetype"/>
         <Library Value="boost_system"/>
         <Library Value="pthread"/>
+        <Library Value="boost_system"/>
+        <Library Value="boost_filesystem"/>
+        <Library Value="boost_thread"/>
+        <Library Value="boost_chrono"/>
+        <Library Value="gmp"/>
+        <Library Value="gmpxx"/>
       </Linker>
       <ResourceCompiler Options=""/>
     </GlobalSettings>

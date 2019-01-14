@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <cmath>
 #include <complex>
 #include <vector>
 
@@ -29,6 +30,10 @@ struct Flt : mpf_class
 	}
 	explicit operator double() { return get_d(); }
 };
+
+inline bool isnan(const Flt&) { return false; }
+inline bool isinf(const Flt&) { return false; }
+Flt copysign(const Flt& a,const Flt& b);
 
 typedef unsigned long UL;
 
