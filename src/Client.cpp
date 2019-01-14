@@ -119,7 +119,7 @@ GtkWidget* edit;
 auto snd_rcv(std::string msg) -> std::string
 {
 	add_log("Sending : "s + msg);
-	
+
 	boost::asio::write(connection->sock, boost::asio::buffer(msg.c_str(), msg.size()));
 
 	char reply[max_length];
@@ -137,15 +137,13 @@ void client_start()
 	auto p = ed.find(':');
 	std::string addr = ed.substr(0,p);
 	std::string port = ed.substr(p+1);
-	
+
 	connection = std::make_unique<Connection>(addr,port);
 
 	for (auto& itm : params)
 	{
 		itm.value = snd_rcv("send:"s + itm.name);
 	}
-	
-	
 }
 
 bool have_job = false;
@@ -188,6 +186,7 @@ auto get_param(pick_1, std::string name)
 	{
 		if (name == x.name)
 		{
+			std::cout << "'" << x.value << "'" << std::endl;
 			T ret{x.value};
 			return ret;
 		}
@@ -207,7 +206,6 @@ auto get_param(pick_3, std::string name) -> T
 	}
 	return {};
 }
-
 
 template<typename T>
 auto get_param(std::string name) -> auto
@@ -233,10 +231,10 @@ void make_10(int f)
 	m.center_x = get_param<Flt>("center-x"s);
 	m.center_y = get_param<Flt>("center-y"s);
 	m.zoom_mul = 0.99;
-	
+
 	static double mod_base = get_param<double>("col-base"s);
 	static double mod_pow  = get_param<double>("col-pow"s);
-	
+
 	Flt z = get_param<Flt>("zoom-start"s);
 	for (int i=0; i<f; ++i)
 		z *= m.zoom_mul;
@@ -254,7 +252,7 @@ void make_10(int f)
 		auto curr_name = mkname(f+j);
 		m.makeimage_N(j,mod_func).Save(curr_name);
 	}
-	
+
 	add_log("wrote 10 images");
 
 	(void)maxout;
@@ -275,7 +273,7 @@ gboolean idle_func([[maybe_unused]] gpointer data)
 		have_job = true;
 		return TRUE;
 	}
-	
+
 	if (have_job && job_curr < (job_start+job_len))
 	{
 		make_10(job_curr);
@@ -283,10 +281,9 @@ gboolean idle_func([[maybe_unused]] gpointer data)
 		//thr.join();
 		job_curr += 10;
 	}
-	
+
 	return TRUE;
 }
-
 
 gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 {
@@ -364,7 +361,7 @@ void gtk_app()
 
 	GtkWidget *frame_log = gtk_vbox_new(TRUE,1);
 	gtk_widget_show(frame_log);
-	
+
 	edit = gtk_entry_new();
 	gtk_widget_show(edit);
 	gtk_entry_set_text(GTK_ENTRY(edit),"127.0.0.1:9090");
