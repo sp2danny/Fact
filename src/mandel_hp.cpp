@@ -611,7 +611,7 @@ UL Map::generate_threaded_param(UL cap, bool display)
 		vfy.push_back(y_start + y_step*y);
 
 	Updater::Init(new_h*2+4);
-	Updater::Display();
+	if (display) Updater::Display();
 
 	LineCache lc[4] = {
 		{ cap, 0, 0, display, 0, 0, *this, vfx, vfy },
@@ -640,7 +640,7 @@ UL Map::generate_threaded_param(UL cap, bool display)
 	int joined = 1;
 	while (true)
 	{
-		Updater::Display();
+		if (display) Updater::Display();
 
 		bool j = tt[joined].try_join_for(ns);
 		if (j)
@@ -659,7 +659,7 @@ UL Map::generate_threaded_param(UL cap, bool display)
 	}
 
 	Updater::Tick();
-	Updater::Display();
+	if (display) Updater::Display();
 
 	if (display)
 		std::cout << "skipped        : " << sk << " pixels  \n";

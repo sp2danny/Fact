@@ -18,6 +18,7 @@
 
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
+#include <boost/thread.hpp>
 
 #include "cmdline.h"
 #include "mandel_hp.h"
@@ -246,7 +247,7 @@ void make_10(int f)
 	ModFunc mod_func = [](double d) -> float { return mod_base / (float)pow(d, mod_pow); };
 
 	UL update_cap = get_param<UL>("update-cap"s);
-	UL maxout = m.generate_10_threaded(update_cap, mod_func);
+	UL maxout = m.generate_10 /* _threaded */ (update_cap, false);
 
 	for (int j=0; j<10; ++j)
 	{
@@ -278,6 +279,8 @@ gboolean idle_func([[maybe_unused]] gpointer data)
 	if (have_job && job_curr < (job_start+job_len))
 	{
 		make_10(job_curr);
+		//boost::thread thr{&make_10, job_curr};
+		//thr.join();
 		job_curr += 10;
 	}
 	
