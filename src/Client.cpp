@@ -245,7 +245,7 @@ void make_10(int f)
 	ModFunc mod_func = [](double d) -> float { return mod_base / (float)pow(d, mod_pow); };
 
 	UL update_cap = get_param<UL>("update-cap"s);
-	UL maxout = m.generate_10_threaded(update_cap, true);
+	UL maxout = m.generate_10 /* _threaded */ (update_cap, true);
 
 	for (int j=0; j<10; ++j)
 	{
@@ -324,14 +324,18 @@ void do_log()
 	subwin = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title((GtkWindow*)subwin, "Log");
 	gtk_window_set_modal((GtkWindow*)subwin, TRUE);
+	
+	GtkWidget* scroll = gtk_scrolled_window_new(0,0);
 
 	GtkWidget* txt = gtk_text_view_new();
 	GtkTextBuffer* buf = gtk_text_view_get_buffer((GtkTextView*)txt);
+
 	std::string ss;
 	for (auto&& s : logs)
 		ss += s + "\n";
 	gtk_text_buffer_set_text(buf, ss.c_str(), ss.length());
-	gtk_container_add(GTK_CONTAINER(subwin), txt);
+	gtk_container_add(GTK_CONTAINER(subwin), scroll);
+	gtk_container_add(GTK_CONTAINER(scroll), txt);
 	gtk_widget_show_all(subwin);
 }
 
