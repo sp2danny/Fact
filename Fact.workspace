@@ -7,8 +7,7 @@
   <Project Name="Server" Path="Server.project" Active="No"/>
   <Project Name="Client" Path="Client.project" Active="Yes"/>
   <BuildMatrix>
-    <WorkspaceConfiguration Name="Debug" Selected="yes">
-      <Environment/>
+    <WorkspaceConfiguration Name="Debug" Selected="no">
       <Project Name="Fact" ConfigName="Debug"/>
       <Project Name="mm" ConfigName="Debug"/>
       <Project Name="mmhp" ConfigName="Debug"/>
@@ -16,8 +15,7 @@
       <Project Name="Server" ConfigName="Debug"/>
       <Project Name="Client" ConfigName="Debug"/>
     </WorkspaceConfiguration>
-    <WorkspaceConfiguration Name="Release" Selected="no">
-      <Environment/>
+    <WorkspaceConfiguration Name="Release" Selected="yes">
       <Project Name="Fact" ConfigName="Release"/>
       <Project Name="mm" ConfigName="Release"/>
       <Project Name="mmhp" ConfigName="Release"/>

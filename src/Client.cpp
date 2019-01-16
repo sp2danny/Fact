@@ -186,7 +186,7 @@ auto get_param(pick_1, std::string name)
 	{
 		if (name == x.name)
 		{
-			std::cout << name << " : '" << x.value << "'" << std::endl;
+			//std::cout << name << " : '" << x.value << "'" << std::endl;
 			T ret{x.value.c_str()};
 			return ret;
 		}
@@ -352,7 +352,7 @@ void gtk_app()
 	GtkWidget* btn_log   = gtk_button_new_with_label("Log");
 	GtkWidget* btn_exit  = gtk_button_new_with_label("Exit");
 
-	GtkWidget* btns[] = {btn_start, btn_stop, btn_log, btn_exit };
+	GtkWidget* btns[] = { btn_start, btn_stop, btn_log, btn_exit };
 
 	for (int i=0; i<4; ++i)
 	{
