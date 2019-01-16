@@ -245,7 +245,7 @@ void make_10(int f)
 	ModFunc mod_func = [](double d) -> float { return mod_base / (float)pow(d, mod_pow); };
 
 	UL update_cap = get_param<UL>("update-cap"s);
-	UL maxout = m.generate_10 /* _threaded */ (update_cap, false);
+	UL maxout = m.generate_10_threaded(update_cap, true);
 
 	for (int j=0; j<10; ++j)
 	{

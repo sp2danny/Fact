@@ -634,6 +634,7 @@ UL Map::generate_threaded_param(UL cap, bool display)
 	for (i=1; i<4; ++i)
 	{
 		tt[i] = boost::thread{&execute, lc+i};
+		std::cout << "made thread " << tt[i].native_handle() << std::endl;
 	}
 	execute(lc);
 	boost::chrono::nanoseconds ns{250'000};
@@ -645,6 +646,7 @@ UL Map::generate_threaded_param(UL cap, bool display)
 		bool j = tt[joined].try_join_for(ns);
 		if (j)
 		{
+			std::cout << "thread " << tt[joined].native_handle() << " finished" << std::endl;
 			++joined;
 			Updater::Tick();
 			if (joined >= 4) break;
