@@ -244,13 +244,11 @@ void make_10(int f)
 
 gboolean idle_func([[maybe_unused]] gpointer data)
 {
-	if (connection && !have_job)
+	if (!connection) return TRUE;
+
+	if (!have_job)
 	{
 		auto ret = snd_rcv("request:"s + params[0].value);
-		auto c = ret.c_str();
-		add_log(c);
-		add_log(std::to_string(ret.length()));
-		std::cout << c << std::endl << ret.length() << std::endl;
 		auto p = ret.find(',');
 		job_start = std::stoi(ret.substr(0, p));
 		job_len = std::stoi(ret.substr(p+1));
@@ -260,11 +258,16 @@ gboolean idle_func([[maybe_unused]] gpointer data)
 		return TRUE;
 	}
 
-	if (have_job && job_curr < (job_start+job_len))
+	if (!have_job) return TRUE;
+
+	if (job_curr < (job_start+job_len))
 	{
 		make_10(job_curr);
 		job_curr += 10;
+		return TRUE;
 	}
+	
+	have_job = false;
 
 	return TRUE;
 }
