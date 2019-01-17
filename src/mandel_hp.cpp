@@ -7,7 +7,6 @@
 #include <cstdlib>
 #include <iomanip>
 #include <cmath>
-//#include <thread>
 #include <mutex>
 
 #include <boost/thread.hpp>

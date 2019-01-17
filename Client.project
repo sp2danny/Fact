@@ -14,7 +14,7 @@
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
-      <Compiler Options="-std=c++17 -Wall -Wextra -Werror -pedantic -stdlib=libc++" C_Options="" Assembler="">
+      <Compiler Options="-std=c++17 -Wall -Wextra -Werror -pedantic -stdlib=libc++ " C_Options="" Assembler="">
         <IncludePath Value="."/>
         <IncludePath Value="/usr/include/gtk-2.0"/>
         <IncludePath Value="/usr/include/glib-2.0"/>

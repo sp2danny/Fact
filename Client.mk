@@ -50,7 +50,7 @@ LibPath                := $(LibraryPathSwitch).
 AR       := /usr/bin/ar rcu
 CXX      := /usr/bin/clang++ 
 CC       := /usr/bin/clang 
-CXXFLAGS := -std=c++17 -Wall -Wextra -Werror -pedantic -stdlib=libc++ -O2 $(Preprocessors)
+CXXFLAGS := -std=c++17 -Wall -Wextra -Werror -pedantic -stdlib=libc++  -O2 $(Preprocessors)
 CFLAGS   :=  -O2 $(Preprocessors)
 ASFLAGS  := 
 AS       := /usr/bin/as 

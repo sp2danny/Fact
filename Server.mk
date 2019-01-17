@@ -2,12 +2,12 @@
 ## Auto Generated makefile by CodeLite IDE
 ## any manual changes will be erased      
 ##
-## Debug
+## Release
 ProjectName            :=Server
-ConfigurationName      :=Debug
+ConfigurationName      :=Release
 WorkspacePath          := "/home/sp2danny/extra/Fact"
 ProjectPath            := "/home/sp2danny/extra/Fact"
-IntermediateDirectory  :=./bin/Debug
+IntermediateDirectory  :=./bin/Release
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
 CurrentFilePath        :=
@@ -27,8 +27,8 @@ OutputSwitch           :=-o
 LibraryPathSwitch      :=-L
 PreprocessorSwitch     :=-D
 SourceSwitch           :=-c 
-OutputFile             :=./$(ProjectName)_dbg.out
-Preprocessors          :=
+OutputFile             :=./$(ProjectName).out
+Preprocessors          :=$(PreprocessorSwitch)NDEBUG 
 ObjectSwitch           :=-o 
 ArchiveOutputSwitch    := 
 PreprocessOnlySwitch   :=-E
@@ -50,8 +50,8 @@ LibPath                := $(LibraryPathSwitch).
 AR       := /usr/bin/ar rcu
 CXX      := /usr/bin/clang++ 
 CC       := /usr/bin/clang 
-CXXFLAGS := -std=c++17 -Wall -Wextra -Werror -pedantic -stdlib=libc++ -g -O0 $(Preprocessors)
-CFLAGS   :=  -g -O0 $(Preprocessors)
+CXXFLAGS := -std=c++17 -Wall -Wextra -Werror -pedantic -stdlib=libc++ -O2 $(Preprocessors)
+CFLAGS   :=  -O2 $(Preprocessors)
 ASFLAGS  := 
 AS       := /usr/bin/as 
 
@@ -78,7 +78,7 @@ $(OutputFile): $(IntermediateDirectory)/.d $(Objects)
 	$(LinkerName) $(OutputSwitch)$(OutputFile) @$(ObjectsFileList) $(LibPath) $(Libs) $(LinkOptions)
 
 $(IntermediateDirectory)/.d:
-	@test -d ./bin/Debug || $(MakeDirCommand) ./bin/Debug
+	@test -d ./bin/Release || $(MakeDirCommand) ./bin/Release
 
 PreBuild:
 
@@ -124,9 +124,9 @@ $(IntermediateDirectory)/src_gtk_general.cpp$(PreprocessSuffix): src/gtk_general
 ## Clean
 ##
 clean:
-	$(RM) ./bin/Debug/*$(ObjectSuffix)
-	$(RM) ./bin/Debug/*$(DependSuffix)
+	$(RM) ./bin/Release/*$(ObjectSuffix)
+	$(RM) ./bin/Release/*$(DependSuffix)
 	$(RM) $(OutputFile)
-	$(RM) ".build-debug/Server"
+	$(RM) ".build-release/Server"
 
 

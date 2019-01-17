@@ -19,6 +19,7 @@
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
+#include <boost/process.hpp>
 
 extern "C" {
 	#include <libavutil/imgutils.h>
@@ -266,7 +267,7 @@ gboolean idle_func([[maybe_unused]] gpointer data)
 		job_curr += 10;
 		return TRUE;
 	}
-	
+
 	add_log("finished one batch");
 	have_job = false;
 

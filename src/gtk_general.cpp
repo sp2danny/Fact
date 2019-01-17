@@ -72,7 +72,6 @@ extern void gtk_app();
 int main(int argc, char* argv[])
 {
 	cmd.init(argc, argv);
-
 	gtk_init(&argc, &argv);
 	gtk_app();
 }
