@@ -9,7 +9,6 @@
 
 #include "gmpxx.h"
 
-
 struct Flt : mpf_class
 {
 	static constexpr int N = 512;

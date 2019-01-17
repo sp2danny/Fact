@@ -8,6 +8,7 @@
     <File Name="src/cmdline.h"/>
     <File Name="src/connector.h"/>
     <File Name="src/connector.cpp"/>
+    <File Name="src/gtk_general.cpp"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

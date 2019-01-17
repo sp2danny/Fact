@@ -15,10 +15,15 @@
 #include <sstream> 
 #include <memory>
 #include <map>
+#include <string>
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
+
+#include <boost/bind.hpp>
+#include <boost/asio.hpp>
+#include <boost/thread.hpp>
 
 #include "connector.h"
 #include "cmdline.h"
@@ -37,7 +42,6 @@ struct JobSession
 
 std::map<int, JobSession> jobs;
 
-
 struct Server
 {
     boost::asio::io_service io_service;
@@ -51,6 +55,8 @@ struct Server
 
 std::unique_ptr<Server> server_instance;
 
+extern gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data);
+
 gboolean idle_func(gpointer data)
 {
 	(void)data;
@@ -63,32 +69,6 @@ gboolean idle_func(gpointer data)
 	return TRUE;
 }
 
-gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
-{
-	(void)widget;
-	(void)event;
-	(void)data;
-
-	gtk_main_quit();
-	return TRUE;
-}
-
-/*gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
-{
-	(void)widget;
-	(void)data;
-	switch (event->keyval)
-	{
-	case GDK_Escape:
-		gtk_main_quit();
-		break;
-	default:
-		break;
-	}
-
-	return TRUE;
-}*/
-
 gboolean nil_cb(GtkWidget*, gpointer) { return TRUE; }
 
 extern void Save(), Load();
@@ -97,14 +77,7 @@ GtkWidget* log3[3];
 std::vector<std::string> logs;
 std::deque<std::string> logtop = { ""s, ""s, ""s };
 
-std::string add_time(std::string s)
-{
-	auto now = std::chrono::system_clock::now();
-    auto in_time_t = std::chrono::system_clock::to_time_t(now);
-    std::stringstream ss;
-    ss << std::put_time(std::localtime(&in_time_t), "%F %T > ") << s;
-    return ss.str();
-}
+extern std::string add_time(std::string s);
 
 void add_log(std::string s)
 {
@@ -183,27 +156,7 @@ void add_note(std::string s)
 	logs.push_back(add_time(s));
 }
 
-void do_log()
-{
-	GtkWidget* subwin;
-	subwin = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title((GtkWindow*)subwin, "Log");
-	gtk_window_set_modal((GtkWindow*)subwin, TRUE);
-	gtk_window_set_default_size((GtkWindow*)subwin, 350,450);
-	
-	GtkWidget* scroll = gtk_scrolled_window_new(0,0);
-
-	GtkWidget* txt = gtk_text_view_new();
-	GtkTextBuffer* buf = gtk_text_view_get_buffer((GtkTextView*)txt);
-
-	std::string ss;
-	for (auto&& s : logs)
-		ss += s + "\n";
-	gtk_text_buffer_set_text(buf, ss.c_str(), ss.length());
-	gtk_container_add(GTK_CONTAINER(subwin), scroll);
-	gtk_container_add(GTK_CONTAINER(scroll), txt);
-	gtk_widget_show_all(subwin);
-}
+extern void do_log();
 
 gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 {
@@ -252,7 +205,6 @@ void start_server()
 	const char* str = gtk_entry_get_text(GTK_ENTRY(inp[9]));
  
 	server_instance = std::make_unique<Server>(std::atoi(str));
-
 }
 
 void Save()
@@ -295,7 +247,7 @@ void gtk_app()
 	GtkWidget* frame_main = gtk_hpaned_new();
 	gtk_widget_show(frame_main);
 
-	GtkWidget* inputbox = gtk_table_new (2, N, FALSE);
+	GtkWidget* inputbox = gtk_table_new(2, N, FALSE);
 	gtk_widget_show(inputbox);
 
 	for (int i=0; i<N; ++i)
@@ -327,10 +279,10 @@ void gtk_app()
 		g_signal_connect(GTK_OBJECT(btns[i]), "button-press-event", G_CALLBACK(button_press), (void*)(intptr_t)(i+1));
 	}
 
-	gtk_paned_pack1(GTK_PANED (frame_main), inputbox, TRUE, TRUE);
-	gtk_paned_pack2(GTK_PANED (frame_main), buttons, FALSE, FALSE);
+	gtk_paned_pack1(GTK_PANED(frame_main), inputbox, TRUE, TRUE);
+	gtk_paned_pack2(GTK_PANED(frame_main), buttons, FALSE, FALSE);
 
-	GtkWidget *frame_lower = gtk_vbox_new(TRUE,1);
+	GtkWidget *frame_lower = gtk_vbox_new(TRUE, 1);
 	gtk_widget_show(frame_lower);
 
 	for (int i=0; i<3; ++i)
@@ -339,9 +291,9 @@ void gtk_app()
 		gtk_box_pack_start(GTK_BOX(frame_lower), log3[i], TRUE, TRUE, 0);
 	}
 
-	gtk_paned_pack1 (GTK_PANED (pane), frame_main, TRUE, TRUE);
+	gtk_paned_pack1(GTK_PANED(pane), frame_main, TRUE, TRUE);
 
-	gtk_paned_pack2 (GTK_PANED (pane), frame_lower, FALSE, FALSE);
+	gtk_paned_pack2(GTK_PANED(pane), frame_lower, FALSE, FALSE);
 	gtk_widget_set_size_request (frame_lower, -1, 50);
 
 	gtk_container_add(GTK_CONTAINER(window), pane);
@@ -353,11 +305,4 @@ void gtk_app()
 	gtk_main();
 }
 
-int main(int argc, char* argv[])
-{
-	cmd.init(argc, argv);
-
-	gtk_init(&argc, &argv);
-	gtk_app();
-}
 

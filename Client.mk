@@ -59,7 +59,7 @@ AS       := /usr/bin/as
 ##
 ## User defined environment variables
 ##
-Objects0=$(IntermediateDirectory)/src_cmdline.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_Client.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_graph.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_mandel_hp.cpp$(ObjectSuffix) 
+Objects0=$(IntermediateDirectory)/src_cmdline.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_Client.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_graph.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_mandel_hp.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_gtk_general.cpp$(ObjectSuffix) 
 
 
 
@@ -117,6 +117,14 @@ $(IntermediateDirectory)/src_mandel_hp.cpp$(DependSuffix): src/mandel_hp.cpp
 
 $(IntermediateDirectory)/src_mandel_hp.cpp$(PreprocessSuffix): src/mandel_hp.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_mandel_hp.cpp$(PreprocessSuffix) "src/mandel_hp.cpp"
+
+$(IntermediateDirectory)/src_gtk_general.cpp$(ObjectSuffix): src/gtk_general.cpp $(IntermediateDirectory)/src_gtk_general.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/sp2danny/extra/Fact/src/gtk_general.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_gtk_general.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/src_gtk_general.cpp$(DependSuffix): src/gtk_general.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_gtk_general.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_gtk_general.cpp$(DependSuffix) -MM "src/gtk_general.cpp"
+
+$(IntermediateDirectory)/src_gtk_general.cpp$(PreprocessSuffix): src/gtk_general.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_gtk_general.cpp$(PreprocessSuffix) "src/gtk_general.cpp"
 
 
 -include $(IntermediateDirectory)/*$(DependSuffix)

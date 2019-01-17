@@ -30,15 +30,7 @@ cmdline cmd;
 
 gboolean idle_func(gpointer data);
 
-gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
-{
-	(void)widget;
-	(void)event;
-	(void)data;
-
-	gtk_main_quit();
-	return TRUE;
-}
+extern gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data);
 
 gboolean nil_cb(GtkWidget*, gpointer) { return TRUE; }
 
@@ -46,14 +38,7 @@ GtkWidget* log13[13];
 std::vector<std::string> logs;
 std::deque<std::string> logtop(13);
 
-std::string add_time(std::string s)
-{
-	auto now = std::chrono::system_clock::now();
-    auto in_time_t = std::chrono::system_clock::to_time_t(now);
-    std::stringstream ss;
-    ss << std::put_time(std::localtime(&in_time_t), "%F %T > ") << s;
-    return ss.str();
-}
+extern std::string add_time(std::string s);
 
 void add_log(std::string s)
 {
@@ -149,11 +134,6 @@ void client_start()
 bool have_job = false;
 int job_start, job_len, job_curr;
 
-//std::vector<Item> params = {
-//	"client-id"s, "center-x"s, "center-y"s, "update-cap"s, "zoom-start"s,
-//	"width"s, "height"s, "col-base"s, "col-pow"s
-//};
-
 #define DV std::declval
 
 struct pick_3          {};
@@ -186,7 +166,6 @@ auto get_param(pick_1, std::string name)
 	{
 		if (name == x.name)
 		{
-			//std::cout << name << " : '" << x.value << "'" << std::endl;
 			T ret{x.value.c_str()};
 			return ret;
 		}
@@ -250,7 +229,7 @@ void make_10(int f)
 	for (int j=0; j<10; ++j)
 	{
 		auto curr_name = mkname(f+j);
-		m.makeimage_N(j,mod_func).Save(curr_name);
+		m.makeimage_N(j, mod_func).Save(curr_name);
 	}
 
 	add_log("wrote 10 images");
@@ -268,9 +247,9 @@ gboolean idle_func([[maybe_unused]] gpointer data)
 		add_log(std::to_string(ret.length()));
 		std::cout << c << std::endl << ret.length() << std::endl;
 		auto p = ret.find(',');
-		job_start = std::stoi( ret.substr(0,p) );
-		job_len = std::stoi( ret.substr(p+1) );
-		add_log("Starting job : "s + ret );
+		job_start = std::stoi(ret.substr(0, p));
+		job_len = std::stoi(ret.substr(p+1));
+		add_log("Starting job : "s + ret);
 		job_curr = job_start;
 		have_job = true;
 		return TRUE;
@@ -279,13 +258,13 @@ gboolean idle_func([[maybe_unused]] gpointer data)
 	if (have_job && job_curr < (job_start+job_len))
 	{
 		make_10(job_curr);
-		//boost::thread thr{&make_10, job_curr};
-		//thr.join();
 		job_curr += 10;
 	}
 
 	return TRUE;
 }
+
+extern void do_log();
 
 gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 {
@@ -307,7 +286,6 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 	}
 	if (data == (void*)3)
 	{
-		extern void do_log();
 		do_log();
 	}
 	if (data == (void*)4)
@@ -318,27 +296,6 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 	return TRUE;
 }
 
-void do_log()
-{
-	GtkWidget* subwin;
-	subwin = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title((GtkWindow*)subwin, "Log");
-	gtk_window_set_modal((GtkWindow*)subwin, TRUE);
-	
-	GtkWidget* scroll = gtk_scrolled_window_new(0,0);
-
-	GtkWidget* txt = gtk_text_view_new();
-	GtkTextBuffer* buf = gtk_text_view_get_buffer((GtkTextView*)txt);
-
-	std::string ss;
-	for (auto&& s : logs)
-		ss += s + "\n";
-	gtk_text_buffer_set_text(buf, ss.c_str(), ss.length());
-	gtk_container_add(GTK_CONTAINER(subwin), scroll);
-	gtk_container_add(GTK_CONTAINER(scroll), txt);
-	gtk_widget_show_all(subwin);
-}
-
 void gtk_app()
 {
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -347,7 +304,6 @@ void gtk_app()
 	gtk_container_set_border_width(GTK_CONTAINER(window), 8);
 
 	GtkWidget* pane = gtk_hpaned_new();
-
 	GtkWidget* buttons = gtk_vbutton_box_new();
 	gtk_widget_show(buttons);
 
@@ -365,7 +321,7 @@ void gtk_app()
 		g_signal_connect(GTK_OBJECT(btns[i]), "button-press-event", G_CALLBACK(button_press), (void*)(intptr_t)(i+1));
 	}
 
-	GtkWidget *frame_log = gtk_vbox_new(TRUE,1);
+	GtkWidget *frame_log = gtk_vbox_new(TRUE, 1);
 	gtk_widget_show(frame_log);
 
 	edit = gtk_entry_new();
@@ -391,11 +347,4 @@ void gtk_app()
 	gtk_main();
 }
 
-int main(int argc, char* argv[])
-{
-	cmd.init(argc, argv);
-
-	gtk_init(&argc, &argv);
-	gtk_app();
-}
 

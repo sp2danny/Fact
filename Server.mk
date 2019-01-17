@@ -59,7 +59,7 @@ AS       := /usr/bin/as
 ##
 ## User defined environment variables
 ##
-Objects0=$(IntermediateDirectory)/src_server.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_cmdline.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_connector.cpp$(ObjectSuffix) 
+Objects0=$(IntermediateDirectory)/src_server.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_cmdline.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_connector.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_gtk_general.cpp$(ObjectSuffix) 
 
 
 
@@ -109,6 +109,14 @@ $(IntermediateDirectory)/src_connector.cpp$(DependSuffix): src/connector.cpp
 
 $(IntermediateDirectory)/src_connector.cpp$(PreprocessSuffix): src/connector.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_connector.cpp$(PreprocessSuffix) "src/connector.cpp"
+
+$(IntermediateDirectory)/src_gtk_general.cpp$(ObjectSuffix): src/gtk_general.cpp $(IntermediateDirectory)/src_gtk_general.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/sp2danny/extra/Fact/src/gtk_general.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_gtk_general.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/src_gtk_general.cpp$(DependSuffix): src/gtk_general.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_gtk_general.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_gtk_general.cpp$(DependSuffix) -MM "src/gtk_general.cpp"
+
+$(IntermediateDirectory)/src_gtk_general.cpp$(PreprocessSuffix): src/gtk_general.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_gtk_general.cpp$(PreprocessSuffix) "src/gtk_general.cpp"
 
 
 -include $(IntermediateDirectory)/*$(DependSuffix)

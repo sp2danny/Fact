@@ -10,6 +10,7 @@
     <File Name="src/graph.h"/>
     <File Name="src/mandel_hp.cpp"/>
     <File Name="src/mandel_hp.h"/>
+    <File Name="src/gtk_general.cpp"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
