@@ -1,8 +1,8 @@
 .PHONY: clean All
 
 All:
-	@echo "----------Building project:[ Client - Release ]----------"
-	@$(MAKE) -f  "Client.mk"
+	@echo "----------Building project:[ Server - Debug ]----------"
+	@$(MAKE) -f  "Server.mk"
 clean:
-	@echo "----------Cleaning project:[ Client - Release ]----------"
-	@$(MAKE) -f  "Client.mk" clean
+	@echo "----------Cleaning project:[ Server - Debug ]----------"
+	@$(MAKE) -f  "Server.mk" clean
