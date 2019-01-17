@@ -326,7 +326,7 @@ void gtk_app()
 
 	edit = gtk_entry_new();
 	gtk_widget_show(edit);
-	gtk_entry_set_text(GTK_ENTRY(edit),"127.0.0.1:9090");
+	gtk_entry_set_text(GTK_ENTRY(edit), "127.0.0.1:9090");
 	gtk_box_pack_start(GTK_BOX(frame_log), edit, TRUE, TRUE, 0);
 
 	for (int i=0; i<13; ++i)
@@ -335,8 +335,8 @@ void gtk_app()
 		gtk_box_pack_start(GTK_BOX(frame_log), log13[i], TRUE, TRUE, 0);
 	}
 
-	gtk_paned_pack1 (GTK_PANED (pane), frame_log, TRUE, TRUE);
-	gtk_paned_pack2 (GTK_PANED (pane), buttons, FALSE, FALSE);
+	gtk_paned_pack1(GTK_PANED (pane), frame_log, TRUE, TRUE);
+	gtk_paned_pack2(GTK_PANED (pane), buttons, FALSE, FALSE);
 
 	gtk_container_add(GTK_CONTAINER(window), pane);
 	gtk_widget_show(pane);

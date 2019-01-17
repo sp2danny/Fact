@@ -83,9 +83,7 @@ void add_log(std::string s)
 {
 	logtop.push_back(s);
 	logtop.pop_front();
-
 	logs.push_back(add_time(s));
-	
 	for (int i=0; i<3; ++i)
 	{
 		auto str = logtop[i];
@@ -116,7 +114,7 @@ std::string message(const std::string& msg)
 	add_log("got command '"s + command + "' with operand '" + detail +"'");
 	if (command == "send")
 	{
-		if (detail=="client-id")
+		if (detail == "client-id")
 		{
 			++clients;
 			add_log("did reply : "s + std::to_string(clients));
@@ -138,9 +136,9 @@ std::string message(const std::string& msg)
 	else if (command == "request")
 	{
 		lock.lock();
-		JobSession js { frames, 100 };
+		JobSession js{frames, 100};
 		frames += 100;
-		jobs[ std::stoi(detail) ] = js;
+		jobs[std::stoi(detail)] = js;
 		lock.unlock();
 		return std::to_string(js.frame_start) + "," + std::to_string(js.frame_count);
 	}
@@ -157,6 +155,9 @@ void add_note(std::string s)
 }
 
 extern void do_log();
+extern void start_server();
+
+typedef void (*VFunc)();
 
 gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 {
@@ -167,43 +168,16 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 	if (event->type != GDK_BUTTON_PRESS)
 		return TRUE;
 
-	if (data == (void*)1)
-	{
-		add_log("Start");
-		extern void start_server();
-		start_server();
-	}
-	if (data == (void*)2)
-	{
-		add_log("Stop");
-	}
-	if (data == (void*)3)
-	{
-		add_note("Open Log");
-		do_log();
-	}
-	if (data == (void*)4)
-	{
-		Save();
-	}
-	if (data == (void*)5)
-	{
-		Load();
-	}
-	if (data == (void*)6)
-	{
-		gtk_main_quit();
-	}
+	VFunc func = (VFunc)data;
+	func();
 
 	return TRUE;
 }
 
 void start_server()
 {
-    boost::asio::io_service io_service;
-
+	add_log("Start");
 	const char* str = gtk_entry_get_text(GTK_ENTRY(inp[9]));
- 
 	server_instance = std::make_unique<Server>(std::atoi(str));
 }
 
@@ -226,12 +200,28 @@ void Load()
 	{
 		std::string str;
 		std::getline(ifs,str,':');
-		assert( str == caps[i] );
+		assert(str == caps[i]);
 		std::getline(ifs,str);
 		gtk_entry_set_text(GTK_ENTRY(inp[i]),str.c_str());
 	}
 	add_log("Loaded 'Server.save'");
 }
+
+struct Btn
+{
+	GtkWidget* btn;
+	std::string lbl;
+	VFunc func;
+};
+
+std::vector<Btn> btn_lst = {
+	Btn{nullptr, "Start" , start_server },
+	Btn{nullptr, "Stop"  , [](){add_log("Stop");} },
+	Btn{nullptr, "Log"   , do_log },
+	Btn{nullptr, "Save"  , Save },
+	Btn{nullptr, "Load"  , Load },
+	Btn{nullptr, "Exit"  , gtk_main_quit }
+};
 
 void gtk_app()
 {
@@ -263,20 +253,12 @@ void gtk_app()
 	GtkWidget* buttons = gtk_vbutton_box_new();
 	gtk_widget_show(buttons);
 
-	GtkWidget* btn_start = gtk_button_new_with_label("Start");
-	GtkWidget* btn_stop  = gtk_button_new_with_label("Stop");
-	GtkWidget* btn_log   = gtk_button_new_with_label("Log");
-	GtkWidget* btn_save  = gtk_button_new_with_label("Save");
-	GtkWidget* btn_load  = gtk_button_new_with_label("Load");
-	GtkWidget* btn_exit  = gtk_button_new_with_label("Exit");
-
-	GtkWidget* btns[] = { btn_start, btn_stop, btn_log, btn_save, btn_load, btn_exit };
-
-	for (int i=0; i<6; ++i)
+	for (auto&& btn : btn_lst)
 	{
-		gtk_widget_show(btns[i]);
-		gtk_container_add(GTK_CONTAINER(buttons), btns[i]);
-		g_signal_connect(GTK_OBJECT(btns[i]), "button-press-event", G_CALLBACK(button_press), (void*)(intptr_t)(i+1));
+		btn.btn = gtk_button_new_with_label(btn.lbl.c_str());
+		gtk_widget_show(btn.btn);
+		gtk_container_add(GTK_CONTAINER(buttons), btn.btn);
+		g_signal_connect(GTK_OBJECT(btn.btn), "button-press-event", G_CALLBACK(button_press), (void*)btn.func);
 	}
 
 	gtk_paned_pack1(GTK_PANED(frame_main), inputbox, TRUE, TRUE);
