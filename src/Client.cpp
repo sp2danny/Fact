@@ -267,6 +267,7 @@ gboolean idle_func([[maybe_unused]] gpointer data)
 		return TRUE;
 	}
 	
+	add_log("finished one batch");
 	have_job = false;
 
 	return TRUE;

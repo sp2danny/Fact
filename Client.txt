@@ -1,1 +1,1 @@
-./bin/Debug/src_cmdline.cpp.o ./bin/Debug/src_Client.cpp.o ./bin/Debug/src_graph.cpp.o ./bin/Debug/src_mandel_hp.cpp.o ./bin/Debug/src_gtk_general.cpp.o
+./bin/Release/src_cmdline.cpp.o ./bin/Release/src_Client.cpp.o ./bin/Release/src_graph.cpp.o ./bin/Release/src_mandel_hp.cpp.o ./bin/Release/src_gtk_general.cpp.o
