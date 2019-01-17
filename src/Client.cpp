@@ -20,6 +20,10 @@
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 
+extern "C" {
+	#include <libavutil/imgutils.h>
+}
+
 #include "cmdline.h"
 #include "mandel_hp.h"
 
@@ -118,6 +122,7 @@ auto snd_rcv(std::string msg) -> std::string
 
 void client_start()
 {
+	add_log("Start");
 	std::string ed = gtk_entry_get_text(GTK_ENTRY(edit));
 	auto p = ed.find(':');
 	std::string addr = ed.substr(0,p);
@@ -266,6 +271,22 @@ gboolean idle_func([[maybe_unused]] gpointer data)
 
 extern void do_log();
 
+typedef void (*VFunc)();
+
+struct Btn
+{
+	GtkWidget* btn;
+	std::string lbl;
+	VFunc func;
+};
+
+std::vector<Btn> btn_lst = {
+	Btn{nullptr, "Start" , client_start },
+	Btn{nullptr, "Stop"  , [](){add_log("Stop");} },
+	Btn{nullptr, "Log"   , do_log },
+	Btn{nullptr, "Exit"  , gtk_main_quit }
+};
+
 gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 {
 	(void)widget;
@@ -275,23 +296,8 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 	if (event->type != GDK_BUTTON_PRESS)
 		return TRUE;
 
-	if (data == (void*)1)
-	{
-		add_log("Start");
-		client_start();
-	}
-	if (data == (void*)2)
-	{
-		add_log("Stop");
-	}
-	if (data == (void*)3)
-	{
-		do_log();
-	}
-	if (data == (void*)4)
-	{
-		gtk_main_quit();
-	}
+	VFunc func = (VFunc)data;
+	func();
 
 	return TRUE;
 }
@@ -307,18 +313,12 @@ void gtk_app()
 	GtkWidget* buttons = gtk_vbutton_box_new();
 	gtk_widget_show(buttons);
 
-	GtkWidget* btn_start = gtk_button_new_with_label("Start");
-	GtkWidget* btn_stop  = gtk_button_new_with_label("Stop");
-	GtkWidget* btn_log   = gtk_button_new_with_label("Log");
-	GtkWidget* btn_exit  = gtk_button_new_with_label("Exit");
-
-	GtkWidget* btns[] = { btn_start, btn_stop, btn_log, btn_exit };
-
-	for (int i=0; i<4; ++i)
+	for (auto&& btn : btn_lst)
 	{
-		gtk_widget_show(btns[i]);
-		gtk_container_add(GTK_CONTAINER(buttons), btns[i]);
-		g_signal_connect(GTK_OBJECT(btns[i]), "button-press-event", G_CALLBACK(button_press), (void*)(intptr_t)(i+1));
+		btn.btn = gtk_button_new_with_label(btn.lbl.c_str());
+		gtk_widget_show(btn.btn);
+		gtk_container_add(GTK_CONTAINER(buttons), btn.btn);
+		g_signal_connect(GTK_OBJECT(btn.btn), "button-press-event", G_CALLBACK(button_press), (void*)btn.func);
 	}
 
 	GtkWidget *frame_log = gtk_vbox_new(TRUE, 1);
