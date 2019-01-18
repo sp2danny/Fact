@@ -27,7 +27,6 @@
       </Compiler>
       <Linker Options="-std=c++17">
         <LibraryPath Value="."/>
-        <LibraryPath Value="/usr/include/c++/4.9"/>
         <Library Value="gtk-x11-2.0"/>
         <Library Value="gdk-x11-2.0"/>
         <Library Value="pangocairo-1.0"/>

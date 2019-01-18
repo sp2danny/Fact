@@ -21,6 +21,54 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 
+/*
+namespace std
+{
+	template<typename _CharT>
+	struct _Put_time
+	{
+		const std::tm* _M_tmb;
+		const _CharT* _M_fmt;
+    };
+
+	template<typename _CharT>
+    inline _Put_time<_CharT>
+    put_time(const std::tm* __tmb, const _CharT* __fmt)
+    { return { __tmb, __fmt }; }
+	template<typename _CharT, typename _Traits>
+    basic_ostream<_CharT, _Traits>&
+    operator<<(basic_ostream<_CharT, _Traits>& __os, _Put_time<_CharT> __f)
+    {
+		typename basic_ostream<_CharT, _Traits>::sentry __cerb(__os);
+		if (__cerb)
+        {
+			ios_base::iostate __err = ios_base::goodbit;
+			try
+            {
+				typedef ostreambuf_iterator<_CharT, _Traits>   _Iter;
+				typedef time_put<_CharT, _Iter>                _TimePut;
+				const _CharT* const __fmt_end = __f._M_fmt +
+					_Traits::length(__f._M_fmt);
+				const _TimePut& __mp = use_facet<_TimePut>(__os.getloc());
+				if (__mp.put(_Iter(__os.rdbuf()), __os, __os.fill(),
+					__f._M_tmb, __f._M_fmt, __fmt_end).failed())
+				__err |= ios_base::badbit;
+			}
+			catch(__cxxabiv1::__forced_unwind&)
+			{
+				__os._M_setstate(ios_base::badbit);
+				__throw_exception_again;
+			}
+			catch(...)
+			{ __os._M_setstate(ios_base::badbit); }
+			if (__err)
+				__os.setstate(__err);
+		}
+		return __os;
+	}
+}
+*/
+
 std::string add_time(std::string s)
 {
 	auto now = std::chrono::system_clock::now();
