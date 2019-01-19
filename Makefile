@@ -2,7 +2,7 @@
 
 All:
 	@echo "----------Building project:[ Client - Release ]----------"
-	@$(MAKE) -f  "Client.mk"
+	@"$(MAKE)" -f  "Client.mk"
 clean:
 	@echo "----------Cleaning project:[ Client - Release ]----------"
-	@$(MAKE) -f  "Client.mk" clean
+	@"$(MAKE)" -f  "Client.mk" clean

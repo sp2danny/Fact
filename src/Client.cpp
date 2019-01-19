@@ -19,14 +19,10 @@
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
-// #include <boost/process.hpp>
-
-extern "C" {
-	#include <libavutil/imgutils.h>
-}
 
 #include "cmdline.h"
 #include "mandel_hp.h"
+#include "makemovie.h"
 
 using boost::asio::ip::tcp;
 using namespace std::literals;

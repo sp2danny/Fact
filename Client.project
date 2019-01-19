@@ -11,6 +11,8 @@
     <File Name="src/mandel_hp.cpp"/>
     <File Name="src/mandel_hp.h"/>
     <File Name="src/gtk_general.cpp"/>
+    <File Name="src/makemovie.cpp"/>
+    <File Name="src/makemovie.h"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
@@ -48,6 +50,10 @@
         <Library Value="boost_chrono"/>
         <Library Value="gmp"/>
         <Library Value="gmpxx"/>
+        <Library Value="avcodec"/>
+        <Library Value="avformat"/>
+        <Library Value="avutil"/>
+        <Library Value="swresample"/>
       </Linker>
       <ResourceCompiler Options=""/>
     </GlobalSettings>
@@ -58,6 +64,7 @@
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="./$(ProjectName)_dbg.out" IntermediateDirectory="./bin/Debug" Command="./$(ProjectName)_dbg.out" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>
@@ -82,7 +89,7 @@
         <CustomPostBuild/>
         <CustomPreBuild/>
       </AdditionalRules>
-      <Completion EnableCpp11="no">
+      <Completion EnableCpp11="no" EnableCpp14="no">
         <ClangCmpFlagsC/>
         <ClangCmpFlags/>
         <ClangPP/>
@@ -97,6 +104,7 @@
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="./$(ProjectName).out" IntermediateDirectory="./bin/Release" Command="./$(ProjectName).out" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="yes" IsEnabled="yes"/>
+      <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>
@@ -121,7 +129,7 @@
         <CustomPostBuild/>
         <CustomPreBuild/>
       </AdditionalRules>
-      <Completion EnableCpp11="no">
+      <Completion EnableCpp11="no" EnableCpp14="no">
         <ClangCmpFlagsC/>
         <ClangCmpFlags/>
         <ClangPP/>
