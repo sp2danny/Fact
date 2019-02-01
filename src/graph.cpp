@@ -26,6 +26,16 @@ void Image::PutPixel(int x, int y, RGB pix)
 	pixels[idx(x,y)] = pix;
 }
 
+RGB Image::GetPixel(int x, int y) const
+{
+	if ((x <  0) ||
+	    (x >= w) ||
+	    (y <  0) ||
+	    (y >= h) )
+		throw "Range error";
+	return pixels[idx(x,y)];
+}
+
 void Image::Save(std::string fn)
 {
 	std::ofstream ofs(fn, std::ios_base::binary);

@@ -117,22 +117,6 @@ auto snd_rcv(std::string msg) -> std::string
 	return ret;
 }
 
-void client_start()
-{
-	add_log("Start");
-	std::string ed = gtk_entry_get_text(GTK_ENTRY(edit));
-	auto p = ed.find(':');
-	std::string addr = ed.substr(0,p);
-	std::string port = ed.substr(p+1);
-
-	connection = std::make_unique<Connection>(addr,port);
-
-	for (auto& itm : params)
-	{
-		itm.value = snd_rcv("send:"s + itm.name);
-	}
-}
-
 bool have_job = false;
 int job_start, job_len, job_curr;
 
@@ -194,6 +178,24 @@ auto get_param(std::string name) -> auto
 	return get_param<T>(pick_1{}, name);
 }
 
+void client_start()
+{
+	add_log("Start");
+	std::string ed = gtk_entry_get_text(GTK_ENTRY(edit));
+	auto p = ed.find(':');
+	std::string addr = ed.substr(0,p);
+	std::string port = ed.substr(p+1);
+
+	connection = std::make_unique<Connection>(addr,port);
+
+	for (auto& itm : params)
+	{
+		itm.value = snd_rcv("send:"s + itm.name);
+	}
+	
+
+}
+
 auto mkname(int i) -> std::string
 {
 	std::string name = "./temp/img_";
@@ -231,7 +233,9 @@ void make_10(int f)
 	for (int j=0; j<10; ++j)
 	{
 		auto curr_name = mkname(f+j);
-		m.makeimage_N(j, mod_func).Save(curr_name);
+		auto img = m.makeimage_N(j, mod_func);
+		img.Save(curr_name);
+		mm::AddFrame(img);
 	}
 
 	add_log("wrote 10 images");
@@ -252,6 +256,11 @@ gboolean idle_func([[maybe_unused]] gpointer data)
 		add_log("Starting job : "s + ret);
 		job_curr = job_start;
 		have_job = true;
+		
+		int w = get_param<int>("width");
+		int h = get_param<int>("height");
+		mm::SetupMovie(w,h, "./temp/mov_"s + std::to_string(job_curr) + ".mp4" );
+		
 		return TRUE;
 	}
 
@@ -264,6 +273,7 @@ gboolean idle_func([[maybe_unused]] gpointer data)
 		return TRUE;
 	}
 
+	mm::Encode();
 	add_log("finished one batch");
 	have_job = false;
 

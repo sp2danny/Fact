@@ -5,17 +5,17 @@
 ## Release
 ProjectName            :=Server
 ConfigurationName      :=Release
-WorkspacePath          :=/home/daniel/project/Fact
-ProjectPath            :=/home/daniel/project/Fact
+WorkspacePath          := "/home/sp2danny/extra/Fact"
+ProjectPath            := "/home/sp2danny/extra/Fact"
 IntermediateDirectory  :=./bin/Release
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
-User                   :=daniel
-Date                   :=19/01/19
-CodeLitePath           :=/home/daniel/.codelite
-LinkerName             :=/usr/bin/clang++
+User                   :=Daniel Nyström
+Date                   :=02/01/19
+CodeLitePath           :="/home/sp2danny/.codelite"
+LinkerName             :=/usr/bin/clang++ 
 SharedObjectLinkerName :=/usr/bin/clang++ -shared -fPIC
 ObjectSuffix           :=.o
 DependSuffix           :=.o.d
@@ -48,18 +48,17 @@ LibPath                := $(LibraryPathSwitch).
 ## AR, CXX, CC, AS, CXXFLAGS and CFLAGS can be overriden using an environment variables
 ##
 AR       := /usr/bin/ar rcu
-CXX      := /usr/bin/clang++
-CC       := /usr/bin/clang
+CXX      := /usr/bin/clang++ 
+CC       := /usr/bin/clang 
 CXXFLAGS := -std=c++17 -Wall -Wextra -Werror -pedantic -O2 $(Preprocessors)
 CFLAGS   :=  -O2 $(Preprocessors)
 ASFLAGS  := 
-AS       := /usr/bin/as
+AS       := /usr/bin/as 
 
 
 ##
 ## User defined environment variables
 ##
-CodeLiteDir:=/usr/share/codelite
 Objects0=$(IntermediateDirectory)/src_server.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_cmdline.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_connector.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_gtk_general.cpp$(ObjectSuffix) 
 
 
@@ -69,7 +68,7 @@ Objects=$(Objects0)
 ##
 ## Main Build Targets 
 ##
-.PHONY: all clean PreBuild PrePreBuild PostBuild MakeIntermediateDirs
+.PHONY: all clean PreBuild PrePreBuild PostBuild
 all: $(OutputFile)
 
 $(OutputFile): $(IntermediateDirectory)/.d $(Objects) 
@@ -77,10 +76,6 @@ $(OutputFile): $(IntermediateDirectory)/.d $(Objects)
 	@echo "" > $(IntermediateDirectory)/.d
 	@echo $(Objects0)  > $(ObjectsFileList)
 	$(LinkerName) $(OutputSwitch)$(OutputFile) @$(ObjectsFileList) $(LibPath) $(Libs) $(LinkOptions)
-
-MakeIntermediateDirs:
-	@test -d ./bin/Release || $(MakeDirCommand) ./bin/Release
-
 
 $(IntermediateDirectory)/.d:
 	@test -d ./bin/Release || $(MakeDirCommand) ./bin/Release
@@ -92,36 +87,36 @@ PreBuild:
 ## Objects
 ##
 $(IntermediateDirectory)/src_server.cpp$(ObjectSuffix): src/server.cpp $(IntermediateDirectory)/src_server.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/daniel/project/Fact/src/server.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_server.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/sp2danny/extra/Fact/src/server.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_server.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/src_server.cpp$(DependSuffix): src/server.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_server.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_server.cpp$(DependSuffix) -MM src/server.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_server.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_server.cpp$(DependSuffix) -MM "src/server.cpp"
 
 $(IntermediateDirectory)/src_server.cpp$(PreprocessSuffix): src/server.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_server.cpp$(PreprocessSuffix) src/server.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_server.cpp$(PreprocessSuffix) "src/server.cpp"
 
 $(IntermediateDirectory)/src_cmdline.cpp$(ObjectSuffix): src/cmdline.cpp $(IntermediateDirectory)/src_cmdline.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/daniel/project/Fact/src/cmdline.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_cmdline.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/sp2danny/extra/Fact/src/cmdline.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_cmdline.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/src_cmdline.cpp$(DependSuffix): src/cmdline.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_cmdline.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_cmdline.cpp$(DependSuffix) -MM src/cmdline.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_cmdline.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_cmdline.cpp$(DependSuffix) -MM "src/cmdline.cpp"
 
 $(IntermediateDirectory)/src_cmdline.cpp$(PreprocessSuffix): src/cmdline.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_cmdline.cpp$(PreprocessSuffix) src/cmdline.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_cmdline.cpp$(PreprocessSuffix) "src/cmdline.cpp"
 
 $(IntermediateDirectory)/src_connector.cpp$(ObjectSuffix): src/connector.cpp $(IntermediateDirectory)/src_connector.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/daniel/project/Fact/src/connector.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_connector.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/sp2danny/extra/Fact/src/connector.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_connector.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/src_connector.cpp$(DependSuffix): src/connector.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_connector.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_connector.cpp$(DependSuffix) -MM src/connector.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_connector.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_connector.cpp$(DependSuffix) -MM "src/connector.cpp"
 
 $(IntermediateDirectory)/src_connector.cpp$(PreprocessSuffix): src/connector.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_connector.cpp$(PreprocessSuffix) src/connector.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_connector.cpp$(PreprocessSuffix) "src/connector.cpp"
 
 $(IntermediateDirectory)/src_gtk_general.cpp$(ObjectSuffix): src/gtk_general.cpp $(IntermediateDirectory)/src_gtk_general.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/daniel/project/Fact/src/gtk_general.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_gtk_general.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/sp2danny/extra/Fact/src/gtk_general.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_gtk_general.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/src_gtk_general.cpp$(DependSuffix): src/gtk_general.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_gtk_general.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_gtk_general.cpp$(DependSuffix) -MM src/gtk_general.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_gtk_general.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_gtk_general.cpp$(DependSuffix) -MM "src/gtk_general.cpp"
 
 $(IntermediateDirectory)/src_gtk_general.cpp$(PreprocessSuffix): src/gtk_general.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_gtk_general.cpp$(PreprocessSuffix) src/gtk_general.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_gtk_general.cpp$(PreprocessSuffix) "src/gtk_general.cpp"
 
 
 -include $(IntermediateDirectory)/*$(DependSuffix)
@@ -129,6 +124,9 @@ $(IntermediateDirectory)/src_gtk_general.cpp$(PreprocessSuffix): src/gtk_general
 ## Clean
 ##
 clean:
-	$(RM) -r ./bin/Release/
+	$(RM) ./bin/Release/*$(ObjectSuffix)
+	$(RM) ./bin/Release/*$(DependSuffix)
+	$(RM) $(OutputFile)
+	$(RM) ".build-release/Server"
 
 

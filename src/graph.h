@@ -26,6 +26,7 @@ struct Image
 	UC* data() { return (UC*)pixels.data(); }
 	int Width() const { return w; }
 	int Height() const { return h; }
+	RGB GetPixel(int, int) const;
 private:
 	int idx(int, int) const;
 	int w, h;

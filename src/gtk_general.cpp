@@ -16,6 +16,7 @@
 #include <memory>
 #include <map>
 #include <string>
+#include <stdexcept>
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
@@ -119,8 +120,31 @@ extern void gtk_app();
 
 int main(int argc, char* argv[])
 {
-	cmd.init(argc, argv);
-	gtk_init(&argc, &argv);
-	gtk_app();
+	try
+	{
+		cmd.init(argc, argv);
+		gtk_init(&argc, &argv);
+		gtk_app();
+	}
+	catch (const std::exception& msg)
+	{
+		std::cerr << "Error: " << msg.what() << std::endl;
+	}
+	catch (const std::string& msg)
+	{
+		std::cerr << "Error: " << msg << std::endl;
+	}
+	catch (const char* msg)
+	{
+		std::cerr << "Error: " << msg << std::endl;
+	}
+	catch (int msg)
+	{
+		std::cerr << "Error: #" << msg << std::endl;
+	}
+	catch (...)
+	{
+		std::cerr << "Error: <Unknown>" << std::endl;
+	}
 }
 
