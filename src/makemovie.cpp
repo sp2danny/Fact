@@ -267,12 +267,18 @@ void AddFrame(const Image& img)
 
 	int err;
 	int got_output = 1;
+
 	AVPacket pkt;
-	pkt.buf = nullptr;
-	av_init_packet(&pkt);
+	pkt.data = nullptr;
+    pkt.size = 0;
+    av_new_packet(&pkt, 10000);
 
 	//Set frame pts, monotonically increasing, starting from 0
 	if (frame) frame->pts = pts++; //we use frame == NULL to write delayed packets in destructor
+	
+	codec_ctx->height = h;
+	codec_ctx->width = w;
+
 	err = avcodec_encode_video2(codec_ctx, &pkt, frame, &got_output);
 	if (err < 0)
 	{
@@ -291,7 +297,7 @@ void AddFrame(const Image& img)
 			throw AVException(err, "write frame");
 		}
 	} else {
-		throw AVException(1, "got no output");
+		//throw AVException(1, "got no output");
 	}
 	
 	av_frame_free(&frame);
