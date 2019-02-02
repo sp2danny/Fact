@@ -113,10 +113,10 @@ bool Map::do_one(UL x, UL y, UL cap)
 		}
 
 		auto zre = z.real();
-		Flt  re_sq = zre * zre;
+		const Flt  re_sq = zre * zre;
 		auto zim = z.imag();
-		Flt  im_sq = zim * zim;
-		auto az2 = re_sq + im_sq;
+		const Flt  im_sq = zim * zim;
+		const auto az2 = re_sq + im_sq;
 		if (az2 > 4.0)
 		{
 			p.status = Point::out;
@@ -136,9 +136,6 @@ bool Map::do_one(UL x, UL y, UL cap)
 
 void Map::dothething(UL startx,UL starty)
 {
-	(void)startx;
-	(void)starty;
-
 	UL x,y;
 	for (y=0; y<height; ++y)
 	{
