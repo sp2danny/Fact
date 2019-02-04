@@ -22,7 +22,7 @@
 
 #include "cmdline.h"
 #include "mandel_hp.h"
-#include "makemovie.h"
+//#include "makemovie.h"
 
 using boost::asio::ip::tcp;
 using namespace std::literals;
@@ -192,8 +192,6 @@ void client_start()
 	{
 		itm.value = snd_rcv("send:"s + itm.name);
 	}
-	
-
 }
 
 auto mkname(int i) -> std::string
@@ -235,7 +233,7 @@ void make_10(int f)
 		auto curr_name = mkname(f+j);
 		auto img = m.makeimage_N(j, mod_func);
 		img.Save(curr_name);
-		mm::AddFrame(img);
+		//mm::AddFrame(img);
 	}
 
 	add_log("wrote 10 images");
@@ -257,9 +255,9 @@ gboolean idle_func([[maybe_unused]] gpointer data)
 		job_curr = job_start;
 		have_job = true;
 		
-		int w = get_param<int>("width");
-		int h = get_param<int>("height");
-		mm::SetupMovie(w,h, "./temp/mov_"s + std::to_string(job_curr) + ".mp4" );
+		[[maybe_unused]] int w = get_param<int>("width");
+		[[maybe_unused]] int h = get_param<int>("height");
+		//mm::SetupMovie(w,h, "./temp/mov_"s + std::to_string(job_curr) + ".mp4" );
 		
 		return TRUE;
 	}
@@ -273,7 +271,7 @@ gboolean idle_func([[maybe_unused]] gpointer data)
 		return TRUE;
 	}
 
-	mm::Encode();
+	//mm::Encode();
 	add_log("finished one batch");
 	have_job = false;
 
