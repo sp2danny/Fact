@@ -24,7 +24,7 @@ namespace mm
 #define OUTPUT_PIX_FMT AV_PIX_FMT_YUV420P
 
 AVFormatContext *fmt_ctx;
-AVCodecContext  *codec_ctx; //a shortcut to st->codec
+AVCodecParameters  *codec_ctx; //a shortcut to st->codec
 AVStream        *st;
 //AVFrame         *tmp_frame;
 int              pts=0;
@@ -149,45 +149,46 @@ void SetupMovie(int width,int height, std::string name)
 	st->time_base = AVRational{1, 50};
 
 	//Set codec_ctx to stream's codec structure
-	codec_ctx = st->codec;
+	codec_ctx = st->codecpar;
 	/* put sample parameters */
-	codec_ctx->sample_fmt = codec->sample_fmts ? codec->sample_fmts[0] : AV_SAMPLE_FMT_S16;
+	//codec_ctx-> AV_SAMPLE_FMT_NONE;
+	//sample_fmt = codec->sample_fmts ? codec->sample_fmts[0] : AV_SAMPLE_FMT_S16;
 	codec_ctx->width = width;
 	codec_ctx->height = height;
-	codec_ctx->time_base = st->time_base;
-	codec_ctx->pix_fmt = OUTPUT_PIX_FMT;
+	//codec_ctx->time_base = st->time_base;
+	//codec_ctx->pix_fmt = OUTPUT_PIX_FMT;
 	// Apparently it's in the example in master but does not work in V11
-	if (fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
-	  codec_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+	//if (fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
+	//  codec_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
 	/**/
 	//H.264 specific options
 	
-	codec_ctx->gop_size = 25;
+	//codec_ctx->gop_size = 25;
 	codec_ctx->level = 31;
-	err = av_opt_set(codec_ctx->priv_data, "crf", "12", 0);
+	//err = av_opt_set(codec_ctx->priv_data, "crf", "12", 0);
 	if (err < 0)
 	{
 		throw AVException(err, "av_opt_set crf");
 	}
-	err = av_opt_set(codec_ctx->priv_data, "profile", "main", 0);
+	//err = av_opt_set(codec_ctx->priv_data, "profile", "main", 0);
 	if (err < 0)
 	{
 		throw AVException(err, "av_opt_set profile");
 	}
-	err = av_opt_set(codec_ctx->priv_data, "preset", "slow", 0);
+	//err = av_opt_set(codec_ctx->priv_data, "preset", "slow", 0);
 	if (err < 0)
 	{
 		throw AVException(err, "av_opt_set preset");
 	}
 	// disable b-pyramid. CLI options for this is "-b-pyramid 0"
 	//Because Quicktime (ie. iOS) doesn't support this option
-	err = av_opt_set(codec_ctx->priv_data, "b-pyramid", "0", 0);
+	//err = av_opt_set(codec_ctx->priv_data, "b-pyramid", "0", 0);
 	if (err < 0)
 	{
 		throw AVException(err, "av_opt_set b-pyramid");
 	}
 	//It's necessary to open stream codec to link it to "codec" (the encoder).
-	err = avcodec_open2(codec_ctx, codec, NULL);
+	//err = avcodec_open2(codec_ctx, codec, NULL);
 	if (err < 0)
 	{
 		throw AVException(err, "avcodec_open2");
@@ -242,7 +243,7 @@ void AddFrame(const Image& img)
 	int h = img.Height();
 	frame->width = w;
 	frame->height = h;
-    frame->format = PIX_FMT_RGB24;
+    frame->format = AV_PIX_FMT_RGB24;
 	
 	//pic->img.i_stride[0] = width;
 
@@ -279,7 +280,8 @@ void AddFrame(const Image& img)
 	codec_ctx->height = h;
 	codec_ctx->width = w;
 
-	err = avcodec_encode_video2(codec_ctx, &pkt, frame, &got_output);
+	err = avcodec_send_frame(codec_ctx, frame);
+	//err = avcodec_encode (codec_ctx, &pkt, frame, &got_output);
 	if (err < 0)
 	{
 		throw AVException(err, "encode frame");
