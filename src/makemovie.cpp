@@ -272,7 +272,8 @@ void AddFrame(const Image& img)
 	AVPacket pkt;
 	pkt.data = nullptr;
     pkt.size = 0;
-    av_new_packet(&pkt, 10000);
+	av_init_packet(&pkt);
+    //av_new_packet(&pkt, 10000);
 
 	//Set frame pts, monotonically increasing, starting from 0
 	if (frame) frame->pts = pts++; //we use frame == NULL to write delayed packets in destructor
@@ -282,6 +283,10 @@ void AddFrame(const Image& img)
 
 	//err = avcodec_send_frame(codec_ctx, frame);
 	err = avcodec_encode_video2 (codec_ctx, &pkt, frame, &got_output);
+	
+	
+	//err = avcodec_send_frame((AVCodecContext*)0,frame);
+	
 	if (err < 0)
 	{
 		throw AVException(err, "encode frame");
