@@ -288,57 +288,6 @@ Image Map::makeimage(float mod, UL upc)
 	return img;
 }
 
-UL Map::generate_10(UL cap, bool disp)
-{
-	double zm = zoom_mul.get_d();
-	double tm = pow(zm, -10);
-
-	new_w = ceil(width  * tm);
-	new_h = ceil(height * tm);
-
-	UL x,y;
-
-	points.resize(new_h);
-	for (y=0; y<new_h; ++y)
-		points[y].resize(new_w+3);
-
-	Flt x_start = to_xpos(0);
-	Flt x_stop  = to_xpos(width-1);
-	Flt y_start = to_ypos(0);
-	Flt y_stop  = to_ypos(height-1);
-	Flt x_step  = (x_stop-x_start) / (new_w-1);
-	Flt y_step  = (y_stop-y_start) / (new_h-1);
-
-	UL maxout = 1;
-	std::vector<Flt> vfx, vfy;
-	for (x=0; x<new_w; ++x)
-		vfx.push_back(x_start + x_step*x);
-	for (y=0; y<new_h; ++y)
-		vfy.push_back(y_start + y_step*y);
-	const Flt two = 2.0;
-
-	for (y=0; y<new_h; ++y)
-	{
-		if (disp)
-		{
-			float f = 100.0f;
-			f /= new_h;
-			f *= y;
-			std::cout << (int)f << "%\r" << std::flush;
-		}
-		Flt yld = vfy[y];
-		for (x=0; x<new_w; ++x)
-		{
-			auto& p = get(x,y);
-			Cmplx c{vfx[x], yld};
-			p.init(c);
-			bool out = p.docalc(c, cap);
-			if (out && p.iter>maxout) maxout=p.iter;
-		}
-	}
-	return maxout;
-}
-
 RGB mix(const RGB& p1,const RGB& p2, float f)
 {
 	assert( (f >= 0.0f) && (f <= 1.0f) );
@@ -472,7 +421,7 @@ int Updater::Get()
 
 void execute(LineCache* lc)
 {
-	UL maxout = 1, skipcnt = 0;
+	UL maxout = 1, skipcnt = 0, inskip = 0;
 	const Flt two = 2.0;
 	UL i, n=lc->y_count;
 	UL w = lc->map.new_w;
@@ -510,14 +459,39 @@ void execute(LineCache* lc)
 			dc(p,c);
 		}
 	}
+	
+	UL xlo = 0;
+	UL xhi = lc->map.new_w-1;
+	UL ylo = lc->y_start;
+	UL yhi = lc->y_start+n-1;
 
-	auto ep_x = [&](UL x, UL y, UL lo, UL hi) -> bool
+	auto ep_xy = [&](UL x, UL y) -> bool
 	{
 		auto& p = lc->map.get(x,y);
 		if (p.status != Point::calc) return false;
 		if (p.iter != 1) return false;
-		if (x==lo) return false;
-		if (x==hi) return false;
+		if (x==xlo) return false;
+		if (x==xhi) return false;
+		if (y==ylo) return false;
+		if (y==yhi) return false;
+		Point* pp;
+		pp = &lc->map.get(x-1,y); if (pp->status != Point::in) return false;
+		pp = &lc->map.get(x+1,y); if (pp->status != Point::in) return false;
+		pp = &lc->map.get(x,y-1); if (pp->status != Point::in) return false;
+		pp = &lc->map.get(x,y+1); if (pp->status != Point::in) return false;
+		p.status = Point::in;
+		++skipcnt;
+		++inskip;
+		return true;
+	};
+
+	auto ep_x = [&](UL x, UL y) -> bool
+	{
+		auto& p = lc->map.get(x,y);
+		if (p.status != Point::calc) return false;
+		if (p.iter != 1) return false;
+		if (x==xlo) return false;
+		if (x==xhi) return false;
 		auto& pp = lc->map.get(x-1,y);
 		if (pp.status != Point::out) return false;
 		auto& pn = lc->map.get(x+1,y);
@@ -530,13 +504,13 @@ void execute(LineCache* lc)
 		return true;
 	};
 
-	auto ep_y = [&](UL x, UL y, UL lo, UL hi) -> bool
+	auto ep_y = [&](UL x, UL y) -> bool
 	{
 		auto& p = lc->map.get(x,y);
 		if (p.status != Point::calc) return false;
 		if (p.iter != 1) return false;
-		if (y==lo) return false;
-		if (y==hi) return false;
+		if (y==ylo) return false;
+		if (y==yhi) return false;
 		auto& pp = lc->map.get(x,y-1);
 		if (pp.status != Point::out) return false;
 		auto& pn = lc->map.get(x,y+1);
@@ -555,7 +529,7 @@ void execute(LineCache* lc)
 		{
 			UL y = lc->y_start + i;
 			for (UL x=0; x<w; x+=1)
-				ep_x(x,y , 0,lc->map.new_w-1);
+				ep_x(x,y);
 		}
 	};
 
@@ -565,13 +539,55 @@ void execute(LineCache* lc)
 		{
 			UL y = lc->y_start + i;
 			for (UL x=0; x<w; x+=1)
-				ep_y(x,y , lc->y_start,lc->y_start+n-1);
+				ep_y(x,y);
+		}
+	};
+	
+	auto all_ep_xy = [&]() -> void
+	{
+		for (i=0; i<n; i+=1)
+		{
+			UL y = lc->y_start + i;
+			for (UL x=0; x<w; x+=1)
+				ep_xy(x,y);
 		}
 	};
 
 	all_ep_x(); all_ep_y();
+	
+	for (i=0; i<n; ++i)
+	{
+		Updater::Tick();
+		if (lc->display)
+			Updater::Display();
+		if (!(i%2)) continue;
+		UL y = lc->y_start + i;
+		Flt& yld = lc->vfy[y];
+		for (UL x=1; x<w; x+=2)
+		{
+			auto& p = lc->map.get(x,y);
+			if (p.status != Point::calc) continue;
+			if (p.iter != 1) continue;
+			Cmplx c{lc->vfx[x], yld};
+			dc(p,c);
+		}
+	}
+	
+	for (i=0; i<n; ++i)
+	{
+		UL y = lc->y_start + i;
+		for (UL x=0; x<w; ++x)
+		{
+			auto& p = lc->map.get(x,y);
+			if (p.status != Point::calc) continue;
+			if (p.iter < lc->cap) continue;
+			p.status = Point::in;
+		}
+	}
 
-	for (i=0; i<n; i+=1)
+	all_ep_xy();
+
+	for (i=0; i<n; ++i)
 	{
 		Updater::Tick();
 		if (lc->display)
@@ -584,20 +600,26 @@ void execute(LineCache* lc)
 			if (p.status != Point::calc) continue;
 			if (p.iter != 1) continue;
 			Cmplx c{lc->vfx[x], lc->vfy[y]};
-			p.docalc(c,lc->cap);
+			dc(p,c);
 		}
 	}
 
 	if (maxout > lc->eff_cap)
 		lc->eff_cap = maxout;
 	lc->skip_count = skipcnt;
+	lc->inskip = inskip;
 }
 
-UL Map::generate_threaded_param(UL cap, bool display)
+void Map::generate_10_init(UL )
 {
-	UL x,y;
+	double zm = zoom_mul.get_d();
+	double tm = pow(zm, -10);
+
+	new_w = ceil(width  * tm);
+	new_h = ceil(height * tm);
 
 	points.resize(new_h);
+	UL x,y;
 	for (y=0; y<new_h; ++y)
 		points[y].resize(new_w+3);
 
@@ -608,26 +630,31 @@ UL Map::generate_threaded_param(UL cap, bool display)
 	Flt x_step  = (x_stop-x_start) / (new_w-1);
 	Flt y_step  = (y_stop-y_start) / (new_h-1);
 
-	std::vector<Flt> vfx, vfy;
+	vfx.clear(); vfy.clear();
 	for (x=0; x<new_w; ++x)
 		vfx.push_back(x_start + x_step*x);
 	for (y=0; y<new_h; ++y)
 		vfy.push_back(y_start + y_step*y);
+}
 
-	Updater::Init(new_h*2+4);
+UL Map::generate_10_threaded(UL cap, bool display)
+{
+	generate_10_init(cap);
+
+	Updater::Init(new_h*3+4);
 	if (display) Updater::Display();
 
 	LineCache lc[4] = {
-		{ cap, 0, 0, display, 0, 0, *this, vfx, vfy },
-		{ cap, 0, 0,   false, 0, 0, *this, vfx, vfy },
-		{ cap, 0, 0,   false, 0, 0, *this, vfx, vfy },
-		{ cap, 0, 0,   false, 0, 0, *this, vfx, vfy },
+		{ cap, 0, 0, 0, display, 0, 0, *this, vfx, vfy },
+		{ cap, 0, 0, 0,   false, 0, 0, *this, vfx, vfy },
+		{ cap, 0, 0, 0,   false, 0, 0, *this, vfx, vfy },
+		{ cap, 0, 0, 0,   false, 0, 0, *this, vfx, vfy },
 	};
 
 	UL i = 0;
 	UL num = new_h / 4;
 	UL ovr = new_h - (num*4);
-	y = 0;
+	UL y = 0;
 	lc[0].y_start = y; y += (lc[0].y_count = num + ovr);
 	lc[1].y_start = y; y += (lc[1].y_count = num);
 	lc[2].y_start = y; y += (lc[2].y_count = num);
@@ -638,7 +665,6 @@ UL Map::generate_threaded_param(UL cap, bool display)
 	for (i=1; i<4; ++i)
 	{
 		tt[i] = boost::thread{&execute, lc+i};
-		//std::cout << "made thread " << tt[i].native_handle() << std::endl;
 	}
 	execute(lc);
 	boost::chrono::nanoseconds ns{250'000};
@@ -650,38 +676,47 @@ UL Map::generate_threaded_param(UL cap, bool display)
 		bool j = tt[joined].try_join_for(ns);
 		if (j)
 		{
-			//std::cout << "thread " << tt[joined].native_handle() << " finished" << std::endl;
 			++joined;
 			Updater::Tick();
 			if (joined >= 4) break;
 		}
 	}
-	UL sk = 0;
+	UL sk = 0, is = 0;
 	for (i=0; i<4; ++i)
 	{
 		if (lc[i].eff_cap > maxout)
 			maxout = lc[i].eff_cap;
 		sk += lc[i].skip_count;
+		is += lc[i].inskip;
 	}
 
 	Updater::Tick();
 	if (display) Updater::Display();
 
 	if (display)
-		std::cout << "skipped        : " << sk << " pixels  \n";
+		std::cout << "skipped        : " << sk << " pixels, of wich " << is << " was inside \n";
 
 	return maxout;
 }
 
-UL Map::generate_10_threaded(UL cap, bool display)
+UL Map::generate_10(UL cap, bool display)
 {
-	double zm{zoom_mul};
-	double tm = pow(zm, -10);
+	generate_10_init(cap);
 
-	new_w = ceil(width  * tm);
-	new_h = ceil(height * tm);
+	Updater::Init(new_h*3+1);
+	if (display) Updater::Display();
 
-	UL maxout = generate_threaded_param(cap, display);
+	LineCache lc = { cap, 0, 0, 0, display, 0, new_h, *this, vfx, vfy };
 
-	return maxout;
+	execute(&lc);
+
+	Updater::Tick();
+	if (display) Updater::Display();
+
+	if (display)
+		std::cout << "skipped        : " << lc.skip_count << " pixels  \n";
+
+	return lc.eff_cap;
+
 }
+

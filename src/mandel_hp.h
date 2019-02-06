@@ -62,6 +62,7 @@ struct LineCache
 	UL cap;
 	UL eff_cap;
 	UL skip_count;
+	UL inskip;
 	bool display;
 	UL y_start, y_count;
 	Map& map;
@@ -90,7 +91,7 @@ struct Map
 	Image makeimage(float mod, UL upc=0);
 	UL generate_10(UL cap, bool display=false);
 	UL generate_10_threaded(UL cap, bool display=false);
-	UL generate_threaded_param(UL cap, bool display=false);
+	void generate_10_init(UL cap);
 	Image makeimage_N(int n, ModFunc);
 	RGB extrapolate(float x, float y, float mod);
 	std::vector<Flt> vfx, vfy;
