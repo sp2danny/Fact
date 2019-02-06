@@ -383,16 +383,17 @@ struct Updater
 	static int Get();
 private:
 	static std::mutex lck;
-	static UL count, max;
+	static UL count, max, last;
 };
 
 std::mutex Updater::lck;
-UL Updater::count, Updater::max;
+UL Updater::count, Updater::max, Updater::last;
 
 void Updater::Init(UL m)
 {
 	count = 0;
 	max = m;
+	last = (UL)-1;
 }
 
 void Updater::Tick()
@@ -407,7 +408,10 @@ void Updater::Display()
 	float f = 100.0f;
 	f /= max;
 	f *= count;
-	std::cout << (int)f << "%\r" << std::flush;
+	UL p = (int)f;
+	if (p==last) return;
+	std::cout << p << "%\r" << std::flush;
+	last = p;
 }
 
 int Updater::Get()
@@ -554,7 +558,7 @@ void execute(LineCache* lc)
 	};
 
 	all_ep_x(); all_ep_y();
-	
+
 	for (i=0; i<n; ++i)
 	{
 		Updater::Tick();
@@ -572,7 +576,7 @@ void execute(LineCache* lc)
 			dc(p,c);
 		}
 	}
-	
+
 	for (i=0; i<n; ++i)
 	{
 		UL y = lc->y_start + i;
@@ -714,7 +718,7 @@ UL Map::generate_10(UL cap, bool display)
 	if (display) Updater::Display();
 
 	if (display)
-		std::cout << "skipped        : " << lc.skip_count << " pixels  \n";
+		std::cout << "skipped        : " << lc.skip_count << " pixels, of wich " << lc.inskip << " was inside \n";
 
 	return lc.eff_cap;
 
