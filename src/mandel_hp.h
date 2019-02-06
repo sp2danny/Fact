@@ -4,6 +4,7 @@
 #include <cmath>
 #include <complex>
 #include <vector>
+#include <cstdint>
 
 #include "graph.h"
 
@@ -34,7 +35,7 @@ inline bool isnan(const Flt&) { return false; }
 inline bool isinf(const Flt&) { return false; }
 Flt copysign(const Flt& a,const Flt& b);
 
-typedef unsigned long UL;
+typedef std::uint32_t UL;
 
 typedef std::complex<Flt> Cmplx;
 
@@ -43,7 +44,7 @@ Cmplx step(Cmplx c, Cmplx z);
 struct Point
 {
 	enum { in, calc, out } status = calc;
-	unsigned long iter = 0;
+	UL iter = 0;
 	float over = 0.0f;
 	Cmplx z = {0.0,0.0};
 	bool docalc(const Cmplx& c, UL cap);

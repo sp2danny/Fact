@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 		name += "/";
 		name += name_lead;
 		static char buff[32];
-		sprintf(buff, "%0*lu", (int)num_dig, i);
+		sprintf(buff, "%0*u", (int)num_dig, i);
 		name += buff;
 		name += ".bmp";
 		return name;
