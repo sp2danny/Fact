@@ -92,6 +92,7 @@ struct Map
 	UL generate_threaded_param(UL cap, bool display=false);
 	Image makeimage_N(int n, ModFunc);
 	RGB extrapolate(float x, float y, float mod);
+	std::vector<Flt> vfx, vfy;
 };
 
 template<typename T>

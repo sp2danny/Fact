@@ -122,17 +122,25 @@ Flt Map::to_ypos(UL y) const
 
 void Map::generate_init()
 {
+	UL x,y;
+	vfx.clear();
+	vfy.clear();
+
+	for (y=0; y<height; ++y)
+		vfy.push_back(to_ypos(y));
+	for (x=0; x<width; ++x)
+		vfx.push_back(to_xpos(x));
+
 	map_all_done = false;
 	points.resize(height);
-	UL x,y;
 
 	for (y=0; y<height; ++y)
 	{
 		points[y].resize(width);
-		Flt yld = to_ypos(y);
+		const Flt& yld = vfy[y];
 		for (x=0; x<width; ++x)
 		{
-			Flt xld = to_xpos(x);
+			const Flt& xld = vfx[x];
 			get(x,y).init({xld, yld});
 		}
 	}
@@ -144,9 +152,7 @@ auto Map::generate(UL cap, bool display, bool extrap) -> Status
 	bool did_smth = false;
 
 	UL x,y;
-	std::vector<Flt> vfx;
-	for (x=0; x<width; ++x)
-		vfx.push_back(to_xpos(x));
+
 	const Flt two = 2.0;
 
 	for (y=0; y<height; ++y)
@@ -158,7 +164,7 @@ auto Map::generate(UL cap, bool display, bool extrap) -> Status
 			f *= y;
 			std::cout << (int)f << "%\r" << std::flush;
 		}
-		Flt yld = to_ypos(y);
+		const Flt& yld = vfy[y];
 		for (x=0; x<width; ++x)
 		{
 			Point& p = get(x,y);
@@ -212,9 +218,7 @@ auto Map::generate(UL cap, bool display, bool extrap) -> Status
 void Map::generate_odd(UL cap)
 {
 	UL x,y;
-	std::vector<Flt> vfx;
-	for (x=0; x<width; ++x)
-		vfx.push_back(to_xpos(x));
+
 	const Flt two = 2.0;
 
 	for (y=0; y<height; y+=2)
@@ -225,7 +229,7 @@ void Map::generate_odd(UL cap)
 			f *= y;
 			std::cout << (int)f << "%\r" << std::flush;
 		}
-		Flt yld = to_ypos(y);
+		const Flt& yld = vfy[y];
 		for (x=0; x<width; x+=2)
 		{
 			Point& p = get(x,y);
@@ -356,7 +360,8 @@ RGB Map::extrapolate(float x, float y, float mod)
 	float yr = roundf(y);
 	float dx = x-xr;
 	float dy = y-yr;
-	UL x1,x2,y1,y2; float fx, fy;
+	UL x1,x2,y1,y2;
+	float fx, fy;
 	if (fabs(dx) < 0.05f) {
 		x1 = x2 = roundl(x);
 		fx = 0.5f;
