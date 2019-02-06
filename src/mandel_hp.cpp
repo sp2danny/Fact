@@ -337,7 +337,7 @@ RGB Map::extrapolate(float x, float y, float mod)
 	return pix;
 }
 
-Image Map::makeimage_N(int n, ModFunc mf)
+Image Map::makeimage_10_N(int n, ModFunc mf)
 {
 	Image img(width, height);
 	double sx{scale_x};
@@ -724,3 +724,132 @@ UL Map::generate_10(UL cap, bool display)
 
 }
 
+
+
+
+void Map::generate_25_init(UL)
+{
+	double zm = zoom_mul.get_d();
+	double tm = pow(zm, -25);
+
+	new_w = ceil(width  * tm);
+	new_h = ceil(height * tm);
+
+	points.resize(new_h);
+	UL x,y;
+	for (y=0; y<new_h; ++y)
+		points[y].resize(new_w+3);
+
+	Flt x_start = to_xpos(0);
+	Flt x_stop  = to_xpos(width-1);
+	Flt y_start = to_ypos(0);
+	Flt y_stop  = to_ypos(height-1);
+	Flt x_step  = (x_stop-x_start) / (new_w-1);
+	Flt y_step  = (y_stop-y_start) / (new_h-1);
+
+	vfx.clear(); vfy.clear();
+	for (x=0; x<new_w; ++x)
+		vfx.push_back(x_start + x_step*x);
+	for (y=0; y<new_h; ++y)
+		vfy.push_back(y_start + y_step*y);
+}
+
+UL Map::generate_25_threaded(UL cap, bool display)
+{
+	generate_25_init(cap);
+
+	Updater::Init(new_h*3+4);
+	if (display) Updater::Display();
+
+	LineCache lc[4] = {
+		{ cap, 0, 0, 0, display, 0, 0, *this, vfx, vfy },
+		{ cap, 0, 0, 0,   false, 0, 0, *this, vfx, vfy },
+		{ cap, 0, 0, 0,   false, 0, 0, *this, vfx, vfy },
+		{ cap, 0, 0, 0,   false, 0, 0, *this, vfx, vfy },
+	};
+
+	UL i = 0;
+	UL num = new_h / 4;
+	UL ovr = new_h - (num*4);
+	UL y = 0;
+	lc[0].y_start = y; y += (lc[0].y_count = num + ovr);
+	lc[1].y_start = y; y += (lc[1].y_count = num);
+	lc[2].y_start = y; y += (lc[2].y_count = num);
+	lc[3].y_start = y; y += (lc[3].y_count = num);
+
+	UL maxout = 0;
+	boost::thread tt[4];
+	for (i=1; i<4; ++i)
+	{
+		tt[i] = boost::thread{&execute, lc+i};
+	}
+	execute(lc);
+	boost::chrono::nanoseconds ns{250'000};
+	int joined = 1;
+	while (true)
+	{
+		if (display) Updater::Display();
+
+		bool j = tt[joined].try_join_for(ns);
+		if (j)
+		{
+			++joined;
+			Updater::Tick();
+			if (joined >= 4) break;
+		}
+	}
+	UL sk = 0, is = 0;
+	for (i=0; i<4; ++i)
+	{
+		if (lc[i].eff_cap > maxout)
+			maxout = lc[i].eff_cap;
+		sk += lc[i].skip_count;
+		is += lc[i].inskip;
+	}
+
+	Updater::Tick();
+	if (display) Updater::Display();
+
+	if (display)
+		std::cout << "skipped        : " << sk << " pixels, of wich " << is << " was inside \n";
+
+	return maxout;
+}
+
+Image Map::makeimage_25_N(int n, ModFunc mf)
+{
+	Image img(width, height);
+	double sx{scale_x};
+
+	++n;
+	double t0{zoom_mul};
+	double tm  = powf(t0, -1);
+	double tn  = powf(t0, -n);
+	double t25 = powf(t0, -26);
+	double dif = t25-tm;
+	double per = (tn-tm)/dif;
+
+	double mod = mf(sx/tn);
+
+	double xstart = (new_w - width)/2;
+	xstart *= per;
+	double ystart = (new_h - height)/2;
+	ystart *= per;
+	double xstep = double(new_w) / double(width);
+	xstep = 1.0f + (xstep-1.0f)*(1.0f-per);
+	double ystep = double(new_h) / double(height);
+	ystep = 1.0f + (ystep-1.0f)*(1.0f-per);
+
+	UL x,y;
+	for (y=0; y<height; ++y)
+	{
+		double yf = ystart + y * ystep;
+		for (x=0; x<width; ++x)
+		{
+			double xf = xstart + x * xstep;
+			img.PutPixel(x,y,extrapolate(xf,yf, mod));
+		}
+	}
+
+	return img;
+}

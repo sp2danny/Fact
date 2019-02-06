@@ -92,9 +92,14 @@ struct Map
 	UL generate_10(UL cap, bool display=false);
 	UL generate_10_threaded(UL cap, bool display=false);
 	void generate_10_init(UL cap);
-	Image makeimage_N(int n, ModFunc);
+	Image makeimage_10_N(int n, ModFunc);
 	RGB extrapolate(float x, float y, float mod);
 	std::vector<Flt> vfx, vfy;
+
+	void generate_25_init(UL cap);
+	UL generate_25_threaded(UL cap, bool display=false);
+	Image makeimage_25_N(int n, ModFunc);
+
 };
 
 template<typename T>
