@@ -175,8 +175,8 @@ int main(int argc, char* argv[])
 				zoom_cur *= zoom_step;
 				if (!owr && boost::filesystem::exists(curr_name)) continue;
 				m.makeimage_25_N(j,mod_func).Save(curr_name);
-				std::cout << "Wrote: " << curr_name << std::endl;
 			}
+			std::cout << "Wrote: " << mkname(i) << " to " << mkname(i+24) << std::endl;
 			i += 25;
 		}
 		else
