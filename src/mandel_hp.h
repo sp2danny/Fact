@@ -96,7 +96,7 @@ struct Map
 	RGB extrapolate(float x, float y, float mod);
 	std::vector<Flt> vfx, vfy;
 
-	void generate_25_init(UL cap);
+	void generate_25_init(bool disp);
 	UL generate_25_threaded(UL cap, bool display=false);
 	Image makeimage_25_N(int n, ModFunc);
 

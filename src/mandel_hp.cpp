@@ -727,13 +727,19 @@ UL Map::generate_10(UL cap, bool display)
 
 
 
-void Map::generate_25_init(UL)
+void Map::generate_25_init(bool disp)
 {
 	double zm = zoom_mul.get_d();
 	double tm = pow(zm, -25);
 
 	new_w = ceil(width  * tm);
 	new_h = ceil(height * tm);
+	
+	if (disp)
+	{
+		std::cout << "Old size " << width << "x" << height << std::endl;
+		std::cout << "New size " << new_w << "x" << new_h << std::endl;
+	}
 
 	points.resize(new_h);
 	UL x,y;
@@ -756,7 +762,7 @@ void Map::generate_25_init(UL)
 
 UL Map::generate_25_threaded(UL cap, bool display)
 {
-	generate_25_init(cap);
+	generate_25_init(display);
 
 	Updater::Init(new_h*3+4);
 	if (display) Updater::Display();

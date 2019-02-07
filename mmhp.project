@@ -35,7 +35,7 @@
       </Compiler>
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(ProjectName)_dbg.out" IntermediateDirectory="./bin/Debug" Command="./$(ProjectName)_dbg.out" CommandArguments="center-x=-1.47452882438665971500051212405278384087331193098775457365770182516435143947098976074699292843694113074264365575137714462 center-y=-3.48707682616940982331838969799242778790049588060907746479525628466451286766169075438112125808608914654401503389343823058e-07 update-cap=500 zoom-start=5 width=320 height=240 num-digits=5 lead=img_ target=./temp zoom-end=5e-95 col-base=350 col-pow=-0.003 -p -t" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <General OutputFile="$(ProjectName)_dbg.out" IntermediateDirectory="./bin/Debug" Command="./$(ProjectName)_dbg.out" CommandArguments="center-x=-1.47452882438665971500051212405278384087331193098775457365770182516435143947098976074699292843694113074264365575137714462 center-y=-3.48707682616940982331838969799242778790049588060907746479525628466451286766169075438112125808608914654401503389343823058e-07 update-cap=1500 zoom-start=5 width=128 height=96 num-digits=5 lead=img_ target=./temp zoom-end=5e-95 col-base=350 col-pow=-0.003 -p -q" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>
