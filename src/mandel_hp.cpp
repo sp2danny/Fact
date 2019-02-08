@@ -577,6 +577,8 @@ void execute(LineCache* lc)
 		}
 	}
 
+	bool foundin = false;
+
 	for (i=0; i<n; ++i)
 	{
 		UL y = lc->y_start + i;
@@ -586,10 +588,12 @@ void execute(LineCache* lc)
 			if (p.status != Point::calc) continue;
 			if (p.iter < lc->cap) continue;
 			p.status = Point::in;
+			foundin = true;
 		}
 	}
 
-	all_ep_xy();
+	if (foundin)
+		all_ep_xy();
 
 	for (i=0; i<n; ++i)
 	{
@@ -762,7 +766,7 @@ void Map::generate_25_init(bool disp)
 
 UL Map::generate_25_threaded(UL cap, bool display)
 {
-	generate_25_init(display);
+	generate_25_init(false);
 
 	Updater::Init(new_h*3+4);
 	if (display) Updater::Display();
