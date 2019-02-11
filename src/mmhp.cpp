@@ -95,10 +95,11 @@ int main(int argc, char* argv[])
 	bool owr = cmd.has_option('o', "overwrite");
 	bool prt = cmd.has_option('p', "print");
 	bool i25 = cmd.has_option('q', "25");
+	bool i50 = cmd.has_option('f', "50");
 	
-	if (ten && i25)
+	if ( (ten+i25+i50) > 1 )
 	{
-		std::cerr << "-t and -q are exclusive" << std::endl;
+		std::cerr << "-t, -f and -q are exclusive" << std::endl;
 		return -1;
 	}
 
@@ -178,6 +179,27 @@ int main(int argc, char* argv[])
 			}
 			std::cout << "Wrote: " << mkname(i) << " to " << mkname(i+24) << std::endl;
 			i += 25;
+		}
+		else if (i50)
+		{
+			auto t1 = std::chrono::high_resolution_clock::now();
+			UL maxout = m.generate_50_threaded(update_cap, mod_func);
+			auto t2 = std::chrono::high_resolution_clock::now();
+			if (prt)
+			{
+				std::cout << "generate time  : " << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count() / 1000.0f << std::endl;
+				std::cout << "effective cap  : " << maxout << std::endl;
+				std::cout << "color mod      : " << mod_func(zoom_cur.get_d()) << std::endl;
+			}
+			for (int j=0; j<50; ++j)
+			{
+				curr_name = mkname(i+j);
+				zoom_cur *= zoom_step;
+				if (!owr && boost::filesystem::exists(curr_name)) continue;
+				m.makeimage_50_N(j,mod_func).Save(curr_name);
+			}
+			std::cout << "Wrote: " << mkname(i) << " to " << mkname(i+49) << std::endl;
+			i += 50;			
 		}
 		else
 		{

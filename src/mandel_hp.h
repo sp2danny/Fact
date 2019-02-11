@@ -100,6 +100,10 @@ struct Map
 	UL generate_25_threaded(UL cap, bool display=false);
 	Image makeimage_25_N(int n, ModFunc);
 
+	void generate_50_init(bool disp);
+	UL generate_50_threaded(UL cap, bool display=false);
+	Image makeimage_50_N(int n, ModFunc);
+
 };
 
 template<typename T>
