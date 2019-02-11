@@ -2,12 +2,12 @@
 ## Auto Generated makefile by CodeLite IDE
 ## any manual changes will be erased      
 ##
-## Release
+## Debug
 ProjectName            :=mmhp
-ConfigurationName      :=Release
+ConfigurationName      :=Debug
 WorkspacePath          := "/home/sp2danny/extra/Fact"
 ProjectPath            := "/home/sp2danny/extra/Fact"
-IntermediateDirectory  :=./bin/Release
+IntermediateDirectory  :=./bin/Debug
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
 CurrentFilePath        :=
@@ -27,8 +27,8 @@ OutputSwitch           :=-o
 LibraryPathSwitch      :=-L
 PreprocessorSwitch     :=-D
 SourceSwitch           :=-c 
-OutputFile             :=$(ProjectName).out
-Preprocessors          :=$(PreprocessorSwitch)NDEBUG 
+OutputFile             :=$(ProjectName)_dbg.out
+Preprocessors          :=
 ObjectSwitch           :=-o 
 ArchiveOutputSwitch    := 
 PreprocessOnlySwitch   :=-E
@@ -50,8 +50,8 @@ LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)/usr/lib/x86
 AR       := /usr/bin/ar rcu
 CXX      := /usr/bin/clang++ 
 CC       := /usr/bin/clang 
-CXXFLAGS := -std=c++17 -Wall -Wextra -pedantic -Werror -O3 $(Preprocessors)
-CFLAGS   := -Wall -O3 $(Preprocessors)
+CXXFLAGS := -std=c++17 -Wall -Wextra -pedantic -Werror -g -O0 -Wno-unused-variable $(Preprocessors)
+CFLAGS   := -Wall -g -O0 $(Preprocessors)
 ASFLAGS  := 
 AS       := /usr/bin/as 
 
@@ -78,7 +78,7 @@ $(OutputFile): $(IntermediateDirectory)/.d $(Objects)
 	$(LinkerName) $(OutputSwitch)$(OutputFile) @$(ObjectsFileList) $(LibPath) $(Libs) $(LinkOptions)
 
 $(IntermediateDirectory)/.d:
-	@test -d ./bin/Release || $(MakeDirCommand) ./bin/Release
+	@test -d ./bin/Debug || $(MakeDirCommand) ./bin/Debug
 
 PreBuild:
 
@@ -124,9 +124,9 @@ $(IntermediateDirectory)/src_mandel_hp.cpp$(PreprocessSuffix): src/mandel_hp.cpp
 ## Clean
 ##
 clean:
-	$(RM) ./bin/Release/*$(ObjectSuffix)
-	$(RM) ./bin/Release/*$(DependSuffix)
+	$(RM) ./bin/Debug/*$(ObjectSuffix)
+	$(RM) ./bin/Debug/*$(DependSuffix)
 	$(RM) $(OutputFile)
-	$(RM) ".build-release/mmhp"
+	$(RM) ".build-debug/mmhp"
 
 

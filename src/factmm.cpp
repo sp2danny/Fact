@@ -61,7 +61,7 @@ gboolean idle_func(gpointer data)
 		std::cout << "        unupdated " << noupdatefor << "     \r" << std::flush;
 	}
 
-	float mod = mod_base / (float)std::pow(m.scale_x.get_d(), mod_pow);
+	float mod = mod_base / (float)std::pow((double)m.scale_x, mod_pow);
 	img = m.makeimage(mod, fuc);
 
 	[[maybe_unused]]
@@ -97,7 +97,7 @@ gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
 
 void disp_img(GtkImage* image)
 {
-	float mod = mod_base / (float)pow(m.scale_x.get_d(), mod_pow);
+	float mod = mod_base / (float)pow((double)m.scale_x, mod_pow);
 
 	img = m.makeimage(mod, fuc);
 
@@ -259,7 +259,7 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		std::cout << "zoom step    : " << zoom_step   << std::endl;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
-		std::cout << "col-calc     : " << mod_base / (float)pow(m.scale_x.get_d(), mod_pow) << std::endl;
+		std::cout << "col-calc     : " << mod_base / (float)pow((double)m.scale_x, mod_pow) << std::endl;
 		break;
 	case GDK_c:
 		fuc *= 1.1;
@@ -282,28 +282,28 @@ gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 		mod_base *= 0.99f;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
-		std::cout << "col-calc     : " << mod_base / (float)pow(m.scale_x.get_d(), mod_pow) << std::endl;
+		std::cout << "col-calc     : " << mod_base / (float)pow((double)m.scale_x, mod_pow) << std::endl;
 		disp_img((GtkImage*)data);
 		break;
 	case GDK_w:
 		mod_base *= 1.01f;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
-		std::cout << "col-calc     : " << mod_base / (float)pow(m.scale_x.get_d(), mod_pow) << std::endl;
+		std::cout << "col-calc     : " << mod_base / (float)pow((double)m.scale_x, mod_pow) << std::endl;
 		disp_img((GtkImage*)data);
 		break;
 	case GDK_a:
 		mod_pow *= 0.99f;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
-		std::cout << "col-calc     : " << mod_base / (float)pow(m.scale_x.get_d(), mod_pow) << std::endl;
+		std::cout << "col-calc     : " << mod_base / (float)pow((double)m.scale_x, mod_pow) << std::endl;
 		disp_img((GtkImage*)data);
 		break;
 	case GDK_s:
 		mod_pow *= 1.01f;
 		std::cout << "col-base     : " << mod_base    << std::endl;
 		std::cout << "col-pow      : " << mod_pow     << std::endl;
-		std::cout << "col-calc     : " << mod_base / (float)pow(m.scale_x.get_d(), mod_pow) << std::endl;
+		std::cout << "col-calc     : " << mod_base / (float)pow((double)m.scale_x, mod_pow) << std::endl;
 		disp_img((GtkImage*)data);
 		break;
 	}
@@ -403,7 +403,7 @@ int main(int argc, char* argv[])
 
 	m.generate_init();
 	m.generate_odd(iter_init);
-	float mod = mod_base / (float)pow(m.scale_x.get_d(), mod_pow);
+	float mod = mod_base / (float)pow((double)m.scale_x, mod_pow);
 	img = m.makeimage(mod, fuc);
 
 	gtk_init(&argc, &argv);

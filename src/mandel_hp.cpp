@@ -35,8 +35,8 @@ bool Point::docalc(const Cmplx& c, UL cap)
 	if (n <= 1)
 	{
 		// first bulb
-		double xld = z.real().get_d();
-		double yld = z.imag().get_d();
+		double xld = (double)z.real();
+		double yld = (double)z.imag();
 		double y2 = yld * yld;
 		double xldp1 = xld+1.0;
 		if (((xldp1*xldp1) + y2) < 0.0625)
@@ -72,7 +72,7 @@ bool Point::docalc(const Cmplx& c, UL cap)
 		Flt  re_sq = zre * zre;
 		auto zim = z.imag();
 		Flt  im_sq = zim * zim;
-		auto az2 = re_sq.get_d() + im_sq.get_d();
+		auto az2 = (double)re_sq + (double)im_sq;
 		if (az2 > 4.0)
 		{
 			did_smth = true;
@@ -631,7 +631,7 @@ void execute(LineCache* lc)
 
 void Map::generate_10_init(UL )
 {
-	double zm = zoom_mul.get_d();
+	double zm = (double)zoom_mul;
 	double tm = pow(zm, -10);
 
 	new_w = ceil(width  * tm);
@@ -744,7 +744,7 @@ UL Map::generate_10(UL cap, bool display)
 
 void Map::generate_25_init(bool disp)
 {
-	double zm = zoom_mul.get_d();
+	double zm = (double)zoom_mul;
 	double tm = pow(zm, -25);
 
 	new_w = ceil(width  * tm);
@@ -882,7 +882,7 @@ Image Map::makeimage_25_N(int n, ModFunc mf)
 
 void Map::generate_50_init(bool disp)
 {
-	double zm = zoom_mul.get_d();
+	double zm = (double)zoom_mul;
 	double tm = pow(zm, -50);
 
 	new_w = ceil(width  * tm);

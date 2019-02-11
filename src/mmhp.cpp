@@ -21,11 +21,11 @@ int main(int argc, char* argv[])
 {
 	cmd.init(argc, argv);
 
-	static Flt   zoom_cur        = cmd.get_parameter( "zoom-start",   "3.2"     );
-	static Flt   zoom_end        = cmd.get_parameter( "zoom-end",     "0"       );
-	static Flt   zoom_step       = cmd.get_parameter( "zoom-step",    "0.99"    );
-	static Flt   center_x        = cmd.get_parameter( "center-x",     "0.5"     );
-	static Flt   center_y        = cmd.get_parameter( "center-y",     "0.0"     );
+	static Flt   zoom_cur        = from_string( cmd.get_parameter ( "zoom-start",   "3.2"     ));
+	static Flt   zoom_end        = from_string( cmd.get_parameter ( "zoom-end",     "0"       ));
+	static Flt   zoom_step       = from_string( cmd.get_parameter ( "zoom-step",    "0.99"    ));
+	static Flt   center_x        = from_string( cmd.get_parameter ( "center-x",     "0.5"     ));
+	static Flt   center_y        = from_string( cmd.get_parameter ( "center-y",     "0.0"     ));
 	static UL    num_dig         = std::stol  ( cmd.get_parameter ( "num-digits",   "3"       ));
 	static UL    update_cap      = std::stol  ( cmd.get_parameter ( "update-cap",   "50"      ));
 	static UL    image_width     = std::stol  ( cmd.get_parameter ( "width",        "640"     ));
@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
 			if (prt) {                                                                           \
 				std::cout << "generate time  : " << d1 / 1000.0f << std::endl;                   \
 				std::cout << "effective cap  : " << maxout << std::endl;                         \
-				std::cout << "color mod      : " << mod_func(zoom_cur.get_d()) << std::endl;     \
+				std::cout << "color mod      : " << mod_func((double)zoom_cur) << std::endl;     \
 			}                                                                                    \
 			for (int j=0; j<n; ++j)                                                              \
 			{                                                                                    \
@@ -190,7 +190,7 @@ int main(int argc, char* argv[])
 		{
 			m.generate_init();
 			m.generate(update_cap, true);
-			m.makeimage( mod_func(zoom_cur.get_d()) ).Save(curr_name);
+			m.makeimage( mod_func((double)zoom_cur) ).Save(curr_name);
 			zoom_cur *= zoom_step;
 			++i;
 		}
