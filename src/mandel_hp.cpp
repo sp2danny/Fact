@@ -42,6 +42,7 @@ bool Point::docalc(const Cmplx& c, UL cap)
 		if (((xldp1*xldp1) + y2) < 0.0625)
 		{
 			status = Point::in;
+			pixtype = pt_black;
 			return true;
 		}
 		// main cardoid
@@ -52,6 +53,7 @@ bool Point::docalc(const Cmplx& c, UL cap)
 		if (xld < (pp - 2.0*(pp*pp) + 0.25))
 		{
 			status = Point::in;
+			pixtype = pt_black;
 			return true;
 		}
 	}
@@ -73,6 +75,7 @@ bool Point::docalc(const Cmplx& c, UL cap)
 			did_smth = true;
 			status = Point::out;
 			over = sqrtf(az2);
+			pixtype = pt_normal;
 			break;
 		}
 
@@ -375,6 +378,7 @@ Image Map::makeimage_10_N(int n, ModFunc mf)
 	return img;
 }
 
+/*
 struct Updater
 {
 	static void Init(UL);
@@ -385,6 +389,7 @@ private:
 	static std::mutex lck;
 	static UL count, max, last;
 };
+*/
 
 std::mutex Updater::lck;
 UL Updater::count, Updater::max, Updater::last;
@@ -484,6 +489,7 @@ void execute(LineCache* lc)
 		pp = &lc->map.get(x,y-1); if (pp->status != Point::in) return false;
 		pp = &lc->map.get(x,y+1); if (pp->status != Point::in) return false;
 		p.status = Point::in;
+		p.pixtype = pt_black;
 		++skipcnt;
 		++inskip;
 		return true;
@@ -504,6 +510,7 @@ void execute(LineCache* lc)
 		p.status = Point::out;
 		p.iter = pp.iter;
 		p.over = (pp.over + pn.over)/2.0;
+		p.pixtype = pt_ep_hor;
 		++skipcnt;
 		return true;
 	};
@@ -523,6 +530,7 @@ void execute(LineCache* lc)
 		p.status = Point::out;
 		p.iter = pp.iter;
 		p.over = (pp.over + pn.over)/2.0;
+		p.pixtype = pt_ep_ver;
 		++skipcnt;
 		return true;
 	};
@@ -1001,3 +1009,61 @@ Image Map::makeimage_50_N(int n, ModFunc mf)
 
 	return img;
 }
+
+
+
+void Map::saveblob(int N, std::ostream& out)
+{
+	{
+		std::uint16_t val;
+		val = width;  out.write((char*)&val, 2);
+		val = height; out.write((char*)&val, 2);
+		val = new_w;  out.write((char*)&val, 2);
+		val = new_h;  out.write((char*)&val, 2);
+		val = N;      out.write((char*)&val, 2);
+	}
+	
+	UC val = 0;
+	UC cnt = 0;
+	auto put2 = [&](UC bits)
+	{
+		val = (val << 2) | bits;
+		cnt += 2;
+		if (cnt == 8)
+		{
+			out.write((char*)&val, 1);
+			val = cnt = 0;
+		}
+	};
+	
+	for (UL y=0; y<new_h; ++y)
+	{
+		for (UL x=0; y<new_w; ++x)
+		{
+			auto& pix = get(x,y);
+			UC pt;
+			switch (pix.pixtype)
+			{
+				case pt_normal: pt = 0; break;
+				case pt_ep_hor: pt = 1; break;
+				case pt_ep_ver: pt = 2; break;
+				case pt_black:  pt = 3; break;
+				default: throw "pixeltype error";
+			}
+			put2(pt);
+		}
+	}
+	while (cnt) put2(0);
+	
+	for (UL y=0; y<new_h; ++y)
+	{
+		for (UL x=0; y<new_w; ++x)
+		{
+			auto& pix = get(x,y);
+			if (pix.pixtype == pt_normal)
+				out.write((char*)&pix.over, sizeof(float));
+		}
+	}
+
+}
+

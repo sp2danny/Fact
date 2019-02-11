@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <chrono>
+#include <fstream>
 
 #include <boost/filesystem.hpp>
 
@@ -96,7 +97,8 @@ int main(int argc, char* argv[])
 	bool prt = cmd.has_option('p', "print");
 	bool i25 = cmd.has_option('q', "25");
 	bool i50 = cmd.has_option('f', "50");
-	
+	bool sb  = cmd.has_option('s', "saveblob");
+
 	if ( (ten+i25+i50) > 1 )
 	{
 		std::cerr << "-t, -f and -q are exclusive" << std::endl;
@@ -137,74 +139,57 @@ int main(int argc, char* argv[])
 
 		ModFunc mod_func = [](double d) { return mod_base / (float)pow(d, mod_pow); };
 
+		#define EXEC(n)                                                                          \
+			auto t1 = std::chrono::high_resolution_clock::now();                                 \
+			UL maxout = m.generate_ ## n ## _threaded(update_cap, prt);                          \
+			auto t2 = std::chrono::high_resolution_clock::now();                                 \
+			auto d1 = std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count();      \
+			if (prt) {                                                                           \
+				std::cout << "generate time  : " << d1 / 1000.0f << std::endl;                   \
+				std::cout << "effective cap  : " << maxout << std::endl;                         \
+				std::cout << "color mod      : " << mod_func(zoom_cur.get_d()) << std::endl;     \
+			}                                                                                    \
+			for (int j=0; j<n; ++j)                                                              \
+			{                                                                                    \
+				curr_name = mkname(i+j);                                                         \
+				zoom_cur *= zoom_step;                                                           \
+				if (!owr && boost::filesystem::exists(curr_name)) continue;                      \
+				m.makeimage_ ## n ## _N(j,mod_func).Save(curr_name);                             \
+			}                                                                                    \
+			auto t3 = std::chrono::high_resolution_clock::now();                                 \
+			auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t1).count();      \
+			std::cout << "effectiveness  : " << d2 * n / 1000.0f << std::endl;                   \
+			std::cout << "Wrote: " << mkname(i) << " to " << mkname(i+n-1) << std::endl;         \
+			if (sb) { std::ofstream of{mkname(i)+".blob"}; m.saveblob(n, of); }           \
+			i += n
+
 		if (ten)
 		{
-			auto t1 = std::chrono::high_resolution_clock::now();
-			UL maxout = m.generate_10_threaded(update_cap, mod_func);
-			//UL maxout = m.generate_10(update_cap, mod_func);
-			auto t2 = std::chrono::high_resolution_clock::now();
-			if (prt)
-			{
-				std::cout << "generate time  : " << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count() / 1000.0f << std::endl;
-				std::cout << "effective cap  : " << maxout << std::endl;
-				std::cout << "color mod      : " << mod_func(zoom_cur.get_d()) << std::endl;
-			}
+			//EXEC(10);
+			m.generate_threaded<10>(update_cap, false);
 			for (int j=0; j<10; ++j)
 			{
-				curr_name = mkname(i+j);
-				zoom_cur *= zoom_step;
+				curr_name = mkname(i+j); zoom_cur *= zoom_step;
 				if (!owr && boost::filesystem::exists(curr_name)) continue;
-				m.makeimage_10_N(j,mod_func).Save(curr_name);
-				std::cout << "Wrote: " << curr_name << std::endl;
+				m.makeimage_N<10>(j,mod_func).Save(curr_name);
 			}
 			i += 10;
 		}
 		else if (i25)
 		{
-			auto t1 = std::chrono::high_resolution_clock::now();
-			UL maxout = m.generate_25_threaded(update_cap, mod_func);
-			auto t2 = std::chrono::high_resolution_clock::now();
-			if (prt)
-			{
-				std::cout << "generate time  : " << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count() / 1000.0f << std::endl;
-				std::cout << "effective cap  : " << maxout << std::endl;
-				std::cout << "color mod      : " << mod_func(zoom_cur.get_d()) << std::endl;
-			}
-			for (int j=0; j<25; ++j)
-			{
-				curr_name = mkname(i+j);
-				zoom_cur *= zoom_step;
-				if (!owr && boost::filesystem::exists(curr_name)) continue;
-				m.makeimage_25_N(j,mod_func).Save(curr_name);
-			}
-			std::cout << "Wrote: " << mkname(i) << " to " << mkname(i+24) << std::endl;
-			i += 25;
+			EXEC(25);
 		}
 		else if (i50)
 		{
-			auto t1 = std::chrono::high_resolution_clock::now();
-			UL maxout = m.generate_50_threaded(update_cap, mod_func);
-			auto t2 = std::chrono::high_resolution_clock::now();
-			if (prt)
-			{
-				std::cout << "generate time  : " << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count() / 1000.0f << std::endl;
-				std::cout << "effective cap  : " << maxout << std::endl;
-				std::cout << "color mod      : " << mod_func(zoom_cur.get_d()) << std::endl;
-			}
-			for (int j=0; j<50; ++j)
-			{
-				curr_name = mkname(i+j);
-				zoom_cur *= zoom_step;
-				if (!owr && boost::filesystem::exists(curr_name)) continue;
-				m.makeimage_50_N(j,mod_func).Save(curr_name);
-			}
-			std::cout << "Wrote: " << mkname(i) << " to " << mkname(i+49) << std::endl;
-			i += 50;			
+			EXEC(50);
 		}
+		
+		#undef EXEC
+		
 		else
 		{
 			m.generate_init();
-			m.generate(update_cap,true);
+			m.generate(update_cap, true);
 			m.makeimage( mod_func(zoom_cur.get_d()) ).Save(curr_name);
 			zoom_cur *= zoom_step;
 			++i;
