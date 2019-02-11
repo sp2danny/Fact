@@ -63,7 +63,10 @@ bool Point::docalc(const Cmplx& c, UL cap)
 	while (true)
 	{
 		if (n >= cap)
+		{
+			pixtype = pt_black;
 			break;
+		}
 
 		auto zre = z.real();
 		Flt  re_sq = zre * zre;
@@ -1038,7 +1041,7 @@ void Map::saveblob(int N, std::ostream& out)
 	
 	for (UL y=0; y<new_h; ++y)
 	{
-		for (UL x=0; y<new_w; ++x)
+		for (UL x=0; x<new_w; ++x)
 		{
 			auto& pix = get(x,y);
 			UC pt;
@@ -1057,7 +1060,7 @@ void Map::saveblob(int N, std::ostream& out)
 	
 	for (UL y=0; y<new_h; ++y)
 	{
-		for (UL x=0; y<new_w; ++x)
+		for (UL x=0; x<new_w; ++x)
 		{
 			auto& pix = get(x,y);
 			if (pix.pixtype == pt_normal)

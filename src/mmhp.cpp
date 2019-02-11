@@ -158,22 +158,22 @@ int main(int argc, char* argv[])
 			}                                                                                    \
 			auto t3 = std::chrono::high_resolution_clock::now();                                 \
 			auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t1).count();      \
-			std::cout << "effectiveness  : " << d2 * n / 1000.0f << std::endl;                   \
+			std::cout << "effectiveness  : " << 1000.0f * n / d2 << std::endl;                   \
 			std::cout << "Wrote: " << mkname(i) << " to " << mkname(i+n-1) << std::endl;         \
-			if (sb) { std::ofstream of{mkname(i)+".blob"}; m.saveblob(n, of); }           \
+			if (sb) { std::ofstream of{mkname(i)+".blob"}; m.saveblob(n, of); }                  \
 			i += n
 
 		if (ten)
 		{
-			//EXEC(10);
-			m.generate_threaded<10>(update_cap, false);
-			for (int j=0; j<10; ++j)
-			{
-				curr_name = mkname(i+j); zoom_cur *= zoom_step;
-				if (!owr && boost::filesystem::exists(curr_name)) continue;
-				m.makeimage_N<10>(j,mod_func).Save(curr_name);
-			}
-			i += 10;
+			EXEC(10);
+			//m.generate_threaded<10>(update_cap, false);
+			//for (int j=0; j<10; ++j)
+			//{
+			//	curr_name = mkname(i+j); zoom_cur *= zoom_step;
+			//	if (!owr && boost::filesystem::exists(curr_name)) continue;
+			//	m.makeimage_N<10>(j,mod_func).Save(curr_name);
+			//}
+			//i += 10;
 		}
 		else if (i25)
 		{
