@@ -18,7 +18,7 @@
 
 #include "gmpxx.h"
 
-/*
+/* */
 struct Flt : mpf_class
 {
 	static constexpr int N = 512;
@@ -43,20 +43,12 @@ inline Flt from_string(const std::string& str)
 {
 	return Flt{str};
 }
-*/
-
 /* */
+
+/*
 typedef double Flt;
-
-inline Flt from_string(const std::string& str)
-{
-	std::stringstream ss;
-	ss.str(str);
-	double d;
-	ss >> d;
-	return d;
-}
-/* */
+auto from_string = [](const std::string& str) { return std::stod(str); };
+*/
 
 inline bool isnan(const Flt&) { return false; }
 inline bool isinf(const Flt&) { return false; }
