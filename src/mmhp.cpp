@@ -89,6 +89,13 @@ int main(int argc, char* argv[])
 	ml.center_y = (double)center_y;
 	ml.zoom_mul = (double)zoom_step;
 
+	if (cmd.has_option('r', "report"))
+	{
+		std::cout << std::setprecision(75);
+		mh.setup_dbl(zoom_step);
+		return 0;
+	}
+
 	if (cmd.has_option('p', "print"))
 	{
 		std::cout << std::setprecision(75);

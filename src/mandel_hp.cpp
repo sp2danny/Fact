@@ -376,13 +376,13 @@ void Map<Flt>::generate_N_init(int n, bool disp)
 
 	new_w = ceil(width  * tm);
 	new_h = ceil(height * tm);
-	
+
 	if (disp)
 	{
 		std::cout << "Old size " << width << "x" << height << std::endl;
 		std::cout << "New size " << new_w << "x" << new_h << std::endl;
 	}
-	
+
 	generate_init_rest();
 }
 
@@ -395,10 +395,10 @@ UL Map<Flt>::generate_N_threaded(int n, UL cap, bool display)
 	if (display) Updater::Display();
 
 	LineCache<Flt> lc[4] = {
-		{ cap, 0, 0, 0, display, 0, 0, *this, vfx, vfy },
-		{ cap, 0, 0, 0,   false, 0, 0, *this, vfx, vfy },
-		{ cap, 0, 0, 0,   false, 0, 0, *this, vfx, vfy },
-		{ cap, 0, 0, 0,   false, 0, 0, *this, vfx, vfy },
+		{ cap, display, *this },
+		{ cap,   false, *this },
+		{ cap,   false, *this },
+		{ cap,   false, *this },
 	};
 
 	UL i = 0;
@@ -414,9 +414,9 @@ UL Map<Flt>::generate_N_threaded(int n, UL cap, bool display)
 	boost::thread tt[4];
 	for (i=1; i<4; ++i)
 	{
-		tt[i] = boost::thread{&execute<Flt>, lc+i};
+		tt[i] = boost::thread{&LineCache<Flt>::execute, lc+i};
 	}
-	execute(lc);
+	LineCache<Flt>::execute(lc);
 	boost::chrono::nanoseconds ns{250'000};
 	int joined = 1;
 	while (true)
@@ -538,6 +538,100 @@ void Map<Flt>::saveblob(int N, std::ostream& out)
 
 }
 
+template<typename Flt>
+void Map<Flt>::setup_dbl(Flt target)
+{
+	double n = std::log(0.5) / std::log((double)target);
+	count_dlb = std::roundl(n);
+	double factor = std::pow(0.5, 1.0/n);
+	std::cout << "new factor    : " << factor << std::endl;
+	std::cout << "new count     : " << count_dlb << std::endl;
+	width  = (width  >> 2) << 2;
+	height = (height >> 2) << 2;
+	new_w = width  * 2;
+	new_h = height * 2;
+	std::cout << "adjusted size : " << width << "x" << height << std::endl;
+	std::cout << "new size      : " << new_w << "x" << new_h << std::endl;
+
+	generate_init_rest();
+
+	for (UL y=0; y<new_h; ++y)
+	{
+		const Flt& yld = vfy[y];
+		for (UL x=0; x<new_w; ++x)
+		{
+			const Flt& xld = vfx[x];
+			get(x,y).init({xld, yld});
+		}
+	}
+
+}
+
+template<typename Flt>
+int Map<Flt>::generate_dbl(UL cap, bool display)
+{
+	Updater::Init(new_h*3+4);
+	if (display) Updater::Display();
+
+	LineCache<Flt> lc[4] = {
+		{ cap, display, *this },
+		{ cap,   false, *this },
+		{ cap,   false, *this },
+		{ cap,   false, *this },
+	};
+
+	UL i = 0;
+	UL num = new_h / 4;
+	UL ovr = new_h - (num*4);
+	UL y = 0;
+	lc[0].y_start = y; y += (lc[0].y_count = num + ovr);
+	lc[1].y_start = y; y += (lc[1].y_count = num);
+	lc[2].y_start = y; y += (lc[2].y_count = num);
+	lc[3].y_start = y; y += (lc[3].y_count = num);
+
+	UL maxout = 0;
+	boost::thread tt[4];
+	for (i=1; i<4; ++i)
+	{
+		tt[i] = boost::thread{&LineCache<Flt>::execute_dbl, lc+i};
+	}
+	LineCache<Flt>::execute_dbl(lc);
+	boost::chrono::nanoseconds ns{250'000};
+	int joined = 1;
+	while (true)
+	{
+		if (display) Updater::Display();
+
+		bool j = tt[joined].try_join_for(ns);
+		if (j)
+		{
+			++joined;
+			Updater::Tick();
+			if (joined >= 4) break;
+		}
+	}
+	UL sk = 0, is = 0;
+	for (i=0; i<4; ++i)
+	{
+		if (lc[i].eff_cap > maxout)
+			maxout = lc[i].eff_cap;
+		sk += lc[i].skip_count;
+		is += lc[i].inskip;
+	}
+
+	Updater::Tick();
+	if (display) Updater::Display();
+
+	if (display)
+	{
+		std::cout << "skipped        : " << sk << " pixels, of wich " << is << " was inside \n";
+		std::cout << "maxout         : " << maxout << "\n";
+	}
+
+	return count_dlb;
+}
+
+
 template struct Map<FltH>;
 template struct Map<FltL>;
 
@@ -591,50 +685,79 @@ int Updater::Get()
 // *****************
 
 template<typename Flt>
-void execute(LineCache<Flt>* lc)
-{
-	UL maxout = 1, skipcnt = 0, inskip = 0;
-	UL i, n=lc->y_count;
-	UL w = lc->map.new_w;
+LineCache<Flt>::LineCache(UL cap, bool display, Map<Flt>& map)
+	: cap(cap)
+	, display(display)
+	, map(map)
+	, vfx(map.vfx)
+	, vfy(map.vfy)
+{}
 
-	for (i=0; i<n; ++i)
+template<typename Flt>
+void LineCache<Flt>::base_init()
+{
+	eff_cap = 1;
+	skip_count = 0;
+	inskip = 0;
+	n = y_count;
+	w = map.new_w;
+}
+
+template<typename Flt>
+void LineCache<Flt>::init_zero()
+{
+	for (UL i=0; i<n; ++i)
 	{
-		UL y = lc->y_start + i;
-		Flt& yld = lc->vfy[y];
+		UL y = y_start + i;
+		Flt& yld = vfy[y];
 		for (UL x=0; x<w; ++x)
 		{
-			auto& p = lc->map.get(x,y);
-			std::complex<Flt> c{lc->vfx[x], yld};
+			auto& p = map.get(x,y);
+			std::complex<Flt> c{vfx[x], yld};
 			p.init(c);
 		}
 	}
+}
 
-	auto dc = [&](Point<Flt>& p, const std::complex<Flt>& c) -> void
-	{
-		bool did = p.docalc(c, lc->cap);
-		if (did && p.iter>maxout) maxout=p.iter;
-	};
+template<typename Flt>
+void LineCache<Flt>::dc(Point<Flt>& p, const std::complex<Flt>& c)
+{
+	bool did = p.docalc(c, cap);
+	if (did && p.iter>eff_cap)
+		eff_cap = p.iter;
+}
 
-	for (i=0; i<n; ++i)
+template<typename Flt>
+void LineCache<Flt>::even()
+{
+	for (UL i=0; i<n; ++i)
 	{
 		Updater::Tick();
-		if (lc->display)
+		if (display)
 			Updater::Display();
 		if (i%2) continue;
-		UL y = lc->y_start + i;
-		Flt& yld = lc->vfy[y];
+		UL y = y_start + i;
+		Flt& yld = vfy[y];
 		for (UL x=0; x<w; x+=2)
 		{
-			auto& p = lc->map.get(x,y);
-			std::complex<Flt> c{lc->vfx[x], yld};
+			auto& p = map.get(x,y);
+			std::complex<Flt> c{vfx[x], yld};
 			dc(p,c);
 		}
 	}
+}
+
+template<typename Flt>
+void LineCache<Flt>::execute(LineCache* lc)
+{
+	lc->base_init();
+	lc->init_zero();
+	lc->even();
 	
 	UL xlo = 0;
 	UL xhi = lc->map.new_w-1;
 	UL ylo = lc->y_start;
-	UL yhi = lc->y_start+n-1;
+	UL yhi = lc->y_start+lc->n-1;
 
 	auto ep_xy = [&](UL x, UL y) -> bool
 	{
@@ -652,8 +775,8 @@ void execute(LineCache<Flt>* lc)
 		pp = &lc->map.get(x,y+1); if (pp->status != Point<Flt>::in) return false;
 		p.status = Point<Flt>::in;
 		p.pixtype = pt_black;
-		++skipcnt;
-		++inskip;
+		++lc->skip_count;
+		++lc->inskip;
 		return true;
 	};
 
@@ -673,7 +796,7 @@ void execute(LineCache<Flt>* lc)
 		p.iter = pp.iter;
 		p.over = (pp.over + pn.over)/2.0;
 		p.pixtype = pt_ep_hor;
-		++skipcnt;
+		++lc->skip_count;
 		return true;
 	};
 
@@ -693,43 +816,43 @@ void execute(LineCache<Flt>* lc)
 		p.iter = pp.iter;
 		p.over = (pp.over + pn.over)/2.0;
 		p.pixtype = pt_ep_ver;
-		++skipcnt;
+		++lc->skip_count;
 		return true;
 	};
 
 	auto all_ep_x = [&]() -> void
 	{
-		for (i=0; i<n; i+=1)
+		for (UL i=0; i<lc->n; i+=1)
 		{
 			UL y = lc->y_start + i;
-			for (UL x=0; x<w; x+=1)
+			for (UL x=0; x<lc->w; x+=1)
 				ep_x(x,y);
 		}
 	};
 
 	auto all_ep_y = [&]() -> void
 	{
-		for (i=0; i<n; i+=1)
+		for (UL i=0; i<lc->n; i+=1)
 		{
 			UL y = lc->y_start + i;
-			for (UL x=0; x<w; x+=1)
+			for (UL x=0; x<lc->w; x+=1)
 				ep_y(x,y);
 		}
 	};
 	
 	auto all_ep_xy = [&]() -> void
 	{
-		for (i=0; i<n; i+=1)
+		for (UL i=0; i<lc->n; i+=1)
 		{
 			UL y = lc->y_start + i;
-			for (UL x=0; x<w; x+=1)
+			for (UL x=0; x<lc->w; x+=1)
 				ep_xy(x,y);
 		}
 	};
 
 	all_ep_x(); all_ep_y();
 
-	for (i=0; i<n; ++i)
+	for (UL i=0; i<lc->n; ++i)
 	{
 		Updater::Tick();
 		if (lc->display)
@@ -737,22 +860,22 @@ void execute(LineCache<Flt>* lc)
 		if (!(i%2)) continue;
 		UL y = lc->y_start + i;
 		Flt& yld = lc->vfy[y];
-		for (UL x=1; x<w; x+=2)
+		for (UL x=1; x<lc->w; x+=2)
 		{
 			auto& p = lc->map.get(x,y);
 			if (p.status != Point<Flt>::calc) continue;
 			if (p.iter != 1) continue;
 			std::complex<Flt> c{lc->vfx[x], yld};
-			dc(p,c);
+			lc->dc(p,c);
 		}
 	}
 
 	bool foundin = false;
 
-	for (i=0; i<n; ++i)
+	for (UL i=0; i<lc->n; ++i)
 	{
 		UL y = lc->y_start + i;
-		for (UL x=0; x<w; ++x)
+		for (UL x=0; x<lc->w; ++x)
 		{
 			auto& p = lc->map.get(x,y);
 			if (p.status != Point<Flt>::calc) continue;
@@ -765,30 +888,32 @@ void execute(LineCache<Flt>* lc)
 	if (foundin)
 		all_ep_xy();
 
-	for (i=0; i<n; ++i)
+	for (UL i=0; i<lc->n; ++i)
 	{
 		Updater::Tick();
 		if (lc->display)
 			Updater::Display();
 
 		UL y = lc->y_start + i;
-		for (UL x=0; x<w; ++x)
+		for (UL x=0; x<lc->w; ++x)
 		{
 			auto& p = lc->map.get(x,y);
 			if (p.status != Point<Flt>::calc) continue;
 			if (p.iter != 1) continue;
 			std::complex<Flt> c{lc->vfx[x], lc->vfy[y]};
-			dc(p,c);
+			lc->dc(p,c);
 		}
 	}
 
-	if (maxout > lc->eff_cap)
-		lc->eff_cap = maxout;
-	lc->skip_count = skipcnt;
-	lc->inskip = inskip;
 }
 
-template void execute<FltH>(LineCache<FltH>*);
-template void execute<FltL>(LineCache<FltL>*);
+template<typename Flt>
+void LineCache<Flt>::execute_dbl(LineCache* lc)
+{
+	(void)lc;
+}
+
+template struct LineCache<FltH>;
+template struct LineCache<FltL>;
 
 

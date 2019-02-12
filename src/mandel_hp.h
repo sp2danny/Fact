@@ -84,6 +84,8 @@ struct Map;
 template<typename Flt>
 struct LineCache
 {
+	LineCache(UL cap, bool display, Map<Flt>& map);
+
 	UL cap;
 	UL eff_cap;
 	UL skip_count;
@@ -93,10 +95,18 @@ struct LineCache
 	Map<Flt>& map;
 	std::vector<Flt>& vfx;
 	std::vector<Flt>& vfy;
-};
 
-template<typename Flt>
-void execute(LineCache<Flt>*);
+	static void execute(LineCache*);
+	static void execute_dbl(LineCache*);
+
+private:
+	UL n, w;
+
+	void base_init();
+	void init_zero();
+	void dc(Point<Flt>& p, const std::complex<Flt>& c);
+	void even();
+};
 
 template<typename Flt>
 struct Map
@@ -123,7 +133,14 @@ struct Map
 	Image makeimage_N(int n, ModFunc);
 
 	void saveblob(int N, std::ostream&);
-	
+
+	int count_dlb;
+	void setup_dbl(Flt);
+	int generate_dbl(UL, bool=false);
+	void shuffle_dbl();
+
+friend
+	struct LineCache<Flt>;
 private:
 	void generate_N_init(int n, bool disp);
 	void generate_init_rest();
