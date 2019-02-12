@@ -18,70 +18,70 @@
 
 #include "gmpxx.h"
 
-/* */
-struct Flt : mpf_class
+struct FltH : mpf_class
 {
 	static constexpr int N = 512;
-	Flt() : mpf_class(0.0, N) { }
-	explicit Flt(double d) : mpf_class(d, N) { }
-	explicit Flt(std::string s) : mpf_class(s.c_str(), N) {}
+	FltH() : mpf_class(0.0, N) { }
+	explicit FltH(double d) : mpf_class(d, N) { }
+	explicit FltH(std::string s) : mpf_class(s.c_str(), N) {}
 	template<typename T>
-	Flt(T&& arg)
-		: Flt()
+	FltH(T&& arg)
+		: FltH()
 	{
 		((mpf_class&)*this) = std::forward<T>(arg);
 	}
 	template<typename T>
-	Flt& operator=(T&& arg)
+	FltH& operator=(T&& arg)
 	{
 		((mpf_class&)*this) = std::forward<T>(arg);
 		return *this;
 	}
 	explicit operator double() { return get_d(); }
 };
-inline Flt from_string(const std::string& str)
+inline FltH from_stringH(const std::string& str)
 {
-	return Flt{str};
+	return FltH{str};
 }
-/* */
 
-/*
-typedef double Flt;
-auto from_string = [](const std::string& str) { return std::stod(str); };
-*/
+typedef double FltL;
+inline auto from_stringL = [](const std::string& str) { return std::stod(str); };
 
-inline bool isnan(const Flt&) { return false; }
-inline bool isinf(const Flt&) { return false; }
-Flt copysign(const Flt& a,const Flt& b);
+inline bool isnan(const FltH&) { return false; }
+inline bool isinf(const FltH&) { return false; }
+FltH copysign(const FltH& a,const FltH& b);
 
 typedef std::uint32_t UL;
 
-typedef std::complex<Flt> Cmplx;
-
-Cmplx step(Cmplx c, Cmplx z);
+template<typename Flt>
+std::complex<Flt> step(const std::complex<Flt>& c, const std::complex<Flt>& z);
 
 constexpr UC pt_normal = 1;
 constexpr UC pt_ep_hor = 2;
 constexpr UC pt_ep_ver = 3;
 constexpr UC pt_black  = 4;
 
+template<typename Flt>
 struct Point
 {
 	enum { in, calc, out } status = calc;
 	UL iter = 0;
 	float over = 0.0f;
-	Cmplx z = {0.0,0.0};
-	bool docalc(const Cmplx& c, UL cap);
-	void init(const Cmplx& c);
 	UC pixtype = 0;
+	std::complex<Flt> z = {0.0,0.0};
+	bool docalc(const std::complex<Flt>& c, UL cap);
+	void init(const std::complex<Flt>& c);
+	RGB col(float mod) const;
 };
 
 typedef float (*ModFunc)(double);
 
-typedef std::vector<Point> Scanline;
+template<typename Flt>
+using Scanline = std::vector<Point<Flt>>;
 
+template<typename>
 struct Map;
 
+template<typename Flt>
 struct LineCache
 {
 	UL cap;
@@ -90,13 +90,15 @@ struct LineCache
 	UL inskip;
 	bool display;
 	UL y_start, y_count;
-	Map& map;
+	Map<Flt>& map;
 	std::vector<Flt>& vfx;
 	std::vector<Flt>& vfy;
 };
 
-void execute(LineCache*);
+template<typename Flt>
+void execute(LineCache<Flt>*);
 
+template<typename Flt>
 struct Map
 {
 	UL width, height;
@@ -104,19 +106,19 @@ struct Map
 	Flt center_x, center_y;
 	Flt zoom_mul;
 	bool map_all_done = false;
-	std::vector<Scanline> points;
+	std::vector<Scanline<Flt>> points;
 	UL new_w, new_h;
-	Point& get(UL x, UL y);
+	Point<Flt>& get(UL x, UL y);
 	Flt to_xpos(UL x) const;
 	Flt to_ypos(UL y) const;
-	void generate_init();
-	void generate_odd(UL cap);
 	enum Status { all_done, was_updated, no_change };
+	
+	// Singles
+	void generate_init();
 	Status generate(UL cap, bool display=false, bool extrap=false);
 	Image makeimage(float mod, UL upc=0);
 
-	UL generate_10(UL cap, bool display=false);
-
+	// Batch
 	UL generate_N_threaded(int n, UL cap, bool display=false);
 	Image makeimage_N(int n, ModFunc);
 
@@ -127,18 +129,15 @@ private:
 	void generate_init_rest();
 	RGB extrapolate(float x, float y, float mod);
 	std::vector<Flt> vfx, vfy;
-
 };
 
 template<typename T>
-T clamp(T val, T min, T max)
+inline T clamp(T val, T min, T max)
 {
 	if (val < min) val = min;
 	if (val > max) val = max;
 	return val;
 }
-
-RGB col(const Point& p, float mod);
 
 struct Updater
 {

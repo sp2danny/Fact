@@ -10,10 +10,9 @@
 #include "cmdline.h"
 #include "mandel_hp.h"
 
-cmdline cmd;
+using namespace std::literals;
 
-Map m;
-Image img;
+cmdline cmd;
 
 typedef std::string Str;
 
@@ -21,21 +20,21 @@ int main(int argc, char* argv[])
 {
 	cmd.init(argc, argv);
 
-	static Flt   zoom_cur        = from_string( cmd.get_parameter ( "zoom-start",   "3.2"     ));
-	static Flt   zoom_end        = from_string( cmd.get_parameter ( "zoom-end",     "0"       ));
-	static Flt   zoom_step       = from_string( cmd.get_parameter ( "zoom-step",    "0.99"    ));
-	static Flt   center_x        = from_string( cmd.get_parameter ( "center-x",     "0.5"     ));
-	static Flt   center_y        = from_string( cmd.get_parameter ( "center-y",     "0.0"     ));
-	static UL    num_dig         = std::stol  ( cmd.get_parameter ( "num-digits",   "3"       ));
-	static UL    update_cap      = std::stol  ( cmd.get_parameter ( "update-cap",   "50"      ));
-	static UL    image_width     = std::stol  ( cmd.get_parameter ( "width",        "640"     ));
-	static UL    image_height    = std::stol  ( cmd.get_parameter ( "height",       "480"     ));
-	static UL    skip_count      = std::stol  ( cmd.get_parameter ( "skip",         "0"       ));
-	static UL    max_count       = std::stol  ( cmd.get_parameter ( "max-count",    "0"       ));
-	static float mod_base        = std::stof  ( cmd.get_parameter ( "col-base",     "100"     ));
-	static float mod_pow         = std::stof  ( cmd.get_parameter ( "col-pow",      "0.03"    ));
-	static Str   target_dir      = cmd.get_parameter("target", "img");
-	static Str   name_lead       = cmd.get_parameter("lead", "m_");
+	static FltH  zoom_cur        = from_stringH ( cmd.get_parameter ( "zoom-start",   "3.2"     ));
+	static FltH  zoom_end        = from_stringH ( cmd.get_parameter ( "zoom-end",     "0"       ));
+	static FltH  zoom_step       = from_stringH ( cmd.get_parameter ( "zoom-step",    "0.99"    ));
+	static FltH  center_x        = from_stringH ( cmd.get_parameter ( "center-x",     "0.5"     ));
+	static FltH  center_y        = from_stringH ( cmd.get_parameter ( "center-y",     "0.0"     ));
+	static UL    num_dig         = std::stol    ( cmd.get_parameter ( "num-digits",   "3"       ));
+	static UL    update_cap      = std::stol    ( cmd.get_parameter ( "update-cap",   "50"      ));
+	static UL    image_width     = std::stol    ( cmd.get_parameter ( "width",        "640"     ));
+	static UL    image_height    = std::stol    ( cmd.get_parameter ( "height",       "480"     ));
+	static UL    skip_count      = std::stol    ( cmd.get_parameter ( "skip",         "0"       ));
+	static UL    max_count       = std::stol    ( cmd.get_parameter ( "max-count",    "0"       ));
+	static float mod_base        = std::stof    ( cmd.get_parameter ( "col-base",     "100"     ));
+	static float mod_pow         = std::stof    ( cmd.get_parameter ( "col-pow",      "0.03"    ));
+	static Str   target_dir      =                cmd.get_parameter ( "target",       "img"     ) ;
+	static Str   name_lead       =                cmd.get_parameter ( "lead",         "m_"      ) ;
 
 	auto mkname = [&](UL i) -> Str
 	{
@@ -76,18 +75,25 @@ int main(int argc, char* argv[])
 		std::cout << "skipping 0 .. " << (i-1) << std::endl;
 	}
 
-	Map m;
-	m.width  = image_width;
-	m.height = image_height;
-	m.center_x = center_x;
-	m.center_y = center_y;
-	m.zoom_mul = zoom_step;
+	Map<FltH> mh;
+	mh.width  = image_width;
+	mh.height = image_height;
+	mh.center_x = center_x;
+	mh.center_y = center_y;
+	mh.zoom_mul = zoom_step;
+	
+	Map<FltL> ml;
+	ml.width  = image_width;
+	ml.height = image_height;
+	ml.center_x = (double)center_x;
+	ml.center_y = (double)center_y;
+	ml.zoom_mul = (double)zoom_step;
 
 	if (cmd.has_option('p', "print"))
 	{
 		std::cout << std::setprecision(75);
-		std::cout << "center-x       : " << m.center_x    << std::endl;
-		std::cout << "center-y       : " << m.center_y    << std::endl;
+		std::cout << "center-x       : " << mh.center_x   << std::endl;
+		std::cout << "center-y       : " << mh.center_y   << std::endl;
 		std::cout << "update cap     : " << update_cap    << std::endl;
 		std::cout << "zoom step      : " << zoom_step     << std::endl;
 	}
@@ -127,21 +133,31 @@ int main(int argc, char* argv[])
 			continue;
 		}
 
-		m.scale_x = zoom_cur;
-		m.scale_y = (zoom_cur * (Flt)image_height) / (Flt)image_width;
+		bool useh = zoom_cur < 1e-10;
+
+		if (prt)
+			std::cout << "using "s << (useh ? "high"s : "low"s) << std::endl;
+
+		mh.scale_x = zoom_cur;
+		mh.scale_y = (zoom_cur * (FltH)image_height) / (FltH)image_width;
+
+		ml.scale_x = (double)zoom_cur;
+		ml.scale_y = (double)zoom_cur * image_height / image_width;
 
 		if (prt)
 		{
 			std::cout << std::setprecision(25);
-			std::cout << "scale-x        : " << m.scale_x << std::endl;
-			std::cout << "scale-y        : " << m.scale_y << std::endl;
+			std::cout << "scale-x        : " << mh.scale_x << std::endl;
+			std::cout << "scale-y        : " << mh.scale_y << std::endl;
 		}
 
 		ModFunc mod_func = [](double d) { return mod_base / (float)pow(d, mod_pow); };
+		UL maxout;
 
 		#define EXEC(n)                                                                          \
 			auto t1 = std::chrono::high_resolution_clock::now();                                 \
-			UL maxout = m.generate_N_threaded(n, update_cap, prt);                               \
+			if (useh) maxout = mh.generate_N_threaded(n, update_cap, prt);                       \
+			else      maxout = ml.generate_N_threaded(n, update_cap, prt);                       \
 			auto t2 = std::chrono::high_resolution_clock::now();                                 \
 			auto d1 = std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count();      \
 			if (prt) {                                                                           \
@@ -155,26 +171,23 @@ int main(int argc, char* argv[])
 				zoom_cur *= zoom_step;                                                           \
 				if (!owr && boost::filesystem::exists(curr_name)) continue;                      \
 				if (prt) std::cout << i+j << "\r" << std::flush;                                 \
-				m.makeimage_N(j,mod_func).Save(curr_name);                                       \
+				if (useh) mh.makeimage_N(j,mod_func).Save(curr_name);                            \
+				else      ml.makeimage_N(j,mod_func).Save(curr_name);                            \
 			}                                                                                    \
 			auto t3 = std::chrono::high_resolution_clock::now();                                 \
 			auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t1).count();      \
 			std::cout << "effectiveness  : " << 1000.0f * n / d2 << std::endl;                   \
 			std::cout << "Wrote: " << mkname(i) << " to " << mkname(i+n-1) << std::endl;         \
-			if (sb) { std::ofstream of{mkname(i)+".blob"}; m.saveblob(n, of); }                  \
+			if (sb) {                                                                            \
+				std::ofstream of{mkname(i)+".blob"};                                             \
+				if (useh) mh.saveblob(n, of);                                                    \
+				else      ml.saveblob(n, of);                                                    \
+			}                                                                                    \
 			i += n
 
 		if (ten)
 		{
 			EXEC(10);
-			//m.generate_threaded<10>(update_cap, false);
-			//for (int j=0; j<10; ++j)
-			//{
-			//	curr_name = mkname(i+j); zoom_cur *= zoom_step;
-			//	if (!owr && boost::filesystem::exists(curr_name)) continue;
-			//	m.makeimage_N<10>(j,mod_func).Save(curr_name);
-			//}
-			//i += 10;
 		}
 		else if (i25)
 		{
@@ -189,9 +202,16 @@ int main(int argc, char* argv[])
 		
 		else
 		{
-			m.generate_init();
-			m.generate(update_cap, true);
-			m.makeimage( mod_func((double)zoom_cur) ).Save(curr_name);
+			if (useh)
+			{
+				mh.generate_init();
+				mh.generate(update_cap, true);
+				mh.makeimage( mod_func((double)zoom_cur) ).Save(curr_name);
+			} else {
+				ml.generate_init();
+				ml.generate(update_cap, true);
+				ml.makeimage( mod_func((double)zoom_cur) ).Save(curr_name);
+			}
 			zoom_cur *= zoom_step;
 			++i;
 		}

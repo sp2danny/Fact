@@ -1,5 +1,4 @@
 
-
 #include "mandel_hp.h"
 
 #include <cassert>
@@ -12,7 +11,11 @@
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
 
-Flt copysign(const Flt& a,const Flt& b)
+using namespace std::literals;
+
+// ----------------------------------------------------------------------------
+
+FltH copysign(const FltH& a,const FltH& b)
 {
 	bool aneg = a<0;
 	bool bneg = b<0;
@@ -22,14 +25,23 @@ Flt copysign(const Flt& a,const Flt& b)
 		return -a;
 }
 
-using namespace std::literals;
-
-Cmplx step(Cmplx c, Cmplx z)
+template<typename Flt>
+std::complex<Flt> step(const std::complex<Flt>& c, const std::complex<Flt>& z)
 {
 	return z*z + c;
 }
 
-bool Point::docalc(const Cmplx& c, UL cap)
+template std::complex<FltH> step<FltH>(const std::complex<FltH>&, const std::complex<FltH>&);
+template std::complex<FltL> step<FltL>(const std::complex<FltL>&, const std::complex<FltL>&);
+
+// ----------------------------------------------------------------------------
+
+// *************
+// *** Point ***
+// *************
+
+template<typename Flt>
+bool Point<Flt>::docalc(const std::complex<Flt>& c, UL cap)
 {
 	UL& n = iter;
 	if (n <= 1)
@@ -92,19 +104,57 @@ bool Point::docalc(const Cmplx& c, UL cap)
 	return did_smth;
 }
 
-void Point::init(const Cmplx& c)
+template<typename Flt>
+void Point<Flt>::init(const std::complex<Flt>& c)
 {
 	status = Point::calc;
 	iter = 1;
 	z = c;
 }
 
-Point& Map::get(UL x, UL y)
+template<typename Flt>
+RGB Point<Flt>::col(float mod) const
+{
+	const Point& p = *this;
+	if (p.status != Point::out)
+	{
+		return RGB{0,0,0};
+	}
+	auto x = p.iter;
+
+	static const float pi2 = 3.1415926536f * 2;
+	static const float ilg2 = 1.0f / log(2.0f);
+	float f = fmod((float)x, mod) + 1.0f;
+	f /= mod;
+
+	f -= (float)log(log(p.over) * ilg2) * ilg2 / mod;
+	f *= pi2;
+	float r = 0.5f + 0.5f*std::sin(f + pi2 * 0.00000f);
+	float g = 0.5f + 0.5f*std::sin(f + pi2 * 0.33333f);
+	float b = 0.5f + 0.5f*std::sin(f + pi2 * 0.66666f);
+	int ri = clamp(int(r*256), 0, 255);
+	int gi = clamp(int(g*256), 0, 255);
+	int bi = clamp(int(b*256), 0, 255);
+	return {(UC)ri, (UC)gi, (UC)bi};
+}
+
+template struct Point<FltH>;
+template struct Point<FltL>;
+
+// ----------------------------------------------------------------------------
+
+// ***********
+// *** Map ***
+// ***********
+
+template<typename Flt>
+Point<Flt>& Map<Flt>::get(UL x, UL y)
 {
 	return points[y][x];
 }
 
-Flt Map::to_xpos(UL x) const
+template<typename Flt>
+Flt Map<Flt>::to_xpos(UL x) const
 {
 	assert(x<width);
 	Flt fact = x;
@@ -115,7 +165,8 @@ Flt Map::to_xpos(UL x) const
 	return fact;
 }
 
-Flt Map::to_ypos(UL y) const
+template<typename Flt>
+Flt Map<Flt>::to_ypos(UL y) const
 {
 	assert(y<height);
 	Flt fact = y;
@@ -126,7 +177,8 @@ Flt Map::to_ypos(UL y) const
 	return fact;
 }
 
-void Map::generate_init()
+template<typename Flt>
+void Map<Flt>::generate_init()
 {
 	UL x,y;
 	vfx.clear();
@@ -152,14 +204,13 @@ void Map::generate_init()
 	}
 }
 
-auto Map::generate(UL cap, bool display, bool extrap) -> Status
+template<typename Flt>
+auto Map<Flt>::generate(UL cap, bool display, bool extrap) -> Status
 {
 	bool found_one = false;
 	bool did_smth = false;
 
 	UL x,y;
-
-	//const Flt two = 2.0;
 
 	for (y=0; y<height; ++y)
 	{
@@ -173,8 +224,8 @@ auto Map::generate(UL cap, bool display, bool extrap) -> Status
 		const Flt& yld = vfy[y];
 		for (x=0; x<width; ++x)
 		{
-			Point& p = get(x,y);
-			if (p.status != Point::calc)
+			Point<Flt>& p = get(x,y);
+			if (p.status != Point<Flt>::calc)
 				continue;
 			found_one = true;
 			if (extrap)
@@ -182,13 +233,13 @@ auto Map::generate(UL cap, bool display, bool extrap) -> Status
 				UL w = width-1, h = height-1;
 				if (x && x<w)
 				{
-					Point& pp = get(x-1,y);
-					Point& pn = get(x+1,y);
-					if ( (pp.status == Point::out) &&
-					     (pn.status == Point::out) &&
+					auto& pp = get(x-1,y);
+					auto& pn = get(x+1,y);
+					if ( (pp.status == Point<Flt>::out) &&
+					     (pn.status == Point<Flt>::out) &&
 					     (pp.iter == pn.iter) )
 					{
-						p.status = Point::out;
+						p.status = Point<Flt>::out;
 						p.iter = pp.iter;
 						p.over = (pp.over + pn.over)/2.0;
 						did_smth = true;
@@ -197,13 +248,13 @@ auto Map::generate(UL cap, bool display, bool extrap) -> Status
 				}
 				if (y && y<h)
 				{
-					Point& pp = get(x,y-1);
-					Point& pn = get(x,y+1);
-					if ( (pp.status == Point::out) &&
-					     (pn.status == Point::out) &&
+					Point<Flt>& pp = get(x,y-1);
+					Point<Flt>& pn = get(x,y+1);
+					if ( (pp.status == Point<Flt>::out) &&
+					     (pn.status == Point<Flt>::out) &&
 					     (pp.iter == pn.iter) )
 					{
-						p.status = Point::out;
+						p.status = Point<Flt>::out;
 						p.iter = pp.iter;
 						p.over = (pp.over + pn.over)/2.0;
 						did_smth = true;
@@ -211,7 +262,7 @@ auto Map::generate(UL cap, bool display, bool extrap) -> Status
 					}
 				}
 			}
-			Cmplx c{vfx[x], yld};
+			std::complex<Flt> c{vfx[x], yld};
 			did_smth = p.docalc(c, p.iter+cap) || did_smth;
 		}
 	}
@@ -221,57 +272,8 @@ auto Map::generate(UL cap, bool display, bool extrap) -> Status
 		return did_smth ? was_updated : no_change;
 }
 
-void Map::generate_odd(UL cap)
-{
-	UL x,y;
-
-	//const Flt two = 2.0;
-
-	for (y=0; y<height; y+=2)
-	{
-		{
-			float f = 100.0f;
-			f /= height;
-			f *= y;
-			std::cout << (int)f << "%\r" << std::flush;
-		}
-		const Flt& yld = vfy[y];
-		for (x=0; x<width; x+=2)
-		{
-			Point& p = get(x,y);
-			if (p.status != Point::calc)
-				continue;
-			Cmplx c{vfx[x], yld};
-			p.docalc(c, cap);
-		}
-	}
-}
-
-RGB col(const Point& p, float mod)
-{
-	if (p.status != Point::out)
-	{
-		return RGB{0,0,0};
-	}
-	auto x = p.iter;
-
-	static const float pi2 = 3.1415926536f * 2;
-	static const float ilg2 = 1.0f / log(2.0f);
-	float f = fmod((float)x, mod) + 1.0f;
-	f /= mod;
-
-	f -= (float)log(log(p.over) * ilg2) * ilg2 / mod;
-	f *= pi2;
-	float r = 0.5f + 0.5f*std::sin(f + pi2 * 0.00000f);
-	float g = 0.5f + 0.5f*std::sin(f + pi2 * 0.33333f);
-	float b = 0.5f + 0.5f*std::sin(f + pi2 * 0.66666f);
-	int ri = clamp(int(r*256), 0, 255);
-	int gi = clamp(int(g*256), 0, 255);
-	int bi = clamp(int(b*256), 0, 255);
-	return {(UC)ri, (UC)gi, (UC)bi};
-}
-
-Image Map::makeimage(float mod, UL upc)
+template<typename Flt>
+Image Map<Flt>::makeimage(float mod, UL upc)
 {
 	Image img(width, height);
 	UL x,y;
@@ -280,11 +282,11 @@ Image Map::makeimage(float mod, UL upc)
 		for (x=0; x<width; ++x)
 		{
 			auto& p = get(x,y);
-			if (p.status == Point::out)
+			if (p.status == Point<Flt>::out)
 			{
-				img.PutPixel(x,y,col(p, mod));
+				img.PutPixel(x,y,p.col(mod));
 			} else {
-				if ((p.status==Point::calc) && upc && (p.iter<upc))
+				if ((p.status==Point<Flt>::calc) && upc && (p.iter<upc))
 					img.PutPixel(x,y,{255,255,255});
 				else
 					img.PutPixel(x,y,{0,0,0});
@@ -294,7 +296,7 @@ Image Map::makeimage(float mod, UL upc)
 	return img;
 }
 
-RGB mix(const RGB& p1,const RGB& p2, float f)
+static RGB mix(const RGB& p1,const RGB& p2, float f)
 {
 	assert( (f >= 0.0f) && (f <= 1.0f) );
 	const float inv = 1.0f-f;
@@ -307,7 +309,8 @@ RGB mix(const RGB& p1,const RGB& p2, float f)
 	return {(UC)ri, (UC)gi, (UC)bi};
 }
 
-RGB Map::extrapolate(float x, float y, float mod)
+template<typename Flt>
+RGB Map<Flt>::extrapolate(float x, float y, float mod)
 {
 	if (x<0.0f) x=0.0f; if (x>new_w) x=new_w;
 	if (y<0.0f) y=0.0f; if (y>new_h) y=new_h;
@@ -333,252 +336,18 @@ RGB Map::extrapolate(float x, float y, float mod)
 		y2 = ceill(y);
 		fy = y2-y;
 	}
-	RGB pix_11 = col(get(x1 , y1), mod);
-	RGB pix_12 = col(get(x1 , y2), mod);
-	RGB pix_21 = col(get(x2 , y1), mod);
-	RGB pix_22 = col(get(x2 , y2), mod);
+	RGB pix_11 = get(x1 , y1).col(mod);
+	RGB pix_12 = get(x1 , y2).col(mod);
+	RGB pix_21 = get(x2 , y1).col(mod);
+	RGB pix_22 = get(x2 , y2).col(mod);
 	RGB pix_1 = mix(pix_11, pix_12, fy);
 	RGB pix_2 = mix(pix_21, pix_22, fy);
 	RGB pix = mix(pix_1, pix_2, fx);
 	return pix;
 }
 
-std::mutex Updater::lck;
-UL Updater::count, Updater::max, Updater::last;
-
-void Updater::Init(UL m)
-{
-	count = 0;
-	max = m;
-	last = (UL)-1;
-}
-
-void Updater::Tick()
-{
-	std::lock_guard guard(lck);
-	++count;
-}
-
-void Updater::Display()
-{
-	std::lock_guard guard(lck);
-	float f = 100.0f;
-	f /= max;
-	f *= count;
-	UL p = (int)f;
-	if (p==last) return;
-	std::cout << p << "%\r" << std::flush;
-	last = p;
-}
-
-int Updater::Get()
-{
-	std::lock_guard guard(lck);
-	float f = 100.0f;
-	f /= max;
-	f *= count;
-	return (int)f;
-}
-
-void execute(LineCache* lc)
-{
-	UL maxout = 1, skipcnt = 0, inskip = 0;
-	//const Flt two = 2.0;
-	UL i, n=lc->y_count;
-	UL w = lc->map.new_w;
-
-	for (i=0; i<n; ++i)
-	{
-		UL y = lc->y_start + i;
-		Flt& yld = lc->vfy[y];
-		for (UL x=0; x<w; ++x)
-		{
-			auto& p = lc->map.get(x,y);
-			Cmplx c{lc->vfx[x], yld};
-			p.init(c);
-		}
-	}
-
-	auto dc = [&](Point& p, const Cmplx& c) -> void
-	{
-		bool did = p.docalc(c, lc->cap);
-		if (did && p.iter>maxout) maxout=p.iter;
-	};
-
-	for (i=0; i<n; ++i)
-	{
-		Updater::Tick();
-		if (lc->display)
-			Updater::Display();
-		if (i%2) continue;
-		UL y = lc->y_start + i;
-		Flt& yld = lc->vfy[y];
-		for (UL x=0; x<w; x+=2)
-		{
-			auto& p = lc->map.get(x,y);
-			Cmplx c{lc->vfx[x], yld};
-			dc(p,c);
-		}
-	}
-	
-	UL xlo = 0;
-	UL xhi = lc->map.new_w-1;
-	UL ylo = lc->y_start;
-	UL yhi = lc->y_start+n-1;
-
-	auto ep_xy = [&](UL x, UL y) -> bool
-	{
-		auto& p = lc->map.get(x,y);
-		if (p.status != Point::calc) return false;
-		if (p.iter != 1) return false;
-		if (x==xlo) return false;
-		if (x==xhi) return false;
-		if (y==ylo) return false;
-		if (y==yhi) return false;
-		Point* pp;
-		pp = &lc->map.get(x-1,y); if (pp->status != Point::in) return false;
-		pp = &lc->map.get(x+1,y); if (pp->status != Point::in) return false;
-		pp = &lc->map.get(x,y-1); if (pp->status != Point::in) return false;
-		pp = &lc->map.get(x,y+1); if (pp->status != Point::in) return false;
-		p.status = Point::in;
-		p.pixtype = pt_black;
-		++skipcnt;
-		++inskip;
-		return true;
-	};
-
-	auto ep_x = [&](UL x, UL y) -> bool
-	{
-		auto& p = lc->map.get(x,y);
-		if (p.status != Point::calc) return false;
-		if (p.iter != 1) return false;
-		if (x==xlo) return false;
-		if (x==xhi) return false;
-		auto& pp = lc->map.get(x-1,y);
-		if (pp.status != Point::out) return false;
-		auto& pn = lc->map.get(x+1,y);
-		if (pn.status != Point::out) return false;
-		if (pp.iter != pn.iter) return false;
-		p.status = Point::out;
-		p.iter = pp.iter;
-		p.over = (pp.over + pn.over)/2.0;
-		p.pixtype = pt_ep_hor;
-		++skipcnt;
-		return true;
-	};
-
-	auto ep_y = [&](UL x, UL y) -> bool
-	{
-		auto& p = lc->map.get(x,y);
-		if (p.status != Point::calc) return false;
-		if (p.iter != 1) return false;
-		if (y==ylo) return false;
-		if (y==yhi) return false;
-		auto& pp = lc->map.get(x,y-1);
-		if (pp.status != Point::out) return false;
-		auto& pn = lc->map.get(x,y+1);
-		if (pn.status != Point::out) return false;
-		if (pp.iter != pn.iter) return false;
-		p.status = Point::out;
-		p.iter = pp.iter;
-		p.over = (pp.over + pn.over)/2.0;
-		p.pixtype = pt_ep_ver;
-		++skipcnt;
-		return true;
-	};
-
-	auto all_ep_x = [&]() -> void
-	{
-		for (i=0; i<n; i+=1)
-		{
-			UL y = lc->y_start + i;
-			for (UL x=0; x<w; x+=1)
-				ep_x(x,y);
-		}
-	};
-
-	auto all_ep_y = [&]() -> void
-	{
-		for (i=0; i<n; i+=1)
-		{
-			UL y = lc->y_start + i;
-			for (UL x=0; x<w; x+=1)
-				ep_y(x,y);
-		}
-	};
-	
-	auto all_ep_xy = [&]() -> void
-	{
-		for (i=0; i<n; i+=1)
-		{
-			UL y = lc->y_start + i;
-			for (UL x=0; x<w; x+=1)
-				ep_xy(x,y);
-		}
-	};
-
-	all_ep_x(); all_ep_y();
-
-	for (i=0; i<n; ++i)
-	{
-		Updater::Tick();
-		if (lc->display)
-			Updater::Display();
-		if (!(i%2)) continue;
-		UL y = lc->y_start + i;
-		Flt& yld = lc->vfy[y];
-		for (UL x=1; x<w; x+=2)
-		{
-			auto& p = lc->map.get(x,y);
-			if (p.status != Point::calc) continue;
-			if (p.iter != 1) continue;
-			Cmplx c{lc->vfx[x], yld};
-			dc(p,c);
-		}
-	}
-
-	bool foundin = false;
-
-	for (i=0; i<n; ++i)
-	{
-		UL y = lc->y_start + i;
-		for (UL x=0; x<w; ++x)
-		{
-			auto& p = lc->map.get(x,y);
-			if (p.status != Point::calc) continue;
-			if (p.iter < lc->cap) continue;
-			p.status = Point::in;
-			foundin = true;
-		}
-	}
-
-	if (foundin)
-		all_ep_xy();
-
-	for (i=0; i<n; ++i)
-	{
-		Updater::Tick();
-		if (lc->display)
-			Updater::Display();
-
-		UL y = lc->y_start + i;
-		for (UL x=0; x<w; ++x)
-		{
-			auto& p = lc->map.get(x,y);
-			if (p.status != Point::calc) continue;
-			if (p.iter != 1) continue;
-			Cmplx c{lc->vfx[x], lc->vfy[y]};
-			dc(p,c);
-		}
-	}
-
-	if (maxout > lc->eff_cap)
-		lc->eff_cap = maxout;
-	lc->skip_count = skipcnt;
-	lc->inskip = inskip;
-}
-
-void Map::generate_init_rest()
+template<typename Flt>
+void Map<Flt>::generate_init_rest()
 {
 	points.resize(new_h);
 	UL x,y;
@@ -599,28 +368,8 @@ void Map::generate_init_rest()
 		vfy.push_back(y_start + y_step*y);
 }
 
-UL Map::generate_10(UL cap, bool display)
-{
-	generate_N_init(10,display);
-
-	Updater::Init(new_h*3+1);
-	if (display) Updater::Display();
-
-	LineCache lc = { cap, 0, 0, 0, display, 0, new_h, *this, vfx, vfy };
-
-	execute(&lc);
-
-	Updater::Tick();
-	if (display) Updater::Display();
-
-	if (display)
-		std::cout << "skipped        : " << lc.skip_count << " pixels, of wich " << lc.inskip << " was inside \n";
-
-	return lc.eff_cap;
-
-}
-
-void Map::generate_N_init(int n, bool disp)
+template<typename Flt>
+void Map<Flt>::generate_N_init(int n, bool disp)
 {
 	double zm = (double)zoom_mul;
 	double tm = pow(zm, -n);
@@ -637,14 +386,15 @@ void Map::generate_N_init(int n, bool disp)
 	generate_init_rest();
 }
 
-UL Map::generate_N_threaded(int n, UL cap, bool display)
+template<typename Flt>
+UL Map<Flt>::generate_N_threaded(int n, UL cap, bool display)
 {
 	generate_N_init(n, display);
 
 	Updater::Init(new_h*3+4);
 	if (display) Updater::Display();
 
-	LineCache lc[4] = {
+	LineCache<Flt> lc[4] = {
 		{ cap, 0, 0, 0, display, 0, 0, *this, vfx, vfy },
 		{ cap, 0, 0, 0,   false, 0, 0, *this, vfx, vfy },
 		{ cap, 0, 0, 0,   false, 0, 0, *this, vfx, vfy },
@@ -664,7 +414,7 @@ UL Map::generate_N_threaded(int n, UL cap, bool display)
 	boost::thread tt[4];
 	for (i=1; i<4; ++i)
 	{
-		tt[i] = boost::thread{&execute, lc+i};
+		tt[i] = boost::thread{&execute<Flt>, lc+i};
 	}
 	execute(lc);
 	boost::chrono::nanoseconds ns{250'000};
@@ -699,7 +449,8 @@ UL Map::generate_N_threaded(int n, UL cap, bool display)
 	return maxout;
 }
 
-Image Map::makeimage_N(int n, ModFunc mf)
+template<typename Flt>
+Image Map<Flt>::makeimage_N(int n, ModFunc mf)
 {
 	Image img(width, height);
 	double sx{scale_x};
@@ -731,7 +482,8 @@ Image Map::makeimage_N(int n, ModFunc mf)
 	return img;
 }
 
-void Map::saveblob(int N, std::ostream& out)
+template<typename Flt>
+void Map<Flt>::saveblob(int N, std::ostream& out)
 {
 	{
 		std::uint16_t val;
@@ -785,4 +537,258 @@ void Map::saveblob(int N, std::ostream& out)
 	}
 
 }
+
+template struct Map<FltH>;
+template struct Map<FltL>;
+
+// ----------------------------------------------------------------------------
+
+// ***************
+// *** Updater ***
+// ***************
+
+std::mutex Updater::lck;
+UL Updater::count, Updater::max, Updater::last;
+
+void Updater::Init(UL m)
+{
+	count = 0;
+	max = m;
+	last = (UL)-1;
+}
+
+void Updater::Tick()
+{
+	std::lock_guard guard(lck);
+	++count;
+}
+
+void Updater::Display()
+{
+	std::lock_guard guard(lck);
+	float f = 100.0f;
+	f /= max;
+	f *= count;
+	UL p = (int)f;
+	if (p==last) return;
+	std::cout << p << "%\r" << std::flush;
+	last = p;
+}
+
+int Updater::Get()
+{
+	std::lock_guard guard(lck);
+	float f = 100.0f;
+	f /= max;
+	f *= count;
+	return (int)f;
+}
+
+// ----------------------------------------------------------------------------
+
+// *****************
+// *** LineCache ***
+// *****************
+
+template<typename Flt>
+void execute(LineCache<Flt>* lc)
+{
+	UL maxout = 1, skipcnt = 0, inskip = 0;
+	UL i, n=lc->y_count;
+	UL w = lc->map.new_w;
+
+	for (i=0; i<n; ++i)
+	{
+		UL y = lc->y_start + i;
+		Flt& yld = lc->vfy[y];
+		for (UL x=0; x<w; ++x)
+		{
+			auto& p = lc->map.get(x,y);
+			std::complex<Flt> c{lc->vfx[x], yld};
+			p.init(c);
+		}
+	}
+
+	auto dc = [&](Point<Flt>& p, const std::complex<Flt>& c) -> void
+	{
+		bool did = p.docalc(c, lc->cap);
+		if (did && p.iter>maxout) maxout=p.iter;
+	};
+
+	for (i=0; i<n; ++i)
+	{
+		Updater::Tick();
+		if (lc->display)
+			Updater::Display();
+		if (i%2) continue;
+		UL y = lc->y_start + i;
+		Flt& yld = lc->vfy[y];
+		for (UL x=0; x<w; x+=2)
+		{
+			auto& p = lc->map.get(x,y);
+			std::complex<Flt> c{lc->vfx[x], yld};
+			dc(p,c);
+		}
+	}
+	
+	UL xlo = 0;
+	UL xhi = lc->map.new_w-1;
+	UL ylo = lc->y_start;
+	UL yhi = lc->y_start+n-1;
+
+	auto ep_xy = [&](UL x, UL y) -> bool
+	{
+		auto& p = lc->map.get(x,y);
+		if (p.status != Point<Flt>::calc) return false;
+		if (p.iter != 1) return false;
+		if (x==xlo) return false;
+		if (x==xhi) return false;
+		if (y==ylo) return false;
+		if (y==yhi) return false;
+		Point<Flt>* pp;
+		pp = &lc->map.get(x-1,y); if (pp->status != Point<Flt>::in) return false;
+		pp = &lc->map.get(x+1,y); if (pp->status != Point<Flt>::in) return false;
+		pp = &lc->map.get(x,y-1); if (pp->status != Point<Flt>::in) return false;
+		pp = &lc->map.get(x,y+1); if (pp->status != Point<Flt>::in) return false;
+		p.status = Point<Flt>::in;
+		p.pixtype = pt_black;
+		++skipcnt;
+		++inskip;
+		return true;
+	};
+
+	auto ep_x = [&](UL x, UL y) -> bool
+	{
+		auto& p = lc->map.get(x,y);
+		if (p.status != Point<Flt>::calc) return false;
+		if (p.iter != 1) return false;
+		if (x==xlo) return false;
+		if (x==xhi) return false;
+		auto& pp = lc->map.get(x-1,y);
+		if (pp.status != Point<Flt>::out) return false;
+		auto& pn = lc->map.get(x+1,y);
+		if (pn.status != Point<Flt>::out) return false;
+		if (pp.iter != pn.iter) return false;
+		p.status = Point<Flt>::out;
+		p.iter = pp.iter;
+		p.over = (pp.over + pn.over)/2.0;
+		p.pixtype = pt_ep_hor;
+		++skipcnt;
+		return true;
+	};
+
+	auto ep_y = [&](UL x, UL y) -> bool
+	{
+		auto& p = lc->map.get(x,y);
+		if (p.status != Point<Flt>::calc) return false;
+		if (p.iter != 1) return false;
+		if (y==ylo) return false;
+		if (y==yhi) return false;
+		auto& pp = lc->map.get(x,y-1);
+		if (pp.status != Point<Flt>::out) return false;
+		auto& pn = lc->map.get(x,y+1);
+		if (pn.status != Point<Flt>::out) return false;
+		if (pp.iter != pn.iter) return false;
+		p.status = Point<Flt>::out;
+		p.iter = pp.iter;
+		p.over = (pp.over + pn.over)/2.0;
+		p.pixtype = pt_ep_ver;
+		++skipcnt;
+		return true;
+	};
+
+	auto all_ep_x = [&]() -> void
+	{
+		for (i=0; i<n; i+=1)
+		{
+			UL y = lc->y_start + i;
+			for (UL x=0; x<w; x+=1)
+				ep_x(x,y);
+		}
+	};
+
+	auto all_ep_y = [&]() -> void
+	{
+		for (i=0; i<n; i+=1)
+		{
+			UL y = lc->y_start + i;
+			for (UL x=0; x<w; x+=1)
+				ep_y(x,y);
+		}
+	};
+	
+	auto all_ep_xy = [&]() -> void
+	{
+		for (i=0; i<n; i+=1)
+		{
+			UL y = lc->y_start + i;
+			for (UL x=0; x<w; x+=1)
+				ep_xy(x,y);
+		}
+	};
+
+	all_ep_x(); all_ep_y();
+
+	for (i=0; i<n; ++i)
+	{
+		Updater::Tick();
+		if (lc->display)
+			Updater::Display();
+		if (!(i%2)) continue;
+		UL y = lc->y_start + i;
+		Flt& yld = lc->vfy[y];
+		for (UL x=1; x<w; x+=2)
+		{
+			auto& p = lc->map.get(x,y);
+			if (p.status != Point<Flt>::calc) continue;
+			if (p.iter != 1) continue;
+			std::complex<Flt> c{lc->vfx[x], yld};
+			dc(p,c);
+		}
+	}
+
+	bool foundin = false;
+
+	for (i=0; i<n; ++i)
+	{
+		UL y = lc->y_start + i;
+		for (UL x=0; x<w; ++x)
+		{
+			auto& p = lc->map.get(x,y);
+			if (p.status != Point<Flt>::calc) continue;
+			if (p.iter < lc->cap) continue;
+			p.status = Point<Flt>::in;
+			foundin = true;
+		}
+	}
+
+	if (foundin)
+		all_ep_xy();
+
+	for (i=0; i<n; ++i)
+	{
+		Updater::Tick();
+		if (lc->display)
+			Updater::Display();
+
+		UL y = lc->y_start + i;
+		for (UL x=0; x<w; ++x)
+		{
+			auto& p = lc->map.get(x,y);
+			if (p.status != Point<Flt>::calc) continue;
+			if (p.iter != 1) continue;
+			std::complex<Flt> c{lc->vfx[x], lc->vfy[y]};
+			dc(p,c);
+		}
+	}
+
+	if (maxout > lc->eff_cap)
+		lc->eff_cap = maxout;
+	lc->skip_count = skipcnt;
+	lc->inskip = inskip;
+}
+
+template void execute<FltH>(LineCache<FltH>*);
+template void execute<FltL>(LineCache<FltL>*);
+
 
