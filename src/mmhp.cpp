@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
 		return name;
 	};
 
-	UL i = 1;
+	UL i = 0;
 
 	while (skip_count)
 	{
@@ -71,9 +71,9 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	if (i != 1)
+	if (i != 0)
 	{
-		std::cout << "skipping 1 .. " << (i-1) << std::endl;
+		std::cout << "skipping 0 .. " << (i-1) << std::endl;
 	}
 
 	Map m;
@@ -141,7 +141,7 @@ int main(int argc, char* argv[])
 
 		#define EXEC(n)                                                                          \
 			auto t1 = std::chrono::high_resolution_clock::now();                                 \
-			UL maxout = m.generate_ ## n ## _threaded(update_cap, prt);                          \
+			UL maxout = m.generate_N_threaded(n, update_cap, prt);                               \
 			auto t2 = std::chrono::high_resolution_clock::now();                                 \
 			auto d1 = std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count();      \
 			if (prt) {                                                                           \
@@ -154,7 +154,8 @@ int main(int argc, char* argv[])
 				curr_name = mkname(i+j);                                                         \
 				zoom_cur *= zoom_step;                                                           \
 				if (!owr && boost::filesystem::exists(curr_name)) continue;                      \
-				m.makeimage_ ## n ## _N(j,mod_func).Save(curr_name);                             \
+				if (prt) std::cout << i+j << "\r" << std::flush;                                 \
+				m.makeimage_N(j,mod_func).Save(curr_name);                                       \
 			}                                                                                    \
 			auto t3 = std::chrono::high_resolution_clock::now();                                 \
 			auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t1).count();      \

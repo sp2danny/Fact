@@ -35,7 +35,7 @@
       </Compiler>
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(ProjectName)_dbg.out" IntermediateDirectory="./bin/Debug" Command="./$(ProjectName)_dbg.out" CommandArguments="center-x=-1.4745288243 center-y=-3.4870768261e-7 update-cap=1500 zoom-start=5 width=320 height=240 num-digits=3 lead=img_ target=./dbg zoom-end=5e-15 col-base=350 col-pow=-0.003 -p -t -s " UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <General OutputFile="$(ProjectName)_dbg.out" IntermediateDirectory="./bin/Debug" Command="./$(ProjectName)_dbg.out" CommandArguments="center-x=-1.4745288243 center-y=-3.4870768261e-7 update-cap=1500 zoom-start=5 width=1024 height=768 num-digits=3 lead=img_ target=./dbg zoom-end=5e-15 col-base=350 col-pow=-0.003 -p -f" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>
@@ -74,7 +74,7 @@
       </Compiler>
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(ProjectName).out" IntermediateDirectory="./bin/Release" Command="./$(ProjectName).out" CommandArguments="center-x=-1.4745288243 center-y=-3.4870768261e-7 update-cap=2500 zoom-start=5 width=320 height=240 num-digits=3 lead=img_ target=./dbg zoom-end=5e-15 col-base=350 col-pow=-0.003 -p -q" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <General OutputFile="$(ProjectName).out" IntermediateDirectory="./bin/Release" Command="./$(ProjectName).out" CommandArguments="center-x=-1.4745288243 center-y=-3.4870768261e-7 update-cap=1500 max-count=999 zoom-start=5 width=1024 height=768 num-digits=3 lead=img_ target=./dbg zoom-end=5e-15 col-base=350 col-pow=-0.003 -p -f" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>

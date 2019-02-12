@@ -159,7 +159,7 @@ auto Map::generate(UL cap, bool display, bool extrap) -> Status
 
 	UL x,y;
 
-	const Flt two = 2.0;
+	//const Flt two = 2.0;
 
 	for (y=0; y<height; ++y)
 	{
@@ -225,7 +225,7 @@ void Map::generate_odd(UL cap)
 {
 	UL x,y;
 
-	const Flt two = 2.0;
+	//const Flt two = 2.0;
 
 	for (y=0; y<height; y+=2)
 	{
@@ -343,43 +343,6 @@ RGB Map::extrapolate(float x, float y, float mod)
 	return pix;
 }
 
-Image Map::makeimage_10_N(int n, ModFunc mf)
-{
-	Image img(width, height);
-	double sx{scale_x};
-
-	++n;
-	double t0{zoom_mul};
-	double tm  = powf(t0, -1);
-	double tn  = powf(t0, -n);
-	double t10 = powf(t0, -11); (void)t10;
-	double dif = t10-tm;
-	double per = (tn-tm)/dif;
-
-	double mod = mf(sx/tn);
-
-	double xstart = (new_w - width)/2;
-	xstart *= per;
-	double ystart = (new_h - height)/2;
-	ystart *= per;
-	double xstep = double(new_w) / double(width);
-	xstep = 1.0f + (xstep-1.0f)*(1.0f-per);
-	double ystep = double(new_h) / double(height);
-	ystep = 1.0f + (ystep-1.0f)*(1.0f-per);
-
-	UL x,y;
-	for (y=0; y<height; ++y)
-	{
-		double yf = ystart + y * ystep;
-		for (x=0; x<width; ++x)
-		{
-			double xf = xstart + x * xstep;
-			img.PutPixel(x,y,extrapolate(xf,yf, mod));
-		}
-	}
-
-	return img;
-}
 
 /*
 struct Updater
@@ -434,7 +397,7 @@ int Updater::Get()
 void execute(LineCache* lc)
 {
 	UL maxout = 1, skipcnt = 0, inskip = 0;
-	const Flt two = 2.0;
+	//const Flt two = 2.0;
 	UL i, n=lc->y_count;
 	UL w = lc->map.new_w;
 
@@ -629,14 +592,41 @@ void execute(LineCache* lc)
 	lc->inskip = inskip;
 }
 
-void Map::generate_10_init(UL )
+/*
+Image Map::makeimage_10_N(int n, ModFunc mf)
 {
-	double zm = (double)zoom_mul;
-	double tm = pow(zm, -10);
+	Image img(width, height);
+	double sx{scale_x};
 
-	new_w = ceil(width  * tm);
-	new_h = ceil(height * tm);
+	double t0{zoom_mul};
+	double tpm1 = pow(t0, -n);
+	double myw = width  * tpm1;
+	double myh = height * tpm1;
+	
+	double xstart = (new_w-myw) / 2;
+	double ystart = (new_h-myh) / 2;
 
+	double xstep = new_w / width;
+	double ystep = new_h / height;
+
+	double mod = mf(sx * tpm1);
+
+	UL x,y;
+	for (y=0; y<height; ++y)
+	{
+		double yf = ystart + y * ystep;
+		for (x=0; x<width; ++x)
+		{
+			double xf = xstart + x * xstep;
+			img.PutPixel(x,y,extrapolate(xf,yf, mod));
+		}
+	}
+
+	return img;
+}
+*/
+void Map::generate_init_rest()
+{
 	points.resize(new_h);
 	UL x,y;
 	for (y=0; y<new_h; ++y)
@@ -656,9 +646,27 @@ void Map::generate_10_init(UL )
 		vfy.push_back(y_start + y_step*y);
 }
 
+/*
+void Map::generate_10_init(bool disp)
+{
+	double zm = (double)zoom_mul;
+	double tm = pow(zm, -10);
+
+	new_w = ceil(width  * tm);
+	new_h = ceil(height * tm);
+	
+	if (disp)
+	{
+		std::cout << "Old size " << width << "x" << height << std::endl;
+		std::cout << "New size " << new_w << "x" << new_h << std::endl;
+	}
+
+	generate_init_rest();
+}
+
 UL Map::generate_10_threaded(UL cap, bool display)
 {
-	generate_10_init(cap);
+	generate_10_init(display);
 
 	Updater::Init(new_h*3+4);
 	if (display) Updater::Display();
@@ -717,10 +725,11 @@ UL Map::generate_10_threaded(UL cap, bool display)
 
 	return maxout;
 }
+*/
 
 UL Map::generate_10(UL cap, bool display)
 {
-	generate_10_init(cap);
+	generate_N_init(10,display);
 
 	Updater::Init(new_h*3+1);
 	if (display) Updater::Display();
@@ -739,13 +748,10 @@ UL Map::generate_10(UL cap, bool display)
 
 }
 
-
-
-
-void Map::generate_25_init(bool disp)
+void Map::generate_N_init(int n, bool disp)
 {
 	double zm = (double)zoom_mul;
-	double tm = pow(zm, -25);
+	double tm = pow(zm, -n);
 
 	new_w = ceil(width  * tm);
 	new_h = ceil(height * tm);
@@ -755,29 +761,13 @@ void Map::generate_25_init(bool disp)
 		std::cout << "Old size " << width << "x" << height << std::endl;
 		std::cout << "New size " << new_w << "x" << new_h << std::endl;
 	}
-
-	points.resize(new_h);
-	UL x,y;
-	for (y=0; y<new_h; ++y)
-		points[y].resize(new_w+3);
-
-	Flt x_start = to_xpos(0);
-	Flt x_stop  = to_xpos(width-1);
-	Flt y_start = to_ypos(0);
-	Flt y_stop  = to_ypos(height-1);
-	Flt x_step  = (x_stop-x_start) / (new_w-1);
-	Flt y_step  = (y_stop-y_start) / (new_h-1);
-
-	vfx.clear(); vfy.clear();
-	for (x=0; x<new_w; ++x)
-		vfx.push_back(x_start + x_step*x);
-	for (y=0; y<new_h; ++y)
-		vfy.push_back(y_start + y_step*y);
+	
+	generate_init_rest();
 }
 
-UL Map::generate_25_threaded(UL cap, bool display)
+UL Map::generate_N_threaded(int n, UL cap, bool display)
 {
-	generate_25_init(false);
+	generate_N_init(n, display);
 
 	Updater::Init(new_h*3+4);
 	if (display) Updater::Display();
@@ -837,29 +827,23 @@ UL Map::generate_25_threaded(UL cap, bool display)
 	return maxout;
 }
 
-Image Map::makeimage_25_N(int n, ModFunc mf)
+Image Map::makeimage_N(int n, ModFunc mf)
 {
 	Image img(width, height);
 	double sx{scale_x};
 
-	++n;
 	double t0{zoom_mul};
-	double tm  = powf(t0, -1);
-	double tn  = powf(t0, -n);
-	double t25 = powf(t0, -26);
-	double dif = t25-tm;
-	double per = (tn-tm)/dif;
+	double tpmn = pow(t0, -n);
+	double myw = new_w / tpmn;
+	double myh = new_h / tpmn;
+	
+	double xstart = (new_w-myw) / 2;
+	double ystart = (new_h-myh) / 2;
 
-	double mod = mf(sx/tn);
+	double xstep = myw / width;
+	double ystep = myh / height;
 
-	double xstart = (new_w - width)/2;
-	xstart *= per;
-	double ystart = (new_h - height)/2;
-	ystart *= per;
-	double xstep = double(new_w) / double(width);
-	xstep = 1.0f + (xstep-1.0f)*(1.0f-per);
-	double ystep = double(new_h) / double(height);
-	ystep = 1.0f + (ystep-1.0f)*(1.0f-per);
+	double mod = mf(sx * tpmn);
 
 	UL x,y;
 	for (y=0; y<height; ++y)
@@ -879,7 +863,7 @@ Image Map::makeimage_25_N(int n, ModFunc mf)
 
 
 
-
+/*
 void Map::generate_50_init(bool disp)
 {
 	double zm = (double)zoom_mul;
@@ -894,6 +878,9 @@ void Map::generate_50_init(bool disp)
 		std::cout << "New size " << new_w << "x" << new_h << std::endl;
 	}
 
+	generate_init_rest();
+
+	
 	points.resize(new_h);
 	UL x,y;
 	for (y=0; y<new_h; ++y)
@@ -911,6 +898,7 @@ void Map::generate_50_init(bool disp)
 		vfx.push_back(x_start + x_step*x);
 	for (y=0; y<new_h; ++y)
 		vfy.push_back(y_start + y_step*y);
+	
 }
 
 UL Map::generate_50_threaded(UL cap, bool display)
@@ -980,24 +968,18 @@ Image Map::makeimage_50_N(int n, ModFunc mf)
 	Image img(width, height);
 	double sx{scale_x};
 
-	++n;
 	double t0{zoom_mul};
-	double tm  = powf(t0, -1);
-	double tn  = powf(t0, -n);
-	double t50 = powf(t0, -51);
-	double dif = t50-tm;
-	double per = (tn-tm)/dif;
+	double tpmn = pow(t0, -n);
+	double myw = new_w / tpmn;
+	double myh = new_h / tpmn;
+	
+	double xstart = (new_w-myw) / 2;
+	double ystart = (new_h-myh) / 2;
 
-	double mod = mf(sx/tn);
+	double xstep = myw / width;
+	double ystep = myh / height;
 
-	double xstart = (new_w - width)/2;
-	xstart *= per;
-	double ystart = (new_h - height)/2;
-	ystart *= per;
-	double xstep = double(new_w) / double(width);
-	xstep = 1.0f + (xstep-1.0f)*(1.0f-per);
-	double ystep = double(new_h) / double(height);
-	ystep = 1.0f + (ystep-1.0f)*(1.0f-per);
+	double mod = mf(sx * tpmn);
 
 	UL x,y;
 	for (y=0; y<height; ++y)
@@ -1012,7 +994,7 @@ Image Map::makeimage_50_N(int n, ModFunc mf)
 
 	return img;
 }
-
+*/
 
 
 void Map::saveblob(int N, std::ostream& out)
