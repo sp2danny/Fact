@@ -84,13 +84,14 @@ struct Map;
 template<typename Flt>
 struct LineCache
 {
-	LineCache(UL cap, bool display, Map<Flt>& map);
+	LineCache(UL cap, bool display, Map<Flt>& map, bool first = false);
 
 	UL cap;
 	UL eff_cap;
 	UL skip_count;
 	UL inskip;
 	bool display;
+	bool first;
 	UL y_start, y_count;
 	Map<Flt>& map;
 	std::vector<Flt>& vfx;
@@ -104,8 +105,17 @@ private:
 
 	void base_init();
 	void init_zero();
+	void init_lim();
 	void dc(Point<Flt>& p, const std::complex<Flt>& c);
-	void even();
+	void even(), odd();
+	bool ep_xy(UL, UL);
+	bool ep_x(UL, UL);
+	bool ep_y(UL, UL);
+	bool setin();
+	void all();
+
+	UL xlo, xhi, ylo, yhi;
+
 };
 
 template<typename Flt>
@@ -136,8 +146,10 @@ struct Map
 
 	int count_dlb;
 	void setup_dbl(Flt);
-	int generate_dbl(UL, bool=false);
+	int generate_dbl(UL, bool, bool=false);
 	void shuffle_dbl();
+	int sh_new_xcoord(int);
+	int sh_new_ycoord(int);
 
 friend
 	struct LineCache<Flt>;

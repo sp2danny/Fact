@@ -156,9 +156,9 @@ Point<Flt>& Map<Flt>::get(UL x, UL y)
 template<typename Flt>
 Flt Map<Flt>::to_xpos(UL x) const
 {
-	assert(x<width);
+	assert(x<new_w);
 	Flt fact = x;
-	fact /= (Flt)width;
+	fact /= (Flt)new_w;
 	fact -= (Flt)0.5;
 	fact *= scale_x;
 	fact += center_x;
@@ -168,9 +168,9 @@ Flt Map<Flt>::to_xpos(UL x) const
 template<typename Flt>
 Flt Map<Flt>::to_ypos(UL y) const
 {
-	assert(y<height);
+	assert(y<new_h);
 	Flt fact = y;
-	fact /= (Flt)height;
+	fact /= (Flt)new_h;
 	fact -= (Flt)0.5;
 	fact *= scale_y;
 	fact += center_y;
@@ -183,6 +183,8 @@ void Map<Flt>::generate_init()
 	UL x,y;
 	vfx.clear();
 	vfy.clear();
+	
+	new_w = width; new_h = height;
 
 	for (y=0; y<height; ++y)
 		vfy.push_back(to_ypos(y));
@@ -355,17 +357,17 @@ void Map<Flt>::generate_init_rest()
 		points[y].resize(new_w+3);
 
 	Flt x_start = to_xpos(0);
-	Flt x_stop  = to_xpos(width-1);
+	Flt x_stop  = to_xpos(new_w-1);
 	Flt y_start = to_ypos(0);
-	Flt y_stop  = to_ypos(height-1);
+	Flt y_stop  = to_ypos(new_h-1);
 	Flt x_step  = (x_stop-x_start) / (new_w-1);
 	Flt y_step  = (y_stop-y_start) / (new_h-1);
 
-	vfx.clear(); vfy.clear();
+	vfx.resize(new_w); vfy.resize(new_h);
 	for (x=0; x<new_w; ++x)
-		vfx.push_back(x_start + x_step*x);
+		vfx[x] = (x_start + x_step*x);
 	for (y=0; y<new_h; ++y)
-		vfy.push_back(y_start + y_step*y);
+		vfy[y] = (y_start + y_step*y);
 }
 
 template<typename Flt>
@@ -535,7 +537,6 @@ void Map<Flt>::saveblob(int N, std::ostream& out)
 				out.write((char*)&pix.over, sizeof(float));
 		}
 	}
-
 }
 
 template<typename Flt>
@@ -544,14 +545,14 @@ void Map<Flt>::setup_dbl(Flt target)
 	double n = std::log(0.5) / std::log((double)target);
 	count_dlb = std::roundl(n);
 	double factor = std::pow(0.5, 1.0/n);
-	std::cout << "new factor    : " << factor << std::endl;
-	std::cout << "new count     : " << count_dlb << std::endl;
+	std::cout << "new factor     : " << factor << std::endl;
+	std::cout << "new count      : " << count_dlb << std::endl;
 	width  = (width  >> 2) << 2;
 	height = (height >> 2) << 2;
 	new_w = width  * 2;
 	new_h = height * 2;
-	std::cout << "adjusted size : " << width << "x" << height << std::endl;
-	std::cout << "new size      : " << new_w << "x" << new_h << std::endl;
+	std::cout << "adjusted size  : " << width << "x" << height << std::endl;
+	std::cout << "new size       : " << new_w << "x" << new_h << std::endl;
 
 	generate_init_rest();
 
@@ -568,16 +569,16 @@ void Map<Flt>::setup_dbl(Flt target)
 }
 
 template<typename Flt>
-int Map<Flt>::generate_dbl(UL cap, bool display)
+int Map<Flt>::generate_dbl(UL cap, bool first, bool display)
 {
 	Updater::Init(new_h*3+4);
 	if (display) Updater::Display();
 
 	LineCache<Flt> lc[4] = {
-		{ cap, display, *this },
-		{ cap,   false, *this },
-		{ cap,   false, *this },
-		{ cap,   false, *this },
+		{ cap, display, *this, first },
+		{ cap,   false, *this, first },
+		{ cap,   false, *this, first },
+		{ cap,   false, *this, first },
 	};
 
 	UL i = 0;
@@ -625,12 +626,72 @@ int Map<Flt>::generate_dbl(UL cap, bool display)
 	if (display)
 	{
 		std::cout << "skipped        : " << sk << " pixels, of wich " << is << " was inside \n";
-		std::cout << "maxout         : " << maxout << "\n";
+		std::cout << "effective cap  : " << maxout << "\n";
 	}
 
 	return count_dlb;
 }
 
+template<typename Flt>
+int Map<Flt>::sh_new_xcoord(int oldx)
+{
+	int hw = new_w/2;
+	if (oldx < hw) // left
+	{
+		int dfc = hw - oldx;
+		return hw - 2*dfc;
+	} else { // right
+		hw -= 1;
+		int dfc = oldx - hw;
+		return hw + 2*dfc;
+	}
+}
+
+template<typename Flt>
+int Map<Flt>::sh_new_ycoord(int oldy)
+{
+	int hh = new_h/2;
+	if (oldy < hh)
+	{
+		int dfc = hh - oldy;
+		return hh - 2*dfc;
+	} else {
+		hh -= 1;
+		int dfc = oldy - hh;
+		return hh + 2*dfc;
+	}
+}
+
+template<typename Flt>
+void Map<Flt>::shuffle_dbl()
+{
+	generate_init_rest();
+
+	auto copy = points;
+	for (UL y=0; y<new_h; ++y)
+	{
+		const Flt& yld = vfy[y];
+		for (UL x=0; x<new_w; ++x)
+		{
+			const Flt& xld = vfx[x];
+			get(x,y).init({xld, yld});
+		}
+	}
+
+	for (int y=0; y<(int)new_h; ++y)
+	{
+		auto newy = sh_new_ycoord(y);
+		if ((newy<0) || (newy>=(int)new_h)) continue;
+		for (int x=0; x<(int)new_w; ++x)
+		{
+			auto newx = sh_new_xcoord(x);
+			if ((newx<0) || (newx>=(int)new_w)) continue;
+			const Point<Flt>& src = copy[y][x];
+			get(newx,newy) = src;
+		}
+	}
+	points.swap(copy);
+}
 
 template struct Map<FltH>;
 template struct Map<FltL>;
@@ -685,9 +746,10 @@ int Updater::Get()
 // *****************
 
 template<typename Flt>
-LineCache<Flt>::LineCache(UL cap, bool display, Map<Flt>& map)
+LineCache<Flt>::LineCache(UL cap, bool display, Map<Flt>& map, bool first)
 	: cap(cap)
 	, display(display)
+	, first(first)
 	, map(map)
 	, vfx(map.vfx)
 	, vfy(map.vfy)
@@ -720,6 +782,15 @@ void LineCache<Flt>::init_zero()
 }
 
 template<typename Flt>
+void LineCache<Flt>::init_lim()
+{
+	xlo = 0;
+	xhi = map.new_w-1;
+	ylo = y_start;
+	yhi = y_start+n-1;
+}
+
+template<typename Flt>
 void LineCache<Flt>::dc(Point<Flt>& p, const std::complex<Flt>& c)
 {
 	bool did = p.docalc(c, cap);
@@ -748,169 +819,196 @@ void LineCache<Flt>::even()
 }
 
 template<typename Flt>
+void LineCache<Flt>::odd()
+{
+	for (UL i=0; i<n; ++i)
+	{
+		Updater::Tick();
+		if (display)
+			Updater::Display();
+		if (!(i%2)) continue;
+		UL y = y_start + i;
+		Flt& yld = vfy[y];
+		for (UL x=1; x<w; x+=2)
+		{
+			auto& p = map.get(x,y);
+			if (p.status != Point<Flt>::calc) continue;
+			if (p.iter != 1) continue;
+			std::complex<Flt> c{vfx[x], yld};
+			dc(p,c);
+		}
+	}
+}
+
+template<typename Flt>
+bool LineCache<Flt>::ep_xy(UL x, UL y)
+{
+	auto& p = map.get(x,y);
+	if (p.status != Point<Flt>::calc) return false;
+	if (p.iter != 1) return false;
+	if (x==xlo) return false;
+	if (x==xhi) return false;
+	if (y==ylo) return false;
+	if (y==yhi) return false;
+	if (map.get(x-1,y).status != Point<Flt>::in) return false;
+	if (map.get(x+1,y).status != Point<Flt>::in) return false;
+	if (map.get(x,y-1).status != Point<Flt>::in) return false;
+	if (map.get(x,y+1).status != Point<Flt>::in) return false;
+	p.status = Point<Flt>::in;
+	p.pixtype = pt_black;
+	++skip_count;
+	++inskip;
+	return true;
+}
+
+template<typename Flt>
+bool LineCache<Flt>::ep_x(UL x, UL y)
+{
+	auto& p = map.get(x,y);
+	if (p.status != Point<Flt>::calc) return false;
+	if (p.iter != 1) return false;
+	if (x==xlo) return false;
+	if (x==xhi) return false;
+	auto& pp = map.get(x-1,y);
+	if (pp.status != Point<Flt>::out) return false;
+	auto& pn = map.get(x+1,y);
+	if (pn.status != Point<Flt>::out) return false;
+	if (pp.iter != pn.iter) return false;
+	p.status = Point<Flt>::out;
+	p.iter = pp.iter;
+	p.over = (pp.over + pn.over)/2.0;
+	p.pixtype = pt_ep_hor;
+	++skip_count;
+	return true;
+}
+
+template<typename Flt>
+bool LineCache<Flt>::ep_y(UL x, UL y)
+{
+	auto& p = map.get(x,y);
+	if (p.status != Point<Flt>::calc) return false;
+	if (p.iter != 1) return false;
+	if (y==ylo) return false;
+	if (y==yhi) return false;
+	auto& pp = map.get(x,y-1);
+	if (pp.status != Point<Flt>::out) return false;
+	auto& pn = map.get(x,y+1);
+	if (pn.status != Point<Flt>::out) return false;
+	if (pp.iter != pn.iter) return false;
+	p.status = Point<Flt>::out;
+	p.iter = pp.iter;
+	p.over = (pp.over + pn.over)/2.0;
+	p.pixtype = pt_ep_ver;
+	++skip_count;
+	return true;
+}
+
+template<typename Flt>
+bool LineCache<Flt>::setin()
+{
+	bool foundin = false;
+
+	for (UL i=0; i<n; ++i)
+	{
+		UL y = y_start + i;
+		for (UL x=0; x<w; ++x)
+		{
+			auto& p = map.get(x,y);
+			if (p.status != Point<Flt>::calc) continue;
+			if (p.iter < cap) continue;
+			p.status = Point<Flt>::in;
+			foundin = true;
+		}
+	}
+	return foundin;
+}
+
+template<typename Flt>
+void LineCache<Flt>::all()
+{
+	for (UL i=0; i<n; ++i)
+	{
+		Updater::Tick();
+		if (display)
+			Updater::Display();
+
+		UL y = y_start + i;
+		for (UL x=0; x<w; ++x)
+		{
+			auto& p = map.get(x,y);
+			if (p.status != Point<Flt>::calc) continue;
+			if (p.iter != 1) continue;
+			std::complex<Flt> c{vfx[x], vfy[y]};
+			dc(p,c);
+		}
+	}
+}
+
+template<typename Flt>
 void LineCache<Flt>::execute(LineCache* lc)
 {
 	lc->base_init();
 	lc->init_zero();
 	lc->even();
-	
-	UL xlo = 0;
-	UL xhi = lc->map.new_w-1;
-	UL ylo = lc->y_start;
-	UL yhi = lc->y_start+lc->n-1;
+	lc->init_lim();
 
-	auto ep_xy = [&](UL x, UL y) -> bool
-	{
-		auto& p = lc->map.get(x,y);
-		if (p.status != Point<Flt>::calc) return false;
-		if (p.iter != 1) return false;
-		if (x==xlo) return false;
-		if (x==xhi) return false;
-		if (y==ylo) return false;
-		if (y==yhi) return false;
-		Point<Flt>* pp;
-		pp = &lc->map.get(x-1,y); if (pp->status != Point<Flt>::in) return false;
-		pp = &lc->map.get(x+1,y); if (pp->status != Point<Flt>::in) return false;
-		pp = &lc->map.get(x,y-1); if (pp->status != Point<Flt>::in) return false;
-		pp = &lc->map.get(x,y+1); if (pp->status != Point<Flt>::in) return false;
-		p.status = Point<Flt>::in;
-		p.pixtype = pt_black;
-		++lc->skip_count;
-		++lc->inskip;
-		return true;
-	};
-
-	auto ep_x = [&](UL x, UL y) -> bool
-	{
-		auto& p = lc->map.get(x,y);
-		if (p.status != Point<Flt>::calc) return false;
-		if (p.iter != 1) return false;
-		if (x==xlo) return false;
-		if (x==xhi) return false;
-		auto& pp = lc->map.get(x-1,y);
-		if (pp.status != Point<Flt>::out) return false;
-		auto& pn = lc->map.get(x+1,y);
-		if (pn.status != Point<Flt>::out) return false;
-		if (pp.iter != pn.iter) return false;
-		p.status = Point<Flt>::out;
-		p.iter = pp.iter;
-		p.over = (pp.over + pn.over)/2.0;
-		p.pixtype = pt_ep_hor;
-		++lc->skip_count;
-		return true;
-	};
-
-	auto ep_y = [&](UL x, UL y) -> bool
-	{
-		auto& p = lc->map.get(x,y);
-		if (p.status != Point<Flt>::calc) return false;
-		if (p.iter != 1) return false;
-		if (y==ylo) return false;
-		if (y==yhi) return false;
-		auto& pp = lc->map.get(x,y-1);
-		if (pp.status != Point<Flt>::out) return false;
-		auto& pn = lc->map.get(x,y+1);
-		if (pn.status != Point<Flt>::out) return false;
-		if (pp.iter != pn.iter) return false;
-		p.status = Point<Flt>::out;
-		p.iter = pp.iter;
-		p.over = (pp.over + pn.over)/2.0;
-		p.pixtype = pt_ep_ver;
-		++lc->skip_count;
-		return true;
-	};
-
-	auto all_ep_x = [&]() -> void
+	auto all_f = [&](auto f) -> void
 	{
 		for (UL i=0; i<lc->n; i+=1)
 		{
 			UL y = lc->y_start + i;
 			for (UL x=0; x<lc->w; x+=1)
-				ep_x(x,y);
+				f(x,y);
 		}
 	};
 
-	auto all_ep_y = [&]() -> void
-	{
-		for (UL i=0; i<lc->n; i+=1)
-		{
-			UL y = lc->y_start + i;
-			for (UL x=0; x<lc->w; x+=1)
-				ep_y(x,y);
-		}
-	};
-	
-	auto all_ep_xy = [&]() -> void
-	{
-		for (UL i=0; i<lc->n; i+=1)
-		{
-			UL y = lc->y_start + i;
-			for (UL x=0; x<lc->w; x+=1)
-				ep_xy(x,y);
-		}
-	};
+	all_f( [&](UL x, UL y) { lc->ep_x(x,y); } );
+	all_f( [&](UL x, UL y) { lc->ep_y(x,y); } );
 
-	all_ep_x(); all_ep_y();
+	lc->odd();
 
-	for (UL i=0; i<lc->n; ++i)
-	{
-		Updater::Tick();
-		if (lc->display)
-			Updater::Display();
-		if (!(i%2)) continue;
-		UL y = lc->y_start + i;
-		Flt& yld = lc->vfy[y];
-		for (UL x=1; x<lc->w; x+=2)
-		{
-			auto& p = lc->map.get(x,y);
-			if (p.status != Point<Flt>::calc) continue;
-			if (p.iter != 1) continue;
-			std::complex<Flt> c{lc->vfx[x], yld};
-			lc->dc(p,c);
-		}
-	}
-
-	bool foundin = false;
-
-	for (UL i=0; i<lc->n; ++i)
-	{
-		UL y = lc->y_start + i;
-		for (UL x=0; x<lc->w; ++x)
-		{
-			auto& p = lc->map.get(x,y);
-			if (p.status != Point<Flt>::calc) continue;
-			if (p.iter < lc->cap) continue;
-			p.status = Point<Flt>::in;
-			foundin = true;
-		}
-	}
+	bool foundin = lc->setin();
 
 	if (foundin)
-		all_ep_xy();
+		all_f( [&](UL x, UL y) { lc->ep_xy(x,y); } );
 
-	for (UL i=0; i<lc->n; ++i)
-	{
-		Updater::Tick();
-		if (lc->display)
-			Updater::Display();
-
-		UL y = lc->y_start + i;
-		for (UL x=0; x<lc->w; ++x)
-		{
-			auto& p = lc->map.get(x,y);
-			if (p.status != Point<Flt>::calc) continue;
-			if (p.iter != 1) continue;
-			std::complex<Flt> c{lc->vfx[x], lc->vfy[y]};
-			lc->dc(p,c);
-		}
-	}
-
+	lc->all();
 }
 
 template<typename Flt>
 void LineCache<Flt>::execute_dbl(LineCache* lc)
 {
-	(void)lc;
+	lc->base_init();
+
+	if (lc->first)
+		lc->even();
+
+	lc->init_lim();
+
+	auto all_f = [&](auto f) -> void
+	{
+		for (UL i=0; i<lc->n; i+=1)
+		{
+			UL y = lc->y_start + i;
+			for (UL x=0; x<lc->w; x+=1)
+				f(x,y);
+		}
+	};
+
+	all_f( [&](UL x, UL y) { lc->ep_x(x,y); } );
+	all_f( [&](UL x, UL y) { lc->ep_y(x,y); } );
+
+	if (lc->first)
+		lc->odd();
+	else
+		lc->even();
+
+	bool foundin = lc->setin();
+
+	if (foundin)
+		all_f( [&](UL x, UL y) { lc->ep_xy(x,y); } );
+
+	lc->all();
 }
 
 template struct LineCache<FltH>;

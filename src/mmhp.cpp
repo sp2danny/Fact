@@ -105,16 +105,17 @@ int main(int argc, char* argv[])
 		std::cout << "zoom step      : " << zoom_step     << std::endl;
 	}
 
-	bool ten = cmd.has_option('t', "ten");
 	bool owr = cmd.has_option('o', "overwrite");
 	bool prt = cmd.has_option('p', "print");
+	bool ten = cmd.has_option('t', "ten");
 	bool i25 = cmd.has_option('q', "25");
 	bool i50 = cmd.has_option('f', "50");
+	bool dbl = cmd.has_option('d', "dbl");
 	bool sb  = cmd.has_option('s', "saveblob");
 
-	if ( (ten+i25+i50) > 1 )
+	if ( (ten+i25+i50+dbl) > 1 )
 	{
-		std::cerr << "-t, -f and -q are exclusive" << std::endl;
+		std::cerr << "-t, -q, -f and -d are exclusive" << std::endl;
 		return -1;
 	}
 
@@ -132,7 +133,7 @@ int main(int argc, char* argv[])
 		if (max_count)
 			if (i>max_count) break;
 
-		if (!owr && boost::filesystem::exists(curr_name))
+		if ((!dbl) && (!owr) && boost::filesystem::exists(curr_name))
 		{
 			i += 1;
 			zoom_cur *= zoom_step;
@@ -207,6 +208,44 @@ int main(int argc, char* argv[])
 		
 		#undef EXEC
 		
+		else if (dbl)
+		{
+			//std::cout << zoom_cur << std::endl;
+			auto t1 = std::chrono::high_resolution_clock::now();
+			static bool first = true;
+			if (first)
+			{
+				if (useh) mh.setup_dbl((FltH)zoom_step);
+				else      ml.setup_dbl((FltL)zoom_step);
+			} else {
+				if (useh) mh.shuffle_dbl();
+				else      ml.shuffle_dbl();
+			}
+			int n;
+			if (useh) n = mh.generate_dbl(update_cap, first, prt);
+			else      n = ml.generate_dbl(update_cap, first, prt);
+			first = false;
+			auto t2 = std::chrono::high_resolution_clock::now();
+			auto d1 = std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count();
+			if (prt) {
+				std::cout << "generate time  : " << d1 / 1000.0f << std::endl;
+				std::cout << "color mod      : " << mod_func((double)zoom_cur) << std::endl;
+			}
+			for (int j=0; j<n; ++j)
+			{
+				curr_name = mkname(i+j);
+				if (!owr && boost::filesystem::exists(curr_name)) continue;
+				if (prt) std::cout << i+j << "\r" << std::flush;
+				if (useh) mh.makeimage_N(j,mod_func).Save(curr_name);
+				else      ml.makeimage_N(j,mod_func).Save(curr_name);
+			}
+			auto t3 = std::chrono::high_resolution_clock::now();
+			auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t1).count();
+			std::cout << "effectiveness  : " << 1000.0f * n / d2 << std::endl;
+			std::cout << "Wrote: " << mkname(i) << " to " << mkname(i+n-1) << std::endl;
+			i += n;
+			zoom_cur *= FltH(0.5);
+		}
 		else
 		{
 			if (useh)
