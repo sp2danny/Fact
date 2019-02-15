@@ -572,6 +572,35 @@ void Map<Flt>::setup_dbl(Flt target)
 }
 
 template<typename Flt>
+Image Map<Flt>::dbl_makefull(UL cap)
+{
+	std::vector<Scanline<Flt>> saved;
+	saved.swap(points);
+	
+	generate_init_rest();
+
+	for (UL y=0; y<new_h; ++y)
+	{
+		const Flt& yld = vfy[y];
+		for (UL x=0; x<new_w; ++x)
+		{
+			const Flt& xld = vfx[x];
+			get(x,y).init({xld, yld});
+			get(x,y).docalc({xld, yld}, cap);
+		}
+	}
+
+	using std::swap;
+	swap(width, new_w); swap(height, new_h);
+	auto img = makeimage(350,INT_MAX);
+	swap(width, new_w); swap(height, new_h);
+
+	saved.swap(points);
+	
+	return img;
+}
+
+template<typename Flt>
 int Map<Flt>::generate_dbl(UL cap, bool first, bool display)
 {
 	Updater::Init(new_h*3+4);
@@ -693,11 +722,12 @@ void Map<Flt>::shuffle_dbl()
 			get(newx,newy) = src;
 		}
 	}
-	//points.swap(copy);
-	//using std::swap;
-	//swap(width, new_w); swap(height, new_h);
-	//makeimage(350,INT_MAX).Save("WorkImage.bmp");
-	//swap(width, new_w); swap(height, new_h);
+	#ifndef NDEBUG
+	using std::swap;
+	swap(width, new_w); swap(height, new_h);
+	makeimage(350,INT_MAX).Save("WorkImage.bmp");
+	swap(width, new_w); swap(height, new_h);
+	#endif
 }
 
 template struct Map<FltH>;

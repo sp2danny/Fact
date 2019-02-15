@@ -223,15 +223,21 @@ int main(int argc, char* argv[])
 				else      ml.shuffle_dbl();
 			}
 			int n;
+			#ifndef NDEBUG
+			Image img;
+			if (useh) img = mh.dbl_makefull(update_cap);
+			else      img = ml.dbl_makefull(update_cap);
+			img.Save("FullImg.bmp");
+			#endif
 			if (useh) n = mh.generate_dbl(update_cap, first, prt);
 			else      n = ml.generate_dbl(update_cap, first, prt);
-			first = false;
 			auto t2 = std::chrono::high_resolution_clock::now();
 			auto d1 = std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count();
 			if (prt) {
 				std::cout << "generate time  : " << d1 / 1000.0f << std::endl;
 				std::cout << "color mod      : " << mod_func((double)zoom_cur) << std::endl;
 			}
+			auto zc = zoom_cur;
 			for (int j=0; j<n; ++j)
 			{
 				curr_name = mkname(i+j);
@@ -246,6 +252,7 @@ int main(int argc, char* argv[])
 			std::cout << "Wrote: " << mkname(i) << " to " << mkname(i+n-1) << std::endl;
 			i += n;
 			zoom_cur *= FltH(0.5);
+			first = false;
 		}
 		else
 		{

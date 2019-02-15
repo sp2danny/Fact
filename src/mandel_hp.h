@@ -145,6 +145,7 @@ struct Map
 	void saveblob(int N, std::ostream&);
 
 	int count_dlb;
+	Image dbl_makefull(UL);
 	void setup_dbl(Flt);
 	int generate_dbl(UL, bool, bool=false);
 	void shuffle_dbl();
