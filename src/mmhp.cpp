@@ -120,6 +120,9 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
+	bool first = true;
+	bool useh = false;
+
 	while (true)
 	{
 		if (zoom_end)
@@ -142,7 +145,12 @@ int main(int argc, char* argv[])
 			continue;
 		}
 
-		bool useh = zoom_cur < 1e-10;
+		{
+			bool new_useh = zoom_cur < 1e-10;
+			if (useh != new_useh)
+				first=true;
+			useh = new_useh;
+		}
 
 		if (prt)
 			std::cout << "using "s << (useh ? "high"s : "low"s) << std::endl;
@@ -216,7 +224,7 @@ int main(int argc, char* argv[])
 		{
 			//std::cout << zoom_cur << std::endl;
 			auto t1 = std::chrono::high_resolution_clock::now();
-			static bool first = true;
+			
 			if (first)
 			{
 				if (useh) mh.setup_dbl((FltH)zoom_step);
