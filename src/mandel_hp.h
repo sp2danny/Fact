@@ -65,7 +65,7 @@ struct Point
 {
 	enum { in, calc, out } status = calc;
 	UL iter = 0;
-	float over = 0.0f;
+	double over = 0.0;
 	UC pixtype = 0;
 	std::complex<Flt> z = {0.0,0.0};
 	#ifndef NDEBUG
@@ -73,15 +73,14 @@ struct Point
 	#endif
 	bool docalc(const std::complex<Flt>& c, UL cap);
 	void init(const std::complex<Flt>& c);
-	RGB col(float mod) const;
+	RGB col(double mod) const;
 	static Flt stepsize;
 };
 
 template<typename Flt> 
 Flt Point<Flt>::stepsize{};
 
-
-typedef float (*ModFunc)(double);
+typedef double (*ModFunc)(double);
 
 template<typename Flt>
 using Scanline = std::vector<Point<Flt>>;
@@ -123,7 +122,6 @@ private:
 	void all();
 
 	UL xlo, xhi, ylo, yhi;
-
 };
 
 template<typename Flt>
@@ -140,6 +138,8 @@ struct Map
 	Flt to_xpos(UL x) const;
 	Flt to_ypos(UL y) const;
 	enum Status { all_done, was_updated, no_change };
+	
+	//Flt get_col_mod() const;
 	
 	// Singles
 	void generate_init();
@@ -167,7 +167,7 @@ friend
 private:
 	void generate_N_init(int n, bool disp);
 	void generate_init_rest();
-	RGB extrapolate(float x, float y, float mod);
+	RGB extrapolate(double x, double y, double mod);
 	std::vector<Flt> vfx, vfy;
 };
 

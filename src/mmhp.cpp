@@ -20,21 +20,21 @@ int main(int argc, char* argv[])
 {
 	cmd.init(argc, argv);
 
-	static FltH  zoom_cur        = from_stringH ( cmd.get_parameter ( "zoom-start",   "3.2"     ));
-	static FltH  zoom_end        = from_stringH ( cmd.get_parameter ( "zoom-end",     "0"       ));
-	static FltH  zoom_step       = from_stringH ( cmd.get_parameter ( "zoom-step",    "0.99"    ));
-	static FltH  center_x        = from_stringH ( cmd.get_parameter ( "center-x",     "0.5"     ));
-	static FltH  center_y        = from_stringH ( cmd.get_parameter ( "center-y",     "0.0"     ));
-	static UL    num_dig         = std::stol    ( cmd.get_parameter ( "num-digits",   "3"       ));
-	static UL    update_cap      = std::stol    ( cmd.get_parameter ( "update-cap",   "50"      ));
-	static UL    image_width     = std::stol    ( cmd.get_parameter ( "width",        "640"     ));
-	static UL    image_height    = std::stol    ( cmd.get_parameter ( "height",       "480"     ));
-	static UL    skip_count      = std::stol    ( cmd.get_parameter ( "skip",         "0"       ));
-	static UL    max_count       = std::stol    ( cmd.get_parameter ( "max-count",    "0"       ));
-	static float mod_base        = std::stof    ( cmd.get_parameter ( "col-base",     "100"     ));
-	static float mod_pow         = std::stof    ( cmd.get_parameter ( "col-pow",      "0.03"    ));
-	static Str   target_dir      =                cmd.get_parameter ( "target",       "img"     ) ;
-	static Str   name_lead       =                cmd.get_parameter ( "lead",         "m_"      ) ;
+	static FltH    zoom_cur        = from_stringH ( cmd.get_parameter ( "zoom-start",   "3.2"     ));
+	static FltH    zoom_end        = from_stringH ( cmd.get_parameter ( "zoom-end",     "0"       ));
+	static FltH    zoom_step       = from_stringH ( cmd.get_parameter ( "zoom-step",    "0.99"    ));
+	static FltH    center_x        = from_stringH ( cmd.get_parameter ( "center-x",     "0.5"     ));
+	static FltH    center_y        = from_stringH ( cmd.get_parameter ( "center-y",     "0.0"     ));
+	static UL      num_dig         = std::stol    ( cmd.get_parameter ( "num-digits",   "3"       ));
+	static UL      update_cap      = std::stol    ( cmd.get_parameter ( "update-cap",   "50"      ));
+	static UL      image_width     = std::stol    ( cmd.get_parameter ( "width",        "640"     ));
+	static UL      image_height    = std::stol    ( cmd.get_parameter ( "height",       "480"     ));
+	static UL      skip_count      = std::stol    ( cmd.get_parameter ( "skip",         "0"       ));
+	static UL      max_count       = std::stol    ( cmd.get_parameter ( "max-count",    "0"       ));
+	static double  mod_base        = std::stod    ( cmd.get_parameter ( "col-base",     "100"     ));
+	static double  mod_pow         = std::stod    ( cmd.get_parameter ( "col-pow",      "0.03"    ));
+	static Str     target_dir      =                cmd.get_parameter ( "target",       "img"     ) ;
+	static Str     name_lead       =                cmd.get_parameter ( "lead",         "m_"      ) ;
 
 	auto mkname = [&](UL i) -> Str
 	{
@@ -171,7 +171,7 @@ int main(int argc, char* argv[])
 			std::cout << "scale-y        : " << mh.scale_y << std::endl;
 		}
 
-		ModFunc mod_func = [](double d) { return mod_base / (float)pow(d, mod_pow); };
+		ModFunc mod_func = [](double d) { return mod_base / std::pow(d, mod_pow); };
 		UL maxout;
 
 		#define EXEC(n)                                                                          \

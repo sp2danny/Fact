@@ -139,7 +139,7 @@ void Point<Flt>::init(const std::complex<Flt>& c)
 }
 
 template<typename Flt>
-RGB Point<Flt>::col(float mod) const
+RGB Point<Flt>::col(double mod) const
 {
 	const Point& p = *this;
 	if (p.status != Point::out)
@@ -148,16 +148,19 @@ RGB Point<Flt>::col(float mod) const
 	}
 	auto x = p.iter;
 
-	static const float pi2 = 3.1415926536f * 2;
-	static const float ilg2 = 1.0f / log(2.0f);
-	float f = fmod((float)x, mod) + 1.0f;
+	static const double pi2 = 3.1415926536f * 2;
+	static const double ilg2 = 1.0f / log(2.0f);
+	static const double c000 = 0.0 / 3.0;
+	static const double c333 = 1.0 / 3.0;
+	static const double c666 = 2.0 / 3.0;
+	double f = fmod((double)x, mod) + 1.0f;
 	f /= mod;
 
-	f -= (float)log(log(p.over) * ilg2) * ilg2 / mod;
+	f -= (double)log(log(p.over) * ilg2) * ilg2 / mod;
 	f *= pi2;
-	float r = 0.5f + 0.5f*std::sin(f + pi2 * 0.00000f);
-	float g = 0.5f + 0.5f*std::sin(f + pi2 * 0.33333f);
-	float b = 0.5f + 0.5f*std::sin(f + pi2 * 0.66666f);
+	float r = 0.5f + 0.5f*std::sin(f + pi2 * c000);
+	float g = 0.5f + 0.5f*std::sin(f + pi2 * c333);
+	float b = 0.5f + 0.5f*std::sin(f + pi2 * c666);
 	int ri = clamp(int(r*256), 0, 255);
 	int gi = clamp(int(g*256), 0, 255);
 	int bi = clamp(int(b*256), 0, 255);
@@ -326,10 +329,10 @@ Image Map<Flt>::makeimage(float mod, UL upc)
 	return img;
 }
 
-static RGB mix(const RGB& p1,const RGB& p2, float f)
+static RGB mix(const RGB& p1,const RGB& p2, double f)
 {
-	assert( (f >= 0.0f) && (f <= 1.0f) );
-	const float inv = 1.0f-f;
+	assert( (f >= 0.0) && (f <= 1.0) );
+	const double inv = 1.0-f;
 	float r = p1.r * f + p2.r * inv;
 	float g = p1.g * f + p2.g * inv;
 	float b = p1.b * f + p2.b * inv;
@@ -340,27 +343,28 @@ static RGB mix(const RGB& p1,const RGB& p2, float f)
 }
 
 template<typename Flt>
-RGB Map<Flt>::extrapolate(float x, float y, float mod)
+RGB Map<Flt>::extrapolate(double x, double y, double mod)
 {
-	if (x<0.0f) x=0.0f; if (x>new_w) x=new_w;
-	if (y<0.0f) y=0.0f; if (y>new_h) y=new_h;
-	float xr = roundf(x);
-	float yr = roundf(y);
-	float dx = x-xr;
-	float dy = y-yr;
+	using namespace std;
+	if (x<0.0) x=0.0; if (x>new_w) x=new_w;
+	if (y<0.0) y=0.0; if (y>new_h) y=new_h;
+	double xr = round(x);
+	double yr = round(y);
+	double dx = x-xr;
+	double dy = y-yr;
 	UL x1,x2,y1,y2;
-	float fx, fy;
-	if (fabs(dx) < 0.05f) {
+	double fx, fy;
+	if (fabs(dx) < 0.05) {
 		x1 = x2 = roundl(x);
-		fx = 0.5f;
+		fx = 0.5;
 	} else {
 		x1 = floorl(x);
 		x2 = ceill(x);
 		fx = x2-x;
 	}
-	if (fabs(dy) < 0.05f) {
+	if (abs(dy) < 0.05) {
 		y1 = y2 = roundl(y);
-		fy = 0.5f;
+		fy = 0.5;
 	} else {
 		y1 = floorl(y);
 		y2 = ceill(y);
