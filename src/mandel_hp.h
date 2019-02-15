@@ -148,6 +148,7 @@ struct Map
 
 	// Batch
 	UL generate_N_threaded(int n, UL cap, bool display=false);
+	void prepare_image();
 	Image makeimage_N(int n, ModFunc);
 
 	void saveblob(int N, std::ostream&);
@@ -169,6 +170,7 @@ private:
 	void generate_init_rest();
 	RGB extrapolate(double x, double y, double mod);
 	std::vector<Flt> vfx, vfy;
+	Image prep;
 };
 
 template<typename T>

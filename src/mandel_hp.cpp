@@ -484,6 +484,14 @@ UL Map<Flt>::generate_N_threaded(int n, UL cap, bool display)
 }
 
 template<typename Flt>
+void Map<Flt>::prepare_image()
+{
+	//using std::swap;
+	//swap(width, new_w); swap(height, new_h);
+	//prep = makeimage()
+}
+
+template<typename Flt>
 Image Map<Flt>::makeimage_N(int n, ModFunc mf)
 {
 	Image img(width, height);

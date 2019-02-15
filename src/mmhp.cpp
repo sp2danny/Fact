@@ -252,6 +252,8 @@ int main(int argc, char* argv[])
 				std::cout << "color mod      : " << mod_func((double)zoom_cur) << std::endl;
 			}
 			auto zc = zoom_cur;
+			if (useh) mh.prepare_image();
+			else      ml.prepare_image();
 			for (int j=0; j<n; ++j)
 			{
 				curr_name = mkname(i+j);
