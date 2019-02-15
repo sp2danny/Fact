@@ -224,20 +224,23 @@ int main(int argc, char* argv[])
 		{
 			//std::cout << zoom_cur << std::endl;
 			auto t1 = std::chrono::high_resolution_clock::now();
-			
+			int cpy = 0;
 			if (first)
 			{
 				if (useh) mh.setup_dbl((FltH)zoom_step);
 				else      ml.setup_dbl((FltL)zoom_step);
 			} else {
-				if (useh) mh.shuffle_dbl();
-				else      ml.shuffle_dbl();
+				if (useh) cpy = mh.shuffle_dbl();
+				else      cpy = ml.shuffle_dbl();
 				//#ifndef NDEBUG
 				//Image img;
 				//if (useh) img = mh.dbl_makefull(update_cap);
 				//else      img = ml.dbl_makefull(update_cap);
 				//img.Save("FullImg.bmp");
 				//#endif
+			}
+			if (prt && cpy) {
+				std::cout << "moved pixels   : " << cpy << std::endl;
 			}
 			int n;
 			if (useh) n = mh.generate_dbl(update_cap, first, prt);

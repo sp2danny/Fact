@@ -646,7 +646,10 @@ int Map<Flt>::generate_dbl(UL cap, bool first, bool display)
 
 	#else
 
-	Updater::Init(new_h*3+4);
+	if (first)
+		Updater::Init(new_h*3+4);
+	else
+		Updater::Init(new_h*2+4);
 	if (display) Updater::Display();
 
 	LineCache<Flt> lc[4] = {
@@ -752,7 +755,7 @@ void Map<Flt>::new_out(std::string fn)
 }
 
 template<typename Flt>
-void Map<Flt>::shuffle_dbl()
+int Map<Flt>::shuffle_dbl()
 {
 	generate_init_rest();
 
@@ -767,6 +770,7 @@ void Map<Flt>::shuffle_dbl()
 		}
 	}
 
+	int cpy = 0;
 	for (int y=0; y<(int)new_h; ++y)
 	{
 		auto newy = sh_new_ycoord(y);
@@ -774,15 +778,19 @@ void Map<Flt>::shuffle_dbl()
 		for (int x=0; x<(int)new_w; ++x)
 		{
 			auto newx = sh_new_xcoord(x);
+			if ((newy==y) && (newx==x)) continue;
 			if ((newx<0) || (newx>=(int)new_w)) continue;
 			const Point<Flt>& src = copy[y][x];
 			Point<Flt>& dst = get(newx,newy);
 			dst = src;
+			++cpy;
 		}
 	}
 	//#ifndef NDEBUG
 	//new_out("WorkImage.bmp");
 	//#endif
+	
+	return cpy;
 }
 
 template struct Map<FltH>;

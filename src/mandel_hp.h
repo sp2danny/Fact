@@ -156,7 +156,7 @@ struct Map
 	Image dbl_makefull(UL);
 	void setup_dbl(Flt);
 	int generate_dbl(UL, bool, bool=false);
-	void shuffle_dbl();
+	int shuffle_dbl();
 	int sh_new_xcoord(int);
 	int sh_new_ycoord(int);
 	
