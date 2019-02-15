@@ -41,9 +41,31 @@ template std::complex<FltL> step<FltL>(const std::complex<FltL>&, const std::com
 // *** Point ***
 // *************
 
+//template<typename Flt>
+//Flt Point<Flt>::stepsize;
+
 template<typename Flt>
 bool Point<Flt>::docalc(const std::complex<Flt>& c, UL cap)
 {
+
+	#ifndef NDEBUG
+	if (c != orig)
+	{
+		auto dx = c.real() - orig.real();
+		auto dy = c.imag() - orig.imag();
+		using std::sqrt;
+		auto dst = sqrt(dx*dx + dy*dy);
+		if (dst > (0.001 * stepsize))
+		{
+			std::cerr << "Error: c differs from orig\n";
+			std::cerr << "    c = " << c.real() << "+" << c.imag() << "i\n";
+			std::cerr << " orig = " << orig.real() << "+" << orig.imag() << "i\n";
+			std::cerr << " diff = " << dx << "+" << dy << "i\n";
+			throw "Error: c differs from orig\n";
+		}
+	}
+	#endif
+
 	UL& n = iter;
 	if (n <= 1)
 	{
@@ -111,6 +133,9 @@ void Point<Flt>::init(const std::complex<Flt>& c)
 	status = Point::calc;
 	iter = 1;
 	z = c;
+	#ifndef NDEBUG
+	orig = c;
+	#endif
 }
 
 template<typename Flt>
@@ -603,6 +628,24 @@ Image Map<Flt>::dbl_makefull(UL cap)
 template<typename Flt>
 int Map<Flt>::generate_dbl(UL cap, bool first, bool display)
 {
+	
+	#ifndef NDEBUG
+
+	Updater::Init(new_h*3+1);
+	if (display) Updater::Display();
+
+	LineCache<Flt> lc = { cap, display, *this, first };
+	lc.y_start = 0;
+	lc.y_count = new_h;
+	
+	LineCache<Flt>::execute_dbl(&lc);
+
+	UL sk = lc.skip_count;
+	UL is = lc.inskip;
+	UL maxout = lc.eff_cap;
+
+	#else
+
 	Updater::Init(new_h*3+4);
 	if (display) Updater::Display();
 
@@ -628,13 +671,15 @@ int Map<Flt>::generate_dbl(UL cap, bool first, bool display)
 	{
 		tt[i] = boost::thread{&LineCache<Flt>::execute_dbl, lc+i};
 	}
+
 	LineCache<Flt>::execute_dbl(lc);
+
 	boost::chrono::nanoseconds ns{250'000};
 	int joined = 1;
 	while (true)
 	{
 		if (display) Updater::Display();
-
+    
 		bool j = tt[joined].try_join_for(ns);
 		if (j)
 		{
@@ -643,6 +688,7 @@ int Map<Flt>::generate_dbl(UL cap, bool first, bool display)
 			if (joined >= 4) break;
 		}
 	}
+
 	UL sk = 0, is = 0;
 	for (i=0; i<4; ++i)
 	{
@@ -651,6 +697,8 @@ int Map<Flt>::generate_dbl(UL cap, bool first, bool display)
 		sk += lc[i].skip_count;
 		is += lc[i].inskip;
 	}
+	
+	#endif
 
 	Updater::Tick();
 	if (display) Updater::Display();
@@ -668,30 +716,39 @@ template<typename Flt>
 int Map<Flt>::sh_new_xcoord(int oldx)
 {
 	int hw = new_w/2;
-	if (oldx < hw) // left
-	{
+	//if (oldx < hw) // left
+	//{
 		int dfc = hw - oldx;
 		return hw - 2*dfc;
-	} else { // right
-		hw -= 1;
-		int dfc = oldx - hw;
-		return hw + 2*dfc;
-	}
+	//} else { // right
+	//	hw -= 1;
+	//	int dfc = oldx - hw;
+	//	return hw + 2*dfc;
+	//}
 }
 
 template<typename Flt>
 int Map<Flt>::sh_new_ycoord(int oldy)
 {
 	int hh = new_h/2;
-	if (oldy < hh)
-	{
+	//if (oldy < hh)
+	//{
 		int dfc = hh - oldy;
 		return hh - 2*dfc;
-	} else {
-		hh -= 1;
-		int dfc = oldy - hh;
-		return hh + 2*dfc;
-	}
+	//} else {
+	//	hh -= 1;
+	//	int dfc = oldy - hh;
+	//	return hh + 2*dfc;
+	//}
+}
+
+template<typename Flt>
+void Map<Flt>::new_out(std::string fn)
+{
+	using std::swap;
+	swap(width, new_w); swap(height, new_h);
+	makeimage(350,INT_MAX).Save(fn);
+	swap(width, new_w); swap(height, new_h);
 }
 
 template<typename Flt>
@@ -719,15 +776,13 @@ void Map<Flt>::shuffle_dbl()
 			auto newx = sh_new_xcoord(x);
 			if ((newx<0) || (newx>=(int)new_w)) continue;
 			const Point<Flt>& src = copy[y][x];
-			get(newx,newy) = src;
+			Point<Flt>& dst = get(newx,newy);
+			dst = src;
 		}
 	}
-	#ifndef NDEBUG
-	using std::swap;
-	swap(width, new_w); swap(height, new_h);
-	makeimage(350,INT_MAX).Save("WorkImage.bmp");
-	swap(width, new_w); swap(height, new_h);
-	#endif
+	//#ifndef NDEBUG
+	//new_out("WorkImage.bmp");
+	//#endif
 }
 
 template struct Map<FltH>;
@@ -951,6 +1006,7 @@ bool LineCache<Flt>::setin()
 		for (UL x=0; x<w; ++x)
 		{
 			auto& p = map.get(x,y);
+			if (p.status ==Point<Flt>::in) foundin = true;
 			if (p.status != Point<Flt>::calc) continue;
 			if (p.iter < cap) continue;
 			p.status = Point<Flt>::in;
@@ -1016,9 +1072,20 @@ template<typename Flt>
 void LineCache<Flt>::execute_dbl(LineCache* lc)
 {
 	lc->base_init();
+	
+	#ifndef NDEBUG
+	#define IDBO(fn) lc->map.new_out(fn)
+	#else
+	#define IDBO(fn) (void)fn
+	#endif
 
+	IDBO("ED_0_After_BI.bmp");
+	
 	if (lc->first)
+	{
 		lc->even();
+		IDBO("ED_1_RanEvenFrst.bmp");
+	}
 
 	lc->init_lim();
 
@@ -1034,18 +1101,25 @@ void LineCache<Flt>::execute_dbl(LineCache* lc)
 
 	all_f( [&](UL x, UL y) { lc->ep_x(x,y); } );
 	all_f( [&](UL x, UL y) { lc->ep_y(x,y); } );
+	
+	IDBO("ED_2_Extrapolate_X_and_Y.bmp");
 
-	if (lc->first)
-		lc->odd();
-	else
-		lc->even();
+	lc->odd();
+	IDBO("ED_3_After_Odd.bmp");
 
 	bool foundin = lc->setin();
 
 	if (foundin)
+	{
+		IDBO("ED_4_After_Setin.bmp");
 		all_f( [&](UL x, UL y) { lc->ep_xy(x,y); } );
+		IDBO("ED_5_Extrapolate_XY.bmp");
+	}
 
 	lc->all();
+	IDBO("ED_6_After_All.bmp");
+	
+	#undef IDBO
 }
 
 template struct LineCache<FltH>;

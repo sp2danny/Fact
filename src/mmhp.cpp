@@ -153,6 +153,9 @@ int main(int argc, char* argv[])
 		ml.scale_x = (double)zoom_cur;
 		ml.scale_y = (double)zoom_cur * image_height / image_width;
 
+		if (useh) Point<FltH>::stepsize = mh.to_xpos(1) - mh.to_xpos(0);
+		else      Point<FltL>::stepsize = ml.to_xpos(1) - ml.to_xpos(0);
+
 		if (prt)
 		{
 			std::cout << std::setprecision(25);
@@ -221,14 +224,14 @@ int main(int argc, char* argv[])
 			} else {
 				if (useh) mh.shuffle_dbl();
 				else      ml.shuffle_dbl();
+				//#ifndef NDEBUG
+				//Image img;
+				//if (useh) img = mh.dbl_makefull(update_cap);
+				//else      img = ml.dbl_makefull(update_cap);
+				//img.Save("FullImg.bmp");
+				//#endif
 			}
 			int n;
-			#ifndef NDEBUG
-			Image img;
-			if (useh) img = mh.dbl_makefull(update_cap);
-			else      img = ml.dbl_makefull(update_cap);
-			img.Save("FullImg.bmp");
-			#endif
 			if (useh) n = mh.generate_dbl(update_cap, first, prt);
 			else      n = ml.generate_dbl(update_cap, first, prt);
 			auto t2 = std::chrono::high_resolution_clock::now();

@@ -68,10 +68,18 @@ struct Point
 	float over = 0.0f;
 	UC pixtype = 0;
 	std::complex<Flt> z = {0.0,0.0};
+	#ifndef NDEBUG
+	std::complex<Flt> orig = {0.0,0.0};
+	#endif
 	bool docalc(const std::complex<Flt>& c, UL cap);
 	void init(const std::complex<Flt>& c);
 	RGB col(float mod) const;
+	static Flt stepsize;
 };
+
+template<typename Flt> 
+Flt Point<Flt>::stepsize{};
+
 
 typedef float (*ModFunc)(double);
 
@@ -151,6 +159,8 @@ struct Map
 	void shuffle_dbl();
 	int sh_new_xcoord(int);
 	int sh_new_ycoord(int);
+	
+	void new_out(std::string);
 
 friend
 	struct LineCache<Flt>;
