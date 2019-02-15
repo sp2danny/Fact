@@ -58,8 +58,17 @@ int main(int argc, char* argv[])
 	}
 
 	Str curr_name = mkname(i);
+	
+	bool owr = cmd.has_option('o', "overwrite");
+	bool prt = cmd.has_option('p', "print");
+	bool ten = cmd.has_option('t', "ten");
+	bool i25 = cmd.has_option('q', "25");
+	bool i50 = cmd.has_option('f', "50");
+	bool dbl = cmd.has_option('d', "dbl");
+	bool sb  = cmd.has_option('s', "saveblob");
+	bool rep = cmd.has_option('r', "report");
 
-	if (!cmd.has_option('o', "overwrite"))
+	if (!owr)
 	{
 		while (true)
 		{
@@ -89,14 +98,14 @@ int main(int argc, char* argv[])
 	ml.center_y = (double)center_y;
 	ml.zoom_mul = (double)zoom_step;
 
-	if (cmd.has_option('r', "report"))
+	if (rep)
 	{
 		std::cout << std::setprecision(75);
 		mh.setup_dbl(zoom_step);
 		return 0;
 	}
 
-	if (cmd.has_option('p', "print"))
+	if (prt)
 	{
 		std::cout << std::setprecision(75);
 		std::cout << "center-x       : " << mh.center_x   << std::endl;
@@ -104,14 +113,6 @@ int main(int argc, char* argv[])
 		std::cout << "update cap     : " << update_cap    << std::endl;
 		std::cout << "zoom step      : " << zoom_step     << std::endl;
 	}
-
-	bool owr = cmd.has_option('o', "overwrite");
-	bool prt = cmd.has_option('p', "print");
-	bool ten = cmd.has_option('t', "ten");
-	bool i25 = cmd.has_option('q', "25");
-	bool i50 = cmd.has_option('f', "50");
-	bool dbl = cmd.has_option('d', "dbl");
-	bool sb  = cmd.has_option('s', "saveblob");
 
 	if ( (ten+i25+i50+dbl) > 1 )
 	{
@@ -177,7 +178,7 @@ int main(int argc, char* argv[])
 			{                                                                                    \
 				curr_name = mkname(i+j);                                                         \
 				zoom_cur *= zoom_step;                                                           \
-				if (!owr && boost::filesystem::exists(curr_name)) continue;                      \
+				if (owr && boost::filesystem::exists(curr_name)) continue;                       \
 				if (prt) std::cout << i+j << "\r" << std::flush;                                 \
 				if (useh) mh.makeimage_N(j,mod_func).Save(curr_name);                            \
 				else      ml.makeimage_N(j,mod_func).Save(curr_name);                            \
@@ -234,7 +235,7 @@ int main(int argc, char* argv[])
 			for (int j=0; j<n; ++j)
 			{
 				curr_name = mkname(i+j);
-				if (!owr && boost::filesystem::exists(curr_name)) continue;
+				if (/*!owr &&*/ boost::filesystem::exists(curr_name)) continue;
 				if (prt) std::cout << i+j << "\r" << std::flush;
 				if (useh) mh.makeimage_N(j,mod_func).Save(curr_name);
 				else      ml.makeimage_N(j,mod_func).Save(curr_name);

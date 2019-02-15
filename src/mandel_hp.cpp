@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <cmath>
 #include <mutex>
+#include <climits>
 
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
@@ -288,7 +289,9 @@ Image Map<Flt>::makeimage(float mod, UL upc)
 			{
 				img.PutPixel(x,y,p.col(mod));
 			} else {
-				if ((p.status==Point<Flt>::calc) && upc && (p.iter<upc))
+				bool clc = p.status==Point<Flt>::calc;
+				bool ilu = upc && (p.iter<upc);
+				if (clc && ilu)
 					img.PutPixel(x,y,{255,255,255});
 				else
 					img.PutPixel(x,y,{0,0,0});
@@ -690,7 +693,11 @@ void Map<Flt>::shuffle_dbl()
 			get(newx,newy) = src;
 		}
 	}
-	points.swap(copy);
+	//points.swap(copy);
+	//using std::swap;
+	//swap(width, new_w); swap(height, new_h);
+	//makeimage(350,INT_MAX).Save("WorkImage.bmp");
+	//swap(width, new_w); swap(height, new_h);
 }
 
 template struct Map<FltH>;
@@ -698,7 +705,7 @@ template struct Map<FltL>;
 
 // ----------------------------------------------------------------------------
 
-// ***************
+// ***************l
 // *** Updater ***
 // ***************
 
