@@ -59,6 +59,7 @@ constexpr UC pt_normal = 1;
 constexpr UC pt_ep_hor = 2;
 constexpr UC pt_ep_ver = 3;
 constexpr UC pt_black  = 4;
+constexpr UC pt_ep_msk = 2;
 
 template<typename Flt>
 struct Point
@@ -150,8 +151,6 @@ struct Map
 	UL generate_N_threaded(int n, UL cap, bool display=false);
 	void prepare_image();
 	Image makeimage_N(int n, ModFunc);
-
-	void saveblob(int N, std::ostream&);
 
 	int count_dlb;
 	Image dbl_makefull(UL);

@@ -1,1 +1,1 @@
-avconv -framerate 50 -i temp/img_06%03d.bmp -r 50 movpart/out_06.mp4
+ffmpeg -framerate 50 -i temp/img_03%03d.bmp -r 50 movpart/out_03.mp4

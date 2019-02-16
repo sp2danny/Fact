@@ -65,8 +65,6 @@ int main(int argc, char* argv[])
 	bool i25 = cmd.has_option('q', "25");
 	bool i50 = cmd.has_option('f', "50");
 	bool dbl = cmd.has_option('d', "dbl");
-	bool sb  = cmd.has_option('s', "saveblob");
-	bool rep = cmd.has_option('r', "report");
 
 	if (!owr)
 	{
@@ -97,13 +95,6 @@ int main(int argc, char* argv[])
 	ml.center_x = (double)center_x;
 	ml.center_y = (double)center_y;
 	ml.zoom_mul = (double)zoom_step;
-
-	if (rep)
-	{
-		std::cout << std::setprecision(75);
-		mh.setup_dbl(zoom_step);
-		return 0;
-	}
 
 	if (prt)
 	{
@@ -137,11 +128,13 @@ int main(int argc, char* argv[])
 		if (max_count)
 			if (i>max_count) break;
 
-		if ((!dbl) && (!owr) && boost::filesystem::exists(curr_name))
+		if ((!owr) && boost::filesystem::exists(curr_name))
 		{
 			i += 1;
 			zoom_cur *= zoom_step;
 			curr_name = mkname(i);
+			if (dbl)
+				first = true;
 			continue;
 		}
 
@@ -185,8 +178,7 @@ int main(int argc, char* argv[])
 				std::cout << "effective cap  : " << maxout << std::endl;                         \
 				std::cout << "color mod      : " << mod_func((double)zoom_cur) << std::endl;     \
 			}                                                                                    \
-			for (int j=0; j<n; ++j)                                                              \
-			{                                                                                    \
+			for (int j=0; j<n; ++j) {                                                            \
 				curr_name = mkname(i+j);                                                         \
 				zoom_cur *= zoom_step;                                                           \
 				if (owr && boost::filesystem::exists(curr_name)) continue;                       \
@@ -196,12 +188,9 @@ int main(int argc, char* argv[])
 			}                                                                                    \
 			auto t3 = std::chrono::high_resolution_clock::now();                                 \
 			auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t1).count();      \
-			std::cout << "effectiveness  : " << 1000.0f * n / d2 << std::endl;                   \
-			std::cout << "Wrote: " << mkname(i) << " to " << mkname(i+n-1) << std::endl;         \
-			if (sb) {                                                                            \
-				std::ofstream of{mkname(i)+".blob"};                                             \
-				if (useh) mh.saveblob(n, of);                                                    \
-				else      ml.saveblob(n, of);                                                    \
+			if (prt) {                                                                           \
+				std::cout << "effectiveness  : " << 1000.0f * n / d2 << std::endl;               \
+				std::cout << "Wrote: " << mkname(i) << " to " << mkname(i+n-1) << std::endl;     \
 			}                                                                                    \
 			i += n
 
@@ -232,12 +221,6 @@ int main(int argc, char* argv[])
 			} else {
 				if (useh) cpy = mh.shuffle_dbl();
 				else      cpy = ml.shuffle_dbl();
-				//#ifndef NDEBUG
-				//Image img;
-				//if (useh) img = mh.dbl_makefull(update_cap);
-				//else      img = ml.dbl_makefull(update_cap);
-				//img.Save("FullImg.bmp");
-				//#endif
 			}
 			if (prt && cpy) {
 				std::cout << "moved pixels   : " << cpy << std::endl;
@@ -257,15 +240,18 @@ int main(int argc, char* argv[])
 			for (int j=0; j<n; ++j)
 			{
 				curr_name = mkname(i+j);
-				if (/*!owr &&*/ boost::filesystem::exists(curr_name)) continue;
+				if ((!owr) && boost::filesystem::exists(curr_name)) continue;
 				if (prt) std::cout << i+j << "\r" << std::flush;
 				if (useh) mh.makeimage_N(j,mod_func).Save(curr_name);
 				else      ml.makeimage_N(j,mod_func).Save(curr_name);
 			}
 			auto t3 = std::chrono::high_resolution_clock::now();
 			auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t1).count();
-			std::cout << "effectiveness  : " << 1000.0f * n / d2 << std::endl;
-			std::cout << "Wrote: " << mkname(i) << " to " << mkname(i+n-1) << std::endl;
+			if (prt)
+			{
+				std::cout << "effectiveness  : " << 1000.0f * n / d2 << std::endl;
+				std::cout << "Wrote: " << mkname(i) << " to " << mkname(i+n-1) << std::endl;
+			}
 			i += n;
 			zoom_cur *= FltH(0.5);
 			first = false;

@@ -133,6 +133,7 @@ void Point<Flt>::init(const std::complex<Flt>& c)
 	status = Point::calc;
 	iter = 1;
 	z = c;
+	pixtype = 0;
 	#ifndef NDEBUG
 	orig = c;
 	#endif
@@ -522,61 +523,6 @@ Image Map<Flt>::makeimage_N(int n, ModFunc mf)
 	}
 
 	return img;
-}
-
-template<typename Flt>
-void Map<Flt>::saveblob(int N, std::ostream& out)
-{
-	{
-		std::uint16_t val;
-		val = width;  out.write((char*)&val, 2);
-		val = height; out.write((char*)&val, 2);
-		val = new_w;  out.write((char*)&val, 2);
-		val = new_h;  out.write((char*)&val, 2);
-		val = N;      out.write((char*)&val, 2);
-	}
-	
-	UC val = 0;
-	UC cnt = 0;
-	auto put2 = [&](UC bits)
-	{
-		val = (val << 2) | bits;
-		cnt += 2;
-		if (cnt == 8)
-		{
-			out.write((char*)&val, 1);
-			val = cnt = 0;
-		}
-	};
-	
-	for (UL y=0; y<new_h; ++y)
-	{
-		for (UL x=0; x<new_w; ++x)
-		{
-			auto& pix = get(x,y);
-			UC pt;
-			switch (pix.pixtype)
-			{
-				case pt_normal: pt = 0; break;
-				case pt_ep_hor: pt = 1; break;
-				case pt_ep_ver: pt = 2; break;
-				case pt_black:  pt = 3; break;
-				default: throw "pixeltype error";
-			}
-			put2(pt);
-		}
-	}
-	while (cnt) put2(0);
-	
-	for (UL y=0; y<new_h; ++y)
-	{
-		for (UL x=0; x<new_w; ++x)
-		{
-			auto& pix = get(x,y);
-			if (pix.pixtype == pt_normal)
-				out.write((char*)&pix.over, sizeof(float));
-		}
-	}
 }
 
 template<typename Flt>
@@ -983,9 +929,12 @@ bool LineCache<Flt>::ep_x(UL x, UL y)
 	if (x==xhi) return false;
 	auto& pp = map.get(x-1,y);
 	if (pp.status != Point<Flt>::out) return false;
+	bool pe = pp.pixtype & pt_ep_msk;
 	auto& pn = map.get(x+1,y);
 	if (pn.status != Point<Flt>::out) return false;
 	if (pp.iter != pn.iter) return false;
+	bool ne = pn.pixtype & pt_ep_msk;
+	if (pe && ne) return false;
 	p.status = Point<Flt>::out;
 	p.iter = pp.iter;
 	p.over = (pp.over + pn.over)/2.0;
@@ -1004,9 +953,12 @@ bool LineCache<Flt>::ep_y(UL x, UL y)
 	if (y==yhi) return false;
 	auto& pp = map.get(x,y-1);
 	if (pp.status != Point<Flt>::out) return false;
+	bool pe = pp.pixtype & pt_ep_msk;
 	auto& pn = map.get(x,y+1);
 	if (pn.status != Point<Flt>::out) return false;
 	if (pp.iter != pn.iter) return false;
+	bool ne = pn.pixtype & pt_ep_msk;
+	if (pe && ne) return false;
 	p.status = Point<Flt>::out;
 	p.iter = pp.iter;
 	p.over = (pp.over + pn.over)/2.0;
