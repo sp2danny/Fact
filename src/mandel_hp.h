@@ -69,7 +69,7 @@ struct Point
 {
 	enum { in, calc, out } status = calc;
 	UL iter = 0;
-	double over = 0.0;
+	float over = 0.0;
 	UC pixtype = 0;
 	std::complex<Flt> z = {0.0,0.0};
 	#ifndef NDEBUG
@@ -77,14 +77,14 @@ struct Point
 	#endif
 	bool docalc(const std::complex<Flt>& c, UL cap);
 	void init(const std::complex<Flt>& c);
-	RGB col(double mod) const;
+	RGB col(float mod) const;
 	static Flt stepsize;
 };
 
 template<typename Flt> 
 Flt Point<Flt>::stepsize{};
 
-typedef double (*ModFunc)(double);
+typedef float (*ModFunc)(float);
 
 template<typename Flt>
 using Scanline = std::vector<Point<Flt>>;
@@ -157,7 +157,6 @@ struct Map
 
 	// Batch
 	UL generate_N_threaded(int n, UL cap, bool display=false);
-	void prepare_image();
 	Image makeimage_N(int, ModFunc, OOR& = oor_nullopt);
 
 	int count_dlb;
@@ -175,7 +174,7 @@ friend
 private:
 	void generate_N_init(int n, bool disp);
 	void generate_init_rest();
-	RGB extrapolate(double x, double y, double mod);
+	RGB extrapolate(float x, float y, float mod);
 	std::vector<Flt> vfx, vfy;
 	Image prep;
 };

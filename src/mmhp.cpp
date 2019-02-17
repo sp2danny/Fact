@@ -30,14 +30,14 @@ int main(int argc, char* argv[])
 	static FltH    zoom_step       = from_stringH ( cmd.get_parameter ( "zoom-step",    "0.99"    ));
 	static FltH    center_x        = from_stringH ( cmd.get_parameter ( "center-x",     "0.5"     ));
 	static FltH    center_y        = from_stringH ( cmd.get_parameter ( "center-y",     "0.0"     ));
+	static double  mod_base        = std::stod    ( cmd.get_parameter ( "col-base",     "100"     ));
+	static double  mod_pow         = std::stod    ( cmd.get_parameter ( "col-pow",      "0.03"    ));
 	static UL      num_dig         = std::stol    ( cmd.get_parameter ( "num-digits",   "3"       ));
 	static UL      update_cap      = std::stol    ( cmd.get_parameter ( "update-cap",   "50"      ));
 	static UL      image_width     = std::stol    ( cmd.get_parameter ( "width",        "640"     ));
 	static UL      image_height    = std::stol    ( cmd.get_parameter ( "height",       "480"     ));
 	static UL      skip_count      = std::stol    ( cmd.get_parameter ( "skip",         "0"       ));
 	static UL      max_count       = std::stol    ( cmd.get_parameter ( "max-count",    "0"       ));
-	static double  mod_base        = std::stod    ( cmd.get_parameter ( "col-base",     "100"     ));
-	static double  mod_pow         = std::stod    ( cmd.get_parameter ( "col-pow",      "0.03"    ));
 	static Str     target_dir      =                cmd.get_parameter ( "target",       "img"     ) ;
 	static Str     name_lead       =                cmd.get_parameter ( "lead",         "m_"      ) ;
 
@@ -96,6 +96,8 @@ int main(int argc, char* argv[])
 			zoom_cur *= zoom_step;
 			curr_name = mkname(i);
 		}
+	} else {
+		std::cout << "running in owerwrite-mode" << std::endl;
 	}
 
 	if (i != 0)
@@ -175,7 +177,7 @@ int main(int argc, char* argv[])
 		logger << "scale-x        : " << mh.scale_x << std::endl;
 		logger << "scale-y        : " << mh.scale_y << std::endl;
 
-		ModFunc mod_func = [](double d) { return mod_base / std::pow(d, mod_pow); };
+		ModFunc mod_func = [](float d) -> float { return mod_base / std::pow(d, mod_pow); };
 		UL maxout;
 
 		auto EXEC = [&](int n) -> void
@@ -221,8 +223,10 @@ int main(int argc, char* argv[])
 		
 		else if (dbl)
 		{
+			int start = 0;
 			if (i)
 			{
+				start = 1;
 				i -= 1;
 				zoom_cur /= zoom_step;
 				mh.setZ((FltH)zoom_cur);
@@ -251,9 +255,7 @@ int main(int argc, char* argv[])
 			logger << "generate time  : " << d1 / 1000.0f << std::endl;
 			logger << "color mod      : " << mod_func((double)zoom_cur) << std::endl;
 			auto zc = zoom_cur;
-			if (useh) mh.prepare_image();
-			else      ml.prepare_image();
-			for (int j=1; j<n; ++j)
+			for (int j=start; j<n; ++j)
 			{
 				curr_name = mkname(i+j);
 				if ((!owr) && boost::filesystem::exists(curr_name)) continue;
@@ -268,7 +270,7 @@ int main(int argc, char* argv[])
 			if (prt)
 			{
 				std::cout << "effectiveness  : " << 1000.0f * n / d2 << std::endl;
-				std::cout << "Wrote: " << mkname(i) << " to " << mkname(i+n-1) << std::endl;
+				std::cout << "Wrote: " << mkname(i+1) << " to " << mkname(i+n-1) << std::endl;
 			}
 			i += n;
 			zoom_cur *= FltH(0.5);

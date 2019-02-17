@@ -140,7 +140,7 @@ void Point<Flt>::init(const std::complex<Flt>& c)
 }
 
 template<typename Flt>
-RGB Point<Flt>::col(double mod) const
+RGB Point<Flt>::col(float mod) const
 {
 	const Point& p = *this;
 	if (p.status != Point::out)
@@ -149,15 +149,15 @@ RGB Point<Flt>::col(double mod) const
 	}
 	auto x = p.iter;
 
-	static const double pi2 = 3.1415926536f * 2;
-	static const double ilg2 = 1.0f / log(2.0f);
-	static const double c000 = 0.0 / 3.0;
-	static const double c333 = 1.0 / 3.0;
-	static const double c666 = 2.0 / 3.0;
-	double f = fmod((double)x, mod) + 1.0f;
+	static const float pi2 = 3.1415926536f * 2;
+	static const float ilg2 = 1.0f / log(2.0f);
+	static const float c000 = 0.0f / 3.0f;
+	static const float c333 = 1.0f / 3.0f;
+	static const float c666 = 2.0f / 3.0f;
+	float f = fmod((float)x, mod) + 1.0f;
 	f /= mod;
 
-	f -= (double)log(log(p.over) * ilg2) * ilg2 / mod;
+	f -= (float)log(log(p.over) * ilg2) * ilg2 / mod;
 	f *= pi2;
 	float r = 0.5f + 0.5f*std::sin(f + pi2 * c000);
 	float g = 0.5f + 0.5f*std::sin(f + pi2 * c333);
@@ -337,10 +337,10 @@ Image Map<Flt>::makeimage(float mod, UL upc)
 	return img;
 }
 
-static RGB mix(const RGB& p1,const RGB& p2, double f)
+static RGB mix(const RGB& p1,const RGB& p2, float f)
 {
-	assert( (f >= 0.0) && (f <= 1.0) );
-	const double inv = 1.0-f;
+	assert( (f >= 0.0f) && (f <= 1.0f) );
+	const float inv = 1.0f-f;
 	float r = p1.r * f + p2.r * inv;
 	float g = p1.g * f + p2.g * inv;
 	float b = p1.b * f + p2.b * inv;
@@ -351,28 +351,28 @@ static RGB mix(const RGB& p1,const RGB& p2, double f)
 }
 
 template<typename Flt>
-RGB Map<Flt>::extrapolate(double x, double y, double mod)
+RGB Map<Flt>::extrapolate(float x, float y, float mod)
 {
 	using namespace std;
-	if (x<0.0) x=0.0; if (x>new_w) x=new_w;
-	if (y<0.0) y=0.0; if (y>new_h) y=new_h;
+	if (x<0.0f) x=0.0f; if (x>new_w) x=new_w;
+	if (y<0.0f) y=0.0f; if (y>new_h) y=new_h;
 	double xr = round(x);
 	double yr = round(y);
 	double dx = x-xr;
 	double dy = y-yr;
 	UL x1,x2,y1,y2;
 	double fx, fy;
-	if (fabs(dx) < 0.05) {
+	if (fabs(dx) < 0.05f) {
 		x1 = x2 = roundl(x);
-		fx = 0.5;
+		fx = 0.5f;
 	} else {
 		x1 = floorl(x);
 		x2 = ceill(x);
 		fx = x2-x;
 	}
-	if (abs(dy) < 0.05) {
+	if (abs(dy) < 0.05f) {
 		y1 = y2 = roundl(y);
-		fy = 0.5;
+		fy = 0.5f;
 	} else {
 		y1 = floorl(y);
 		y2 = ceill(y);
@@ -416,8 +416,8 @@ void Map<Flt>::generate_N_init(int n, bool disp)
 	double zm = (double)zoom_mul;
 	double tm = pow(zm, -n);
 
-	new_w = ceil(width  * tm);
-	new_h = ceil(height * tm);
+	new_w = ceill(width  * tm);
+	new_h = ceill(height * tm);
 
 	if (disp)
 	{
@@ -492,31 +492,23 @@ UL Map<Flt>::generate_N_threaded(int n, UL cap, bool display)
 }
 
 template<typename Flt>
-void Map<Flt>::prepare_image()
-{
-	//using std::swap;
-	//swap(width, new_w); swap(height, new_h);
-	//prep = makeimage()
-}
-
-template<typename Flt>
 Image Map<Flt>::makeimage_N(int n, ModFunc mf, OOR& fr)
 {
 	Image img(width, height);
-	double sx{scale_x};
+	float sx = (float)(double)scale_x;
 
-	double t0{zoom_mul};
-	double tpmn = pow(t0, -n);
-	double myw = new_w / tpmn;
-	double myh = new_h / tpmn;
+	float t0 = (float)(double)zoom_mul;
+	float tpmn = pow(t0, -n);
+	float myw = new_w / tpmn;
+	float myh = new_h / tpmn;
 	
-	double xstart = (new_w-myw) / 2;
-	double ystart = (new_h-myh) / 2;
+	float xstart = (new_w-myw) / 2;
+	float ystart = (new_h-myh) / 2;
 
-	double xstep = myw / width;
-	double ystep = myh / height;
+	float xstep = myw / width;
+	float ystep = myh / height;
 
-	double mod = mf(sx * tpmn);
+	float mod = mf(sx / tpmn);
 	
 	if (fr)
 	{
@@ -528,7 +520,7 @@ Image Map<Flt>::makeimage_N(int n, ModFunc mf, OOR& fr)
 	UL x,y;
 	for (y=0; y<height; ++y)
 	{
-		double yf = ystart + y * ystep;
+		float yf = ystart + y * ystep;
 		for (x=0; x<width; ++x)
 		{
 			double xf = xstart + x * xstep;
@@ -688,30 +680,16 @@ template<typename Flt>
 int Map<Flt>::sh_new_xcoord(int oldx)
 {
 	int hw = new_w/2;
-	//if (oldx < hw) // left
-	//{
-		int dfc = hw - oldx;
-		return hw - 2*dfc;
-	//} else { // right
-	//	hw -= 1;
-	//	int dfc = oldx - hw;
-	//	return hw + 2*dfc;
-	//}
+	int dfc = hw - oldx;
+	return hw - 2*dfc;
 }
 
 template<typename Flt>
 int Map<Flt>::sh_new_ycoord(int oldy)
 {
 	int hh = new_h/2;
-	//if (oldy < hh)
-	//{
-		int dfc = hh - oldy;
-		return hh - 2*dfc;
-	//} else {
-	//	hh -= 1;
-	//	int dfc = oldy - hh;
-	//	return hh + 2*dfc;
-	//}
+	int dfc = hh - oldy;
+	return hh - 2*dfc;
 }
 
 template<typename Flt>
@@ -755,10 +733,7 @@ int Map<Flt>::shuffle_dbl()
 			++cpy;
 		}
 	}
-	//#ifndef NDEBUG
-	//new_out("WorkImage.bmp");
-	//#endif
-	
+
 	return cpy;
 }
 
