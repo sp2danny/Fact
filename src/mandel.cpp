@@ -58,7 +58,7 @@ void Map::generate_init()
 		{
 			Flt& xld = xlds[x];
 			Cmplx z{xld, yld};
-			idx = to_index(x,y);
+			idx = (UL)to_index(x,y);
 			points[idx].status = Point::calc;
 			points[idx].iter = 1;
 			points[idx].z = z;
@@ -120,7 +120,7 @@ bool Map::do_one(UL x, UL y, UL cap)
 		if (az2 > 4.0)
 		{
 			p.status = Point::out;
-			p.over = sqrtf(az2);
+			p.over = sqrtf((float)az2);
 			p.iter = n;
 			return true;
 		}
@@ -141,7 +141,7 @@ void Map::dothething(UL startx,UL starty)
 	{
 		for (x=0; x<width; ++x)
 		{
-			UL idx = to_index(x,y);
+			UL idx = (UL)to_index(x,y);
 			points[idx].visited = false;
 		}
 	}
