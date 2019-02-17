@@ -493,7 +493,7 @@ void Map<Flt>::prepare_image()
 }
 
 template<typename Flt>
-Image Map<Flt>::makeimage_N(int n, ModFunc mf)
+Image Map<Flt>::makeimage_N(int n, ModFunc mf, OOR& fr)
 {
 	Image img(width, height);
 	double sx{scale_x};
@@ -510,6 +510,13 @@ Image Map<Flt>::makeimage_N(int n, ModFunc mf)
 	double ystep = myh / height;
 
 	double mod = mf(sx * tpmn);
+	
+	if (fr)
+	{
+		(*fr).get() << mod << " " << myw << "x" << myh << " ";
+		(*fr).get() << xstart << "+" << xstep << " ";
+		(*fr).get() << ystart << "+" << ystep << " ";
+	}
 
 	UL x,y;
 	for (y=0; y<height; ++y)
@@ -584,15 +591,15 @@ Image Map<Flt>::dbl_makefull(UL cap)
 }
 
 template<typename Flt>
-int Map<Flt>::generate_dbl(UL cap, bool first, bool display)
+int Map<Flt>::generate_dbl(UL cap, bool first, MultiLogger& logger)
 {
 	
 	#ifndef NDEBUG
 
 	Updater::Init(new_h*3+1);
-	if (display) Updater::Display();
+	Updater::Display();
 
-	LineCache<Flt> lc = { cap, display, *this, first };
+	LineCache<Flt> lc = { cap, true, *this, first };
 	lc.y_start = 0;
 	lc.y_count = new_h;
 	
@@ -608,10 +615,10 @@ int Map<Flt>::generate_dbl(UL cap, bool first, bool display)
 		Updater::Init(new_h*3+4);
 	else
 		Updater::Init(new_h*2+4);
-	if (display) Updater::Display();
+	Updater::Display();
 
 	LineCache<Flt> lc[4] = {
-		{ cap, display, *this, first },
+		{ cap,    true, *this, first },
 		{ cap,   false, *this, first },
 		{ cap,   false, *this, first },
 		{ cap,   false, *this, first },
@@ -639,7 +646,7 @@ int Map<Flt>::generate_dbl(UL cap, bool first, bool display)
 	int joined = 1;
 	while (true)
 	{
-		if (display) Updater::Display();
+		Updater::Display();
     
 		bool j = tt[joined].try_join_for(ns);
 		if (j)
@@ -662,13 +669,10 @@ int Map<Flt>::generate_dbl(UL cap, bool first, bool display)
 	#endif
 
 	Updater::Tick();
-	if (display) Updater::Display();
+	Updater::Display();
 
-	if (display)
-	{
-		std::cout << "skipped        : " << sk << " pixels, of wich " << is << " was inside \n";
-		std::cout << "effective cap  : " << maxout << "\n";
-	}
+	logger << "skipped        : " << sk << " pixels, of wich " << is << " was inside \n";
+	logger << "effective cap  : " << maxout << "\n";
 
 	return count_dlb;
 }

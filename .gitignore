@@ -15,3 +15,5 @@ mm.txt
 *.session
 .codelite
 dbg
+FrameReport.txt
+

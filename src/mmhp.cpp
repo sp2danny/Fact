@@ -3,14 +3,19 @@
 #include <iomanip>
 #include <chrono>
 #include <fstream>
+#include <functional>
+#include <sstream>
 
 #include <boost/filesystem.hpp>
 
 #include "graph.h"
 #include "cmdline.h"
 #include "mandel_hp.h"
+#include "multilogger.hpp"
 
 using namespace std::literals;
+
+namespace fs = boost::filesystem;
 
 cmdline cmd;
 
@@ -65,12 +70,28 @@ int main(int argc, char* argv[])
 	bool i25 = cmd.has_option('q', "25");
 	bool i50 = cmd.has_option('f', "50");
 	bool dbl = cmd.has_option('d', "dbl");
+	bool rep = cmd.has_option('r', "rep");
+
+	OOR fr;
+	std::ofstream fra;
+	if (rep)
+	{
+		fra.open("FrameReport.txt"s, std::ios_base::out | std::ios_base::trunc);
+		fr = ref((std::ostream&)fra);
+	}
+
+	MultiLogger logger;
+
+	if (prt)
+		logger.add_target(std::ref(std::cout));
+	if (rep)
+		logger.add_target(std::ref(*fr));
 
 	if (!owr)
 	{
 		while (true)
 		{
-			if (!boost::filesystem::exists(curr_name)) break;
+			if (!fs::exists(curr_name)) break;
 			i += 1;
 			zoom_cur *= zoom_step;
 			curr_name = mkname(i);
@@ -96,14 +117,11 @@ int main(int argc, char* argv[])
 	ml.center_y = (double)center_y;
 	ml.zoom_mul = (double)zoom_step;
 
-	if (prt)
-	{
-		std::cout << std::setprecision(75);
-		std::cout << "center-x       : " << mh.center_x   << std::endl;
-		std::cout << "center-y       : " << mh.center_y   << std::endl;
-		std::cout << "update cap     : " << update_cap    << std::endl;
-		std::cout << "zoom step      : " << zoom_step     << std::endl;
-	}
+	logger << std::setprecision(75);
+	logger << "center-x       : " << mh.center_x   << std::endl;
+	logger << "center-y       : " << mh.center_y   << std::endl;
+	logger << "update cap     : " << update_cap    << std::endl;
+	logger << "zoom step      : " << zoom_step     << std::endl;
 
 	if ( (ten+i25+i50+dbl) > 1 )
 	{
@@ -145,8 +163,7 @@ int main(int argc, char* argv[])
 			useh = new_useh;
 		}
 
-		if (prt)
-			std::cout << "using "s << (useh ? "high"s : "low"s) << std::endl;
+		logger << "using "s << (useh ? "high"s : "low"s) << std::endl;
 
 		mh.scale_x = zoom_cur;
 		mh.scale_y = (zoom_cur * (FltH)image_height) / (FltH)image_width;
@@ -157,42 +174,38 @@ int main(int argc, char* argv[])
 		if (useh) Point<FltH>::stepsize = mh.to_xpos(1) - mh.to_xpos(0);
 		else      Point<FltL>::stepsize = ml.to_xpos(1) - ml.to_xpos(0);
 
-		if (prt)
-		{
-			std::cout << std::setprecision(25);
-			std::cout << "scale-x        : " << mh.scale_x << std::endl;
-			std::cout << "scale-y        : " << mh.scale_y << std::endl;
-		}
+		logger << std::setprecision(25);
+		logger << "scale-x        : " << mh.scale_x << std::endl;
+		logger << "scale-y        : " << mh.scale_y << std::endl;
 
 		ModFunc mod_func = [](double d) { return mod_base / std::pow(d, mod_pow); };
 		UL maxout;
 
-		#define EXEC(n)                                                                          \
-			auto t1 = std::chrono::high_resolution_clock::now();                                 \
-			if (useh) maxout = mh.generate_N_threaded(n, update_cap, prt);                       \
-			else      maxout = ml.generate_N_threaded(n, update_cap, prt);                       \
-			auto t2 = std::chrono::high_resolution_clock::now();                                 \
-			auto d1 = std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count();      \
-			if (prt) {                                                                           \
-				std::cout << "generate time  : " << d1 / 1000.0f << std::endl;                   \
-				std::cout << "effective cap  : " << maxout << std::endl;                         \
-				std::cout << "color mod      : " << mod_func((double)zoom_cur) << std::endl;     \
-			}                                                                                    \
-			for (int j=0; j<n; ++j) {                                                            \
-				curr_name = mkname(i+j);                                                         \
-				zoom_cur *= zoom_step;                                                           \
-				if (owr && boost::filesystem::exists(curr_name)) continue;                       \
-				if (prt) std::cout << i+j << "\r" << std::flush;                                 \
-				if (useh) mh.makeimage_N(j,mod_func).Save(curr_name);                            \
-				else      ml.makeimage_N(j,mod_func).Save(curr_name);                            \
-			}                                                                                    \
-			auto t3 = std::chrono::high_resolution_clock::now();                                 \
-			auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t1).count();      \
-			if (prt) {                                                                           \
-				std::cout << "effectiveness  : " << 1000.0f * n / d2 << std::endl;               \
-				std::cout << "Wrote: " << mkname(i) << " to " << mkname(i+n-1) << std::endl;     \
-			}                                                                                    \
-			i += n
+		auto EXEC = [&](int n) -> void
+		{
+			auto t1 = std::chrono::high_resolution_clock::now();
+			if (useh) maxout = mh.generate_N_threaded(n, update_cap, prt);
+			else      maxout = ml.generate_N_threaded(n, update_cap, prt);
+			auto t2 = std::chrono::high_resolution_clock::now();
+			auto d1 = std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count();
+			logger << "generate time  : " << d1 / 1000.0f << std::endl;
+			logger << "effective cap  : " << maxout << std::endl;
+			logger << "color mod      : " << mod_func((double)zoom_cur) << std::endl;
+			for (int j=0; j<n; ++j)
+			{
+				curr_name = mkname(i+j);
+				zoom_cur *= zoom_step;
+				if (owr && boost::filesystem::exists(curr_name)) continue;
+				logger << i+j << "\r" << std::flush;
+				if (useh) mh.makeimage_N(j,mod_func).Save(curr_name);
+				else      ml.makeimage_N(j,mod_func).Save(curr_name);
+			}
+			auto t3 = std::chrono::high_resolution_clock::now();
+			auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t1).count();
+			logger << "effectiveness  : " << 1000.0f * n / d2 << std::endl;
+			logger << "Wrote: " << mkname(i) << " to " << mkname(i+n-1) << std::endl;
+			i += n;
+		};
 
 		if (ten)
 		{
@@ -222,18 +235,16 @@ int main(int argc, char* argv[])
 				if (useh) cpy = mh.shuffle_dbl();
 				else      cpy = ml.shuffle_dbl();
 			}
-			if (prt && cpy) {
-				std::cout << "moved pixels   : " << cpy << std::endl;
+			if (cpy) {
+				logger << "moved pixels   : " << cpy << std::endl;
 			}
 			int n;
-			if (useh) n = mh.generate_dbl(update_cap, first, prt);
-			else      n = ml.generate_dbl(update_cap, first, prt);
+			if (useh) n = mh.generate_dbl(update_cap, first, logger);
+			else      n = ml.generate_dbl(update_cap, first, logger);
 			auto t2 = std::chrono::high_resolution_clock::now();
 			auto d1 = std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count();
-			if (prt) {
-				std::cout << "generate time  : " << d1 / 1000.0f << std::endl;
-				std::cout << "color mod      : " << mod_func((double)zoom_cur) << std::endl;
-			}
+			logger << "generate time  : " << d1 / 1000.0f << std::endl;
+			logger << "color mod      : " << mod_func((double)zoom_cur) << std::endl;
 			auto zc = zoom_cur;
 			if (useh) mh.prepare_image();
 			else      ml.prepare_image();
@@ -242,8 +253,10 @@ int main(int argc, char* argv[])
 				curr_name = mkname(i+j);
 				if ((!owr) && boost::filesystem::exists(curr_name)) continue;
 				if (prt) std::cout << i+j << "\r" << std::flush;
-				if (useh) mh.makeimage_N(j,mod_func).Save(curr_name);
-				else      ml.makeimage_N(j,mod_func).Save(curr_name);
+				if (rep) (*fr).get() << "Frame " << i+j << " : ";
+				if (useh) mh.makeimage_N(j,mod_func, fr).Save(curr_name);
+				else      ml.makeimage_N(j,mod_func, fr).Save(curr_name);
+				if (rep) (*fr).get() << std::endl;
 			}
 			auto t3 = std::chrono::high_resolution_clock::now();
 			auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t1).count();

@@ -10,11 +10,14 @@
 #include <cstdlib>
 #include <iomanip>
 #include <mutex>
+#include <functional>
+#include <utility>
 
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
 
 #include "graph.h"
+#include "multilogger.hpp"
 
 #include "gmpxx.h"
 
@@ -125,6 +128,10 @@ private:
 	UL xlo, xhi, ylo, yhi;
 };
 
+typedef std::optional<std::reference_wrapper<std::ostream>> OOR;
+
+inline OOR oor_nullopt = {std::nullopt};
+
 template<typename Flt>
 struct Map
 {
@@ -150,12 +157,12 @@ struct Map
 	// Batch
 	UL generate_N_threaded(int n, UL cap, bool display=false);
 	void prepare_image();
-	Image makeimage_N(int n, ModFunc);
+	Image makeimage_N(int, ModFunc, OOR& = oor_nullopt);
 
 	int count_dlb;
 	Image dbl_makefull(UL);
 	void setup_dbl(Flt);
-	int generate_dbl(UL, bool, bool=false);
+	int generate_dbl(UL, bool, MultiLogger&);
 	int shuffle_dbl();
 	int sh_new_xcoord(int);
 	int sh_new_ycoord(int);
