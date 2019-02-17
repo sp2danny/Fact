@@ -148,6 +148,7 @@ struct Map
 	enum Status { all_done, was_updated, no_change };
 	
 	//Flt get_col_mod() const;
+	void setZ(Flt z);
 	
 	// Singles
 	void generate_init();

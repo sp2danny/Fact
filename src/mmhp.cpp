@@ -165,11 +165,8 @@ int main(int argc, char* argv[])
 
 		logger << "using "s << (useh ? "high"s : "low"s) << std::endl;
 
-		mh.scale_x = zoom_cur;
-		mh.scale_y = (zoom_cur * (FltH)image_height) / (FltH)image_width;
-
-		ml.scale_x = (double)zoom_cur;
-		ml.scale_y = (double)zoom_cur * image_height / image_width;
+		mh.setZ((FltH)zoom_cur);
+		ml.setZ((FltL)zoom_cur);
 
 		if (useh) Point<FltH>::stepsize = mh.to_xpos(1) - mh.to_xpos(0);
 		else      Point<FltL>::stepsize = ml.to_xpos(1) - ml.to_xpos(0);
@@ -224,6 +221,14 @@ int main(int argc, char* argv[])
 		
 		else if (dbl)
 		{
+			if (i)
+			{
+				i -= 1;
+				zoom_cur /= zoom_step;
+				mh.setZ((FltH)zoom_cur);
+				ml.setZ((FltL)zoom_cur);
+			}
+
 			//std::cout << zoom_cur << std::endl;
 			auto t1 = std::chrono::high_resolution_clock::now();
 			int cpy = 0;
@@ -248,7 +253,7 @@ int main(int argc, char* argv[])
 			auto zc = zoom_cur;
 			if (useh) mh.prepare_image();
 			else      ml.prepare_image();
-			for (int j=0; j<n; ++j)
+			for (int j=1; j<n; ++j)
 			{
 				curr_name = mkname(i+j);
 				if ((!owr) && boost::filesystem::exists(curr_name)) continue;

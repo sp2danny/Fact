@@ -208,6 +208,13 @@ Flt Map<Flt>::to_ypos(UL y) const
 }
 
 template<typename Flt>
+void Map<Flt>::setZ(Flt z)
+{
+	scale_x = z;
+	scale_y = z * (Flt)height / (Flt)width;
+}
+
+template<typename Flt>
 void Map<Flt>::generate_init()
 {
 	UL x,y;
