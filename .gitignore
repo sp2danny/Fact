@@ -16,4 +16,6 @@ mm.txt
 .codelite
 dbg
 FrameReport.txt
-
+*.txt
+*.mk
+Makefile
