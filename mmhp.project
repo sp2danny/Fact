@@ -10,6 +10,7 @@
     <File Name="src/graph.cpp"/>
     <File Name="src/graph.h"/>
     <File Name="src/mandel_hp.cpp"/>
+    <File Name="src/multilogger.hpp"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
@@ -35,7 +36,7 @@
       </Compiler>
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(ProjectName)_dbg.out" IntermediateDirectory="./bin/Debug" Command="./$(ProjectName)_dbg.out" CommandArguments="center-x=-1.47452882438665971500 center-y=-3.48707682616940982331e-07 update-cap=2500 zoom-start=1 width=640 height=480 num-digits=4 lead=img_ target=./dbg zoom-end=5e-95 col-base=350 col-pow=-0.003 -pdr &#xA;" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <General OutputFile="$(ProjectName)_dbg.out" IntermediateDirectory="./bin/Debug" Command="./$(ProjectName)_dbg.out" CommandArguments="center-x=-1.47452882438665971500 center-y=-3.48707682616940982331e-07 update-cap=2500 zoom-start=1 width=640 height=480 num-digits=4 lead=img_ target=./dbg zoom-end=5e-95 col-base=350 col-pow=-0.003 skip=2500 -pdr " UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>

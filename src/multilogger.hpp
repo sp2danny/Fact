@@ -20,10 +20,8 @@ struct MultiLogger
 	template<typename T>
 	MultiLogger& operator<<(T&& val)
 	{
-		std::stringstream ss;
-		ss << val;
 		for (auto& out : outputs)
-			out.get() << ss.str();
+			out.get() << val << std::flush;
 		return *this;
 	}
 private:
