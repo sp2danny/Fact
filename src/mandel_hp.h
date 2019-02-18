@@ -79,6 +79,8 @@ struct Point
 	void init(const std::complex<Flt>& c);
 	RGB col(float mod) const;
 	static Flt stepsize;
+	mutable bool havergb;
+	mutable RGB rgbval;
 };
 
 template<typename Flt> 

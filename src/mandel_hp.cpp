@@ -142,6 +142,8 @@ void Point<Flt>::init(const std::complex<Flt>& c)
 template<typename Flt>
 RGB Point<Flt>::col(float mod) const
 {
+	if (havergb) return rgbval;
+
 	const Point& p = *this;
 	if (p.status != Point::out)
 	{
@@ -165,7 +167,9 @@ RGB Point<Flt>::col(float mod) const
 	int ri = clamp(int(r*256), 0, 255);
 	int gi = clamp(int(g*256), 0, 255);
 	int bi = clamp(int(b*256), 0, 255);
-	return {(UC)ri, (UC)gi, (UC)bi};
+	havergb = true;
+	rgbval = {(UC)ri, (UC)gi, (UC)bi};
+	return rgbval;
 }
 
 template struct Point<FltH>;
@@ -517,6 +521,14 @@ Image Map<Flt>::makeimage_N(int n, ModFunc mf, OSP fr)
 		(*fr) << ystart << "+" << ystep << " ";
 	}
 
+	for (UL y=0; y<new_h; ++y)
+	{
+		for (UL x=0; x<new_w; ++x)
+		{
+			get(x,y).havergb = false;
+		}
+	}
+
 	UL x,y;
 	for (y=0; y<height; ++y)
 	{
@@ -527,6 +539,19 @@ Image Map<Flt>::makeimage_N(int n, ModFunc mf, OSP fr)
 			img.PutPixel(x,y,extrapolate(xf,yf, mod));
 		}
 	}
+
+	/*
+	UL ta = 0;
+	for (UL y=0; y<new_h; ++y)
+	{
+		for (UL x=0; x<new_w; ++x)
+		{
+			ta += get(x,y).pac;
+		}
+	}
+
+	if (fr) (*fr) << (double(ta)/double(new_w*new_h)) << " ";
+*/
 
 	return img;
 }
@@ -646,7 +671,7 @@ int Map<Flt>::generate_dbl(UL cap, bool first, MultiLogger& logger)
 	while (true)
 	{
 		Updater::Display();
-    
+
 		bool j = tt[joined].try_join_for(ns);
 		if (j)
 		{

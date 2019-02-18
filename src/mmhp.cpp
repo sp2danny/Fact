@@ -71,6 +71,7 @@ int main(int argc, char* argv[])
 	bool i50 = cmd.has_option('f', "50");
 	bool dbl = cmd.has_option('d', "dbl");
 	bool rep = cmd.has_option('r', "rep");
+	bool mbg = cmd.has_option('m', "mbg");
 
 	OSP fr = nullptr;
 	std::ofstream fra;
@@ -203,6 +204,8 @@ int main(int argc, char* argv[])
 			auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t1).count();
 			logger << "effectiveness  : " << 1000.0f * n / d2 << std::endl;
 			logger << "Wrote: " << mkname(i) << " to " << mkname(i+n-1) << std::endl;
+			auto d3 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t2).count();
+			if (mbg) logger << "bitmap generation time : " << (d3 / n) << std::endl;
 			i += n;
 		};
 
@@ -272,6 +275,8 @@ int main(int argc, char* argv[])
 				std::cout << "effectiveness  : " << 1000.0f * n / d2 << std::endl;
 				std::cout << "Wrote: " << mkname(i+1) << " to " << mkname(i+n-1) << std::endl;
 			}
+			auto d3 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t2).count();
+			if (mbg) logger << "bitmap generation time : " << (d3 / (n-start)) << " ms/image " << std::endl;
 			i += n;
 			zoom_cur *= FltH(0.5);
 			first = false;
