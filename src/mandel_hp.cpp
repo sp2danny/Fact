@@ -112,7 +112,7 @@ bool Point<Flt>::docalc(const std::complex<Flt>& c, UL cap)
 		{
 			did_smth = true;
 			status = Point::out;
-			over = sqrtf(az2);
+			over = (float)sqrtf(az2);
 			pixtype = pt_normal;
 			break;
 		}
@@ -280,7 +280,7 @@ auto Map<Flt>::generate(UL cap, bool display, bool extrap) -> Status
 					{
 						p.status = Point<Flt>::out;
 						p.iter = pp.iter;
-						p.over = (pp.over + pn.over)/2.0;
+						p.over = (float)(pp.over + pn.over)/2.0f;
 						did_smth = true;
 						continue;
 					}
@@ -947,7 +947,7 @@ bool LineCache<Flt>::ep_y(UL x, UL y)
 	if (pe && ne) return false;
 	p.status = Point<Flt>::out;
 	p.iter = pp.iter;
-	p.over = (pp.over + pn.over)/2.0;
+	p.over = (float)(pp.over + pn.over)/2.0f;
 	p.pixtype = pt_ep_ver;
 	++skip_count;
 	return true;
