@@ -128,9 +128,7 @@ private:
 	UL xlo, xhi, ylo, yhi;
 };
 
-typedef std::optional<std::reference_wrapper<std::ostream>> OOR;
-
-inline OOR oor_nullopt = {std::nullopt};
+typedef std::ostream* OSP;
 
 template<typename Flt>
 struct Map
@@ -157,7 +155,7 @@ struct Map
 
 	// Batch
 	UL generate_N_threaded(int n, UL cap, bool display=false);
-	Image makeimage_N(int, ModFunc, OOR& = oor_nullopt);
+	Image makeimage_N(int, ModFunc, OSP = nullptr);
 
 	int count_dlb;
 	Image dbl_makefull(UL);

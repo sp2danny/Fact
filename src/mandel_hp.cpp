@@ -492,7 +492,7 @@ UL Map<Flt>::generate_N_threaded(int n, UL cap, bool display)
 }
 
 template<typename Flt>
-Image Map<Flt>::makeimage_N(int n, ModFunc mf, OOR& fr)
+Image Map<Flt>::makeimage_N(int n, ModFunc mf, OSP fr)
 {
 	Image img(width, height);
 	float sx = (float)(double)scale_x;
@@ -512,9 +512,9 @@ Image Map<Flt>::makeimage_N(int n, ModFunc mf, OOR& fr)
 	
 	if (fr)
 	{
-		(*fr).get() << mod << " " << myw << "x" << myh << " ";
-		(*fr).get() << xstart << "+" << xstep << " ";
-		(*fr).get() << ystart << "+" << ystep << " ";
+		(*fr) << mod << " " << myw << "x" << myh << " ";
+		(*fr) << xstart << "+" << xstep << " ";
+		(*fr) << ystart << "+" << ystep << " ";
 	}
 
 	UL x,y;

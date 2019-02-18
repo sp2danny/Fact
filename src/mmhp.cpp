@@ -72,12 +72,12 @@ int main(int argc, char* argv[])
 	bool dbl = cmd.has_option('d', "dbl");
 	bool rep = cmd.has_option('r', "rep");
 
-	OOR fr;
+	OSP fr = nullptr;
 	std::ofstream fra;
 	if (rep)
 	{
 		fra.open("FrameReport.txt"s, std::ios_base::out | std::ios_base::trunc);
-		fr = ref((std::ostream&)fra);
+		fr = &fra;
 	}
 
 	MultiLogger logger;
@@ -260,10 +260,10 @@ int main(int argc, char* argv[])
 				curr_name = mkname(i+j);
 				if ((!owr) && boost::filesystem::exists(curr_name)) continue;
 				if (prt) std::cout << i+j << "\r" << std::flush;
-				if (rep) (*fr).get() << "Frame " << i+j << " : ";
+				if (rep) (*fr) << "Frame " << i+j << " : ";
 				if (useh) mh.makeimage_N(j,mod_func, fr).Save(curr_name);
 				else      ml.makeimage_N(j,mod_func, fr).Save(curr_name);
-				if (rep) (*fr).get() << std::endl;
+				if (rep) (*fr) << std::endl;
 			}
 			auto t3 = std::chrono::high_resolution_clock::now();
 			auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t1).count();
