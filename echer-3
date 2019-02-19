@@ -1,1 +1,1 @@
-./mmhp.out center-x=-1.47452882438665971500 center-y=-3.48707682616940982331e-07 update-cap=2500 zoom-start=1 width=640 height=480 num-digits=4 lead=img_ target=./img zoom-end=5e-25 col-base=350 col-pow=-0.003 skip=000 -pdrm
+./mmhp.out center-x=-1.47452882438665971500 center-y=-3.48707682616940982331e-07 update-cap=2500 zoom-start=1 width=640 height=480 num-digits=4 lead=img_ target=./img zoom-end=5e-25 col-base=350 col-pow=-0.003 skip=000 -drpm

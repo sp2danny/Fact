@@ -241,8 +241,8 @@ int main(int argc, char* argv[])
 			int cpy = 0;
 			if (first)
 			{
-				if (useh) mh.setup_dbl((FltH)zoom_step);
-				else      ml.setup_dbl((FltL)zoom_step);
+				if (useh) mh.setup_dbl((FltH)zoom_step, logger);
+				else      ml.setup_dbl((FltL)zoom_step, logger);
 			} else {
 				if (useh) cpy = mh.shuffle_dbl();
 				else      cpy = ml.shuffle_dbl();
@@ -251,8 +251,8 @@ int main(int argc, char* argv[])
 				logger << "moved pixels   : " << cpy << std::endl;
 			}
 			int n;
-			if (useh) n = mh.generate_dbl(update_cap, first, logger);
-			else      n = ml.generate_dbl(update_cap, first, logger);
+			if (useh) n = mh.generate_dbl(update_cap, first, prt, logger);
+			else      n = ml.generate_dbl(update_cap, first, prt, logger);
 			auto t2 = std::chrono::high_resolution_clock::now();
 			auto d1 = std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count();
 			logger << "generate time  : " << d1 / 1000.0f << std::endl;
@@ -273,8 +273,8 @@ int main(int argc, char* argv[])
 			if (prt)
 			{
 				std::cout << "effectiveness  : " << 1000.0f * n / d2 << std::endl;
-				std::cout << "Wrote: " << mkname(i+1) << " to " << mkname(i+n-1) << std::endl;
 			}
+			std::cout << "Wrote: " << mkname(i+1) << " to " << mkname(i+n-1) << std::endl;
 			auto d3 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t2).count();
 			if (mbg) logger << "bitmap generation time : " << (d3 / (n-start)) << " ms/image " << std::endl;
 			i += n;

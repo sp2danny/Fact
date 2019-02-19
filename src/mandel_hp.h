@@ -161,8 +161,8 @@ struct Map
 
 	int count_dlb;
 	Image dbl_makefull(UL);
-	void setup_dbl(Flt);
-	int generate_dbl(UL, bool, MultiLogger&);
+	void setup_dbl(Flt, MultiLogger&);
+	int generate_dbl(UL, bool, bool, MultiLogger&);
 	int shuffle_dbl();
 	int sh_new_xcoord(int);
 	int sh_new_ycoord(int);

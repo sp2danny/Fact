@@ -540,36 +540,23 @@ Image Map<Flt>::makeimage_N(int n, ModFunc mf, OSP fr)
 		}
 	}
 
-	/*
-	UL ta = 0;
-	for (UL y=0; y<new_h; ++y)
-	{
-		for (UL x=0; x<new_w; ++x)
-		{
-			ta += get(x,y).pac;
-		}
-	}
-
-	if (fr) (*fr) << (double(ta)/double(new_w*new_h)) << " ";
-*/
-
 	return img;
 }
 
 template<typename Flt>
-void Map<Flt>::setup_dbl(Flt target)
+void Map<Flt>::setup_dbl(Flt target, MultiLogger& logger)
 {
 	double n = std::log(0.5) / std::log((double)target);
 	count_dlb = std::roundl(n);
 	double factor = std::pow(0.5, 1.0/n);
-	std::cout << "new factor     : " << factor << std::endl;
-	std::cout << "new count      : " << count_dlb << std::endl;
+	logger << "new factor     : " << factor << std::endl;
+	logger << "new count      : " << count_dlb << std::endl;
 	width  = (width  >> 2) << 2;
 	height = (height >> 2) << 2;
 	new_w = width  * 2;
 	new_h = height * 2;
-	std::cout << "adjusted size  : " << width << "x" << height << std::endl;
-	std::cout << "new size       : " << new_w << "x" << new_h << std::endl;
+	logger << "adjusted size  : " << width << "x" << height << std::endl;
+	logger << "new size       : " << new_w << "x" << new_h << std::endl;
 
 	generate_init_rest();
 
@@ -615,13 +602,13 @@ Image Map<Flt>::dbl_makefull(UL cap)
 }
 
 template<typename Flt>
-int Map<Flt>::generate_dbl(UL cap, bool first, MultiLogger& logger)
+int Map<Flt>::generate_dbl(UL cap, bool first, bool display, MultiLogger& logger)
 {
 	
 	#ifndef NDEBUG
 
 	Updater::Init(new_h*3+1);
-	Updater::Display();
+	if (display) Updater::Display();
 
 	LineCache<Flt> lc = { cap, true, *this, first };
 	lc.y_start = 0;
@@ -639,10 +626,10 @@ int Map<Flt>::generate_dbl(UL cap, bool first, MultiLogger& logger)
 		Updater::Init(new_h*3+4);
 	else
 		Updater::Init(new_h*2+4);
-	Updater::Display();
+	if (display) Updater::Display();
 
 	LineCache<Flt> lc[4] = {
-		{ cap,    true, *this, first },
+		{ cap,  display, *this, first },
 		{ cap,   false, *this, first },
 		{ cap,   false, *this, first },
 		{ cap,   false, *this, first },
@@ -670,7 +657,7 @@ int Map<Flt>::generate_dbl(UL cap, bool first, MultiLogger& logger)
 	int joined = 1;
 	while (true)
 	{
-		Updater::Display();
+		if (display) Updater::Display();
 
 		bool j = tt[joined].try_join_for(ns);
 		if (j)
@@ -693,7 +680,7 @@ int Map<Flt>::generate_dbl(UL cap, bool first, MultiLogger& logger)
 	#endif
 
 	Updater::Tick();
-	Updater::Display();
+	if (display) Updater::Display();
 
 	logger << "skipped        : " << sk << " pixels, of wich " << is << " was inside \n";
 	logger << "effective cap  : " << maxout << "\n";
