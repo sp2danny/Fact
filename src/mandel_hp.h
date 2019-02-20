@@ -52,7 +52,7 @@ inline auto from_stringL = [](const std::string& str) { return std::stod(str); }
 
 inline bool isnan(const FltH&) { return false; }
 inline bool isinf(const FltH&) { return false; }
-FltH copysign(const FltH& a,const FltH& b);
+FltH copysign(const FltH& a, const FltH& b);
 
 typedef std::uint32_t UL;
 
@@ -95,6 +95,9 @@ using Scanline = std::vector<Point<Flt>>;
 
 template<typename>
 struct Map;
+
+template<typename Flt>
+struct MkImg;
 
 template<typename Flt>
 struct LineCache
@@ -148,10 +151,10 @@ struct Map
 	Flt to_xpos(UL x) const;
 	Flt to_ypos(UL y) const;
 	enum Status { all_done, was_updated, no_change };
-	
+
 	//Flt get_col_mod() const;
 	void setZ(Flt z);
-	
+
 	// Singles
 	void generate_init();
 	Status generate(UL cap, bool display=false, bool extrap=false);
@@ -169,17 +172,18 @@ struct Map
 	int shuffle_dbl();
 	int sh_new_xcoord(int);
 	int sh_new_ycoord(int);
-	
+
 	void new_out(std::string);
 
 friend
 	struct LineCache<Flt>;
+friend
+	struct MkImg<Flt>;
 private:
 	void generate_N_init(int n, bool disp);
 	void generate_init_rest();
 	RGB extrapolate(float x, float y, float mod);
 	std::vector<Flt> vfx, vfy;
-	Image prep;
 };
 
 template<typename T>

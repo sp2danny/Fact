@@ -189,9 +189,54 @@ struct MkImg
 	NameFunc& nf;
 	MultiLogger& ml;
 	OSP osp;
-	Map<Flt>& map;
-	static void makeimg(MkImg<Flt>*)
+	Map<Flt> map;
+	static void makeimg(MkImg<Flt>* mi)
 	{
+		Image img(mi->map.width, mi->map.height);
+		float sx = (float)(double)mi->map.scale_x;
+		float t0 = (float)(double)mi->map.zoom_mul;
+		for (int k = 0; k<mi->n; ++k)
+		{
+			int l = k + mi->j;
+			float tpmn = pow(t0, -l);
+			float myw = mi->map.new_w / tpmn;
+			float myh = mi->map.new_h / tpmn;
+
+			float xstart = (mi->map.new_w-myw) / 2;
+			float ystart = (mi->map.new_h-myh) / 2;
+
+			float xstep = myw / mi->map.width;
+			float ystep = myh / mi->map.height;
+
+			float mod = mi->mf(sx / tpmn);
+
+			//if (fr)
+			//{
+			//	(*fr) << mod << " " << myw << "x" << myh << " ";
+			//	(*fr) << xstart << "+" << xstep << " ";
+			//	(*fr) << ystart << "+" << ystep << " ";
+			//}
+
+			for (UL y=0; y<mi->map.new_h; ++y)
+			{
+				for (UL x=0; x<mi->map.new_w; ++x)
+				{
+					mi->map.get(x,y).havergb = false;
+				}
+			}
+
+			UL x,y;
+			for (y=0; y<mi->map.height; ++y)
+			{
+				float yf = ystart + y * ystep;
+				for (x=0; x<mi->map.width; ++x)
+				{
+					double xf = xstart + x * xstep;
+					img.PutPixel(x,y,mi->map.extrapolate(xf,yf, mod));
+				}
+			}
+			img.Save( mi->nf(mi->i+mi->j+k) );
+		}
 	}
 };
 
