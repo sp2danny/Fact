@@ -163,7 +163,7 @@ struct Map
 	// Batch
 	UL generate_N_threaded(int n, UL cap, bool display=false);
 	Image makeimage_N(int, ModFunc, OSP = nullptr);
-	void makeimage_ItoN(int, int, int, ModFunc, NameFunc, MultiLogger&, OSP = nullptr);
+	void makeimage_ItoN(int, int, int, ModFunc, NameFunc, OSP = nullptr);
 
 	int count_dlb;
 	Image dbl_makefull(UL);

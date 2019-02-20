@@ -184,21 +184,22 @@ template struct Point<FltL>;
 template<typename Flt>
 struct MkImg
 {
-	int i,j,n;
-	ModFunc& mf;
-	NameFunc& nf;
-	MultiLogger& ml;
-	OSP osp;
+	int first_index, first_name, count;
+	ModFunc mf;
+	NameFunc nf;
 	Map<Flt> map;
+	std::stringstream ss{};
 	static void makeimg(MkImg<Flt>* mi)
 	{
 		Image img(mi->map.width, mi->map.height);
 		float sx = (float)(double)mi->map.scale_x;
 		float t0 = (float)(double)mi->map.zoom_mul;
-		for (int k = 0; k<mi->n; ++k)
+		for (int i = 0; i<mi->count; ++i)
 		{
-			int l = k + mi->i;
-			float tpmn = pow(t0, -l);
+			int idx = mi->first_index + i;
+			int nam = mi->first_name + i;
+
+			float tpmn = pow(t0, -idx);
 			float myw = mi->map.new_w / tpmn;
 			float myh = mi->map.new_h / tpmn;
 
@@ -210,12 +211,12 @@ struct MkImg
 
 			float mod = mi->mf(sx / tpmn);
 
-			//if (fr)
-			//{
-			//	(*fr) << mod << " " << myw << "x" << myh << " ";
-			//	(*fr) << xstart << "+" << xstep << " ";
-			//	(*fr) << ystart << "+" << ystep << " ";
-			//}
+			{
+				mi->ss << "Frame " << nam << " : ";
+				mi->ss << mod << " " << myw << "x" << myh << " ";
+				mi->ss << xstart << "+" << xstep << " ";
+				mi->ss << ystart << "+" << ystep << "\n";
+			}
 
 			for (UL y=0; y<mi->map.new_h; ++y)
 			{
@@ -235,25 +236,34 @@ struct MkImg
 					img.PutPixel(x,y,mi->map.extrapolate(xf,yf, mod));
 				}
 			}
-			img.Save( mi->nf(mi->i+mi->j+k) );
+			img.Save( mi->nf(nam) );
 		}
 	}
 };
 
-template<typename Flt>
-void Map<Flt>::makeimage_ItoN(int start, int offs, int count, ModFunc mf, NameFunc nf, MultiLogger& ml, OSP osp)
-{
-	(void)start; (void)offs; (void)count; (void)mf; (void)nf; (void)ml; (void)osp;
+//int j=start; j<n; ++j)
+//	curr_name = mkname(i+j);
+//	mh.makeimage_N(j,mod_func, fr).Save(curr_name);
 
+template<typename Flt>
+void Map<Flt>::makeimage_ItoN(int first_index, int first_name, int count, ModFunc mf, NameFunc nf, OSP osp)
+{
 	int sz = count / 4;
 	int ex = count - (sz*4);
 
 	MkImg<Flt> mki[4] = {
-		{ start,   offs,         sz+ex, mf, nf, ml, osp, *this },
-		{ start,   offs+sz+ex,   sz,    mf, nf, ml, osp, *this },
-		{ start,   offs+2*sz+ex, sz,    mf, nf, ml, osp, *this },
-		{ start,   offs+3*sz+ex, sz,    mf, nf, ml, osp, *this }
+		{ first_index, first_name, sz+ex, mf, nf, *this },
+		{ first_index, first_name,    sz, mf, nf, *this },
+		{ first_index, first_name,    sz, mf, nf, *this },
+		{ first_index, first_name,    sz, mf, nf, *this }
 	};
+	int n = 0;
+	for (int i=0; i<4; ++i)
+	{
+		mki[i].first_index += n;
+		mki[i].first_name  += n;
+		n += mki[i].count;
+	}
 
 	boost::thread tt[4];
 	for (int i=1; i<4; ++i)
@@ -272,6 +282,12 @@ void Map<Flt>::makeimage_ItoN(int start, int offs, int count, ModFunc mf, NameFu
 			if (joined >= 4) break;
 		}
 	}
+
+	if (osp) for (int i=0; i<4; ++i)
+	{
+		(*osp) << mki[i].ss.str();
+	}
+
 }
 
 template<typename Flt>

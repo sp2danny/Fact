@@ -258,7 +258,7 @@ int main(int argc, char* argv[])
 			logger << "generate time  : " << d1 / 1000.0f << std::endl;
 			logger << "color mod      : " << mod_func((double)zoom_cur) << std::endl;
 			auto zc = zoom_cur;
-			/*
+			/* */
 			for (int j=start; j<n; ++j)
 			{
 				curr_name = mkname(i+j);
@@ -269,10 +269,10 @@ int main(int argc, char* argv[])
 				else      ml.makeimage_N(j,mod_func, fr).Save(curr_name);
 				if (rep) (*fr) << std::endl;
 			}
-			*/
+			/* */
 
-			if (useh) mh.makeimage_ItoN(start, i, n-start, mod_func, mkname, logger, fr);
-			else      ml.makeimage_ItoN(start, i, n-start, mod_func, mkname, logger, fr);
+			//if (useh) mh.makeimage_ItoN(start, i, n-start, mod_func, mkname, fr);
+			//else      ml.makeimage_ItoN(start, i, n-start, mod_func, mkname, fr);
 
 			auto t3 = std::chrono::high_resolution_clock::now();
 			auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t1).count();
