@@ -182,6 +182,54 @@ template struct Point<FltL>;
 // ***********
 
 template<typename Flt>
+struct MkImg
+{
+	int i,j,n;
+	ModFunc& mf;
+	NameFunc& nf;
+	MultiLogger& ml;
+	OSP osp;
+	Map<Flt>& map;
+	static void makeimg(MkImg<Flt>*)
+	{
+	}
+};
+
+template<typename Flt>
+void Map<Flt>::makeimage_ItoN(int start, int offs, int count, ModFunc mf, NameFunc nf, MultiLogger& ml, OSP osp)
+{
+	(void)start; (void)offs; (void)count; (void)mf; (void)nf; (void)ml; (void)osp;
+
+	int sz = count / 4;
+	int ex = count - (sz*4);
+
+	MkImg<Flt> mki[4] = {
+		{ start,         offs, sz+ex, mf, nf, ml, osp, *this },
+		{ start+sz+ex,   offs, sz,    mf, nf, ml, osp, *this },
+		{ start+2*sz+ex, offs, sz,    mf, nf, ml, osp, *this },
+		{ start+3*sz+ex, offs, sz,    mf, nf, ml, osp, *this }
+	};
+
+	boost::thread tt[4];
+	for (int i=1; i<4; ++i)
+	{
+		tt[i] = boost::thread{&MkImg<Flt>::makeimg, mki+i};
+	}
+	MkImg<Flt>::makeimg(mki);
+	boost::chrono::nanoseconds ns{250'000};
+	int joined = 1;
+	while (true)
+	{
+		bool j = tt[joined].try_join_for(ns);
+		if (j)
+		{
+			++joined;
+			if (joined >= 4) break;
+		}
+	}
+}
+
+template<typename Flt>
 Point<Flt>& Map<Flt>::get(UL x, UL y)
 {
 	return points[y][x];
