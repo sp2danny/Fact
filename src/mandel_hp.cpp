@@ -197,7 +197,7 @@ struct MkImg
 		float t0 = (float)(double)mi->map.zoom_mul;
 		for (int k = 0; k<mi->n; ++k)
 		{
-			int l = k + mi->j;
+			int l = k + mi->i;
 			float tpmn = pow(t0, -l);
 			float myw = mi->map.new_w / tpmn;
 			float myh = mi->map.new_h / tpmn;
@@ -249,10 +249,10 @@ void Map<Flt>::makeimage_ItoN(int start, int offs, int count, ModFunc mf, NameFu
 	int ex = count - (sz*4);
 
 	MkImg<Flt> mki[4] = {
-		{ start,         offs, sz+ex, mf, nf, ml, osp, *this },
-		{ start+sz+ex,   offs, sz,    mf, nf, ml, osp, *this },
-		{ start+2*sz+ex, offs, sz,    mf, nf, ml, osp, *this },
-		{ start+3*sz+ex, offs, sz,    mf, nf, ml, osp, *this }
+		{ start,   offs,         sz+ex, mf, nf, ml, osp, *this },
+		{ start,   offs+sz+ex,   sz,    mf, nf, ml, osp, *this },
+		{ start,   offs+2*sz+ex, sz,    mf, nf, ml, osp, *this },
+		{ start,   offs+3*sz+ex, sz,    mf, nf, ml, osp, *this }
 	};
 
 	boost::thread tt[4];
