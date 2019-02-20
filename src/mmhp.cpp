@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 	static Str     target_dir      =                cmd.get_parameter ( "target",       "img"     ) ;
 	static Str     name_lead       =                cmd.get_parameter ( "lead",         "m_"      ) ;
 
-	auto mkname = [&](UL i) -> Str
+	auto mkname = [](UL i) -> Str
 	{
 		Str name = target_dir;
 		name += "/";

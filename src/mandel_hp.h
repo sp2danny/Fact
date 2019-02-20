@@ -12,6 +12,7 @@
 #include <mutex>
 #include <functional>
 #include <utility>
+#include <string>
 
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
@@ -87,6 +88,7 @@ template<typename Flt>
 Flt Point<Flt>::stepsize{};
 
 typedef float (*ModFunc)(float);
+typedef std::string (*NameFunc)(UL);
 
 template<typename Flt>
 using Scanline = std::vector<Point<Flt>>;
@@ -158,6 +160,7 @@ struct Map
 	// Batch
 	UL generate_N_threaded(int n, UL cap, bool display=false);
 	Image makeimage_N(int, ModFunc, OSP = nullptr);
+	void makeimage_ItoN(int, int, ModFunc, NameFunc, MultiLogger&, OSP = nullptr);
 
 	int count_dlb;
 	Image dbl_makefull(UL);
