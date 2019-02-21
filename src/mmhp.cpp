@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 	static Str     target_dir      =                cmd.get_parameter ( "target",       "img"     ) ;
 	static Str     name_lead       =                cmd.get_parameter ( "lead",         "m_"      ) ;
 
-	auto mkname = [&](UL i) -> Str
+	auto mkname = [](UL i) -> Str
 	{
 		Str name = target_dir;
 		name += "/";
@@ -71,13 +71,14 @@ int main(int argc, char* argv[])
 	bool i50 = cmd.has_option('f', "50");
 	bool dbl = cmd.has_option('d', "dbl");
 	bool rep = cmd.has_option('r', "rep");
+	bool mbg = cmd.has_option('m', "mbg");
 
-	OOR fr;
+	OSP fr = nullptr;
 	std::ofstream fra;
 	if (rep)
 	{
 		fra.open("FrameReport.txt"s, std::ios_base::out | std::ios_base::trunc);
-		fr = ref((std::ostream&)fra);
+		fr = &fra;
 	}
 
 	MultiLogger logger;
@@ -203,6 +204,8 @@ int main(int argc, char* argv[])
 			auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t1).count();
 			logger << "effectiveness  : " << 1000.0f * n / d2 << std::endl;
 			logger << "Wrote: " << mkname(i) << " to " << mkname(i+n-1) << std::endl;
+			auto d3 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t2).count();
+			if (mbg) logger << "bitmap generation time : " << (d3 / n) << std::endl;
 			i += n;
 		};
 
@@ -238,8 +241,8 @@ int main(int argc, char* argv[])
 			int cpy = 0;
 			if (first)
 			{
-				if (useh) mh.setup_dbl((FltH)zoom_step);
-				else      ml.setup_dbl((FltL)zoom_step);
+				if (useh) mh.setup_dbl((FltH)zoom_step, logger);
+				else      ml.setup_dbl((FltL)zoom_step, logger);
 			} else {
 				if (useh) cpy = mh.shuffle_dbl();
 				else      cpy = ml.shuffle_dbl();
@@ -248,30 +251,38 @@ int main(int argc, char* argv[])
 				logger << "moved pixels   : " << cpy << std::endl;
 			}
 			int n;
-			if (useh) n = mh.generate_dbl(update_cap, first, logger);
-			else      n = ml.generate_dbl(update_cap, first, logger);
+			if (useh) n = mh.generate_dbl(update_cap, first, prt, logger);
+			else      n = ml.generate_dbl(update_cap, first, prt, logger);
 			auto t2 = std::chrono::high_resolution_clock::now();
 			auto d1 = std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count();
 			logger << "generate time  : " << d1 / 1000.0f << std::endl;
 			logger << "color mod      : " << mod_func((float)zoom_cur) << std::endl;
 			auto zc = zoom_cur;
+			/* */
 			for (int j=start; j<n; ++j)
 			{
 				curr_name = mkname(i+j);
 				if ((!owr) && boost::filesystem::exists(curr_name)) continue;
 				if (prt) std::cout << i+j << "\r" << std::flush;
-				if (rep) (*fr).get() << "Frame " << i+j << " : ";
+				if (rep) (*fr) << "Frame " << i+j << " : ";
 				if (useh) mh.makeimage_N(j,mod_func, fr).Save(curr_name);
 				else      ml.makeimage_N(j,mod_func, fr).Save(curr_name);
-				if (rep) (*fr).get() << std::endl;
+				if (rep) (*fr) << std::endl;
 			}
+			/* */
+
+			//if (useh) mh.makeimage_ItoN(start, i, n-start, mod_func, mkname, fr);
+			//else      ml.makeimage_ItoN(start, i, n-start, mod_func, mkname, fr);
+
 			auto t3 = std::chrono::high_resolution_clock::now();
 			auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t1).count();
 			if (prt)
 			{
 				std::cout << "effectiveness  : " << 1000.0f * n / d2 << std::endl;
-				std::cout << "Wrote: " << mkname(i+1) << " to " << mkname(i+n-1) << std::endl;
 			}
+			std::cout << "Wrote: " << mkname(i+1) << " to " << mkname(i+n-1) << std::endl;
+			auto d3 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t2).count();
+			if (mbg) logger << "bitmap generation time : " << (d3 / (n-start)) << " ms/image " << std::endl;
 			i += n;
 			zoom_cur *= FltH(0.5);
 			first = false;

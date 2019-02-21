@@ -12,6 +12,7 @@
 #include <mutex>
 #include <functional>
 #include <utility>
+#include <string>
 
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
@@ -51,7 +52,7 @@ inline auto from_stringL = [](const std::string& str) { return std::stod(str); }
 
 inline bool isnan(const FltH&) { return false; }
 inline bool isinf(const FltH&) { return false; }
-FltH copysign(const FltH& a,const FltH& b);
+FltH copysign(const FltH& a, const FltH& b);
 
 typedef std::uint32_t UL;
 
@@ -79,18 +80,24 @@ struct Point
 	void init(const std::complex<Flt>& c);
 	RGB col(float mod) const;
 	static Flt stepsize;
+	mutable bool havergb;
+	mutable RGB rgbval;
 };
 
 template<typename Flt> 
 Flt Point<Flt>::stepsize{};
 
 typedef float (*ModFunc)(float);
+typedef std::string (*NameFunc)(UL);
 
 template<typename Flt>
 using Scanline = std::vector<Point<Flt>>;
 
 template<typename>
 struct Map;
+
+template<typename Flt>
+struct MkImg;
 
 template<typename Flt>
 struct LineCache
@@ -128,9 +135,7 @@ private:
 	UL xlo, xhi, ylo, yhi;
 };
 
-typedef std::optional<std::reference_wrapper<std::ostream>> OOR;
-
-inline OOR oor_nullopt = {std::nullopt};
+typedef std::ostream* OSP;
 
 template<typename Flt>
 struct Map
@@ -146,10 +151,10 @@ struct Map
 	Flt to_xpos(UL x) const;
 	Flt to_ypos(UL y) const;
 	enum Status { all_done, was_updated, no_change };
-	
+
 	//Flt get_col_mod() const;
 	void setZ(Flt z);
-	
+
 	// Singles
 	void generate_init();
 	Status generate(UL cap, bool display=false, bool extrap=false);
@@ -157,26 +162,28 @@ struct Map
 
 	// Batch
 	UL generate_N_threaded(int n, UL cap, bool display=false);
-	Image makeimage_N(int, ModFunc, OOR& = oor_nullopt);
+	Image makeimage_N(int, ModFunc, OSP = nullptr);
+	void makeimage_ItoN(int, int, int, ModFunc, NameFunc, OSP = nullptr);
 
 	int count_dlb;
 	Image dbl_makefull(UL);
-	void setup_dbl(Flt);
-	int generate_dbl(UL, bool, MultiLogger&);
+	void setup_dbl(Flt, MultiLogger&);
+	int generate_dbl(UL, bool, bool, MultiLogger&);
 	int shuffle_dbl();
 	int sh_new_xcoord(int);
 	int sh_new_ycoord(int);
-	
+
 	void new_out(std::string);
 
 friend
 	struct LineCache<Flt>;
+friend
+	struct MkImg<Flt>;
 private:
 	void generate_N_init(int n, bool disp);
 	void generate_init_rest();
 	RGB extrapolate(float x, float y, float mod);
 	std::vector<Flt> vfx, vfy;
-	Image prep;
 };
 
 template<typename T>

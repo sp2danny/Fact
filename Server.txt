@@ -1,1 +1,0 @@
-./bin/Release/src_server.cpp.o ./bin/Release/src_cmdline.cpp.o ./bin/Release/src_connector.cpp.o ./bin/Release/src_gtk_general.cpp.o

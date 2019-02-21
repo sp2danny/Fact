@@ -142,6 +142,8 @@ void Point<Flt>::init(const std::complex<Flt>& c)
 template<typename Flt>
 RGB Point<Flt>::col(float mod) const
 {
+	if (havergb) return rgbval;
+
 	const Point& p = *this;
 	if (p.status != Point::out)
 	{
@@ -165,7 +167,9 @@ RGB Point<Flt>::col(float mod) const
 	int ri = clamp(int(r*256), 0, 255);
 	int gi = clamp(int(g*256), 0, 255);
 	int bi = clamp(int(b*256), 0, 255);
-	return {(UC)ri, (UC)gi, (UC)bi};
+	havergb = true;
+	rgbval = {(UC)ri, (UC)gi, (UC)bi};
+	return rgbval;
 }
 
 template struct Point<FltH>;
@@ -176,6 +180,115 @@ template struct Point<FltL>;
 // ***********
 // *** Map ***
 // ***********
+
+template<typename Flt>
+struct MkImg
+{
+	int first_index, first_name, count;
+	ModFunc mf;
+	NameFunc nf;
+	Map<Flt> map;
+	std::stringstream ss{};
+	static void makeimg(MkImg<Flt>* mi)
+	{
+		Image img(mi->map.width, mi->map.height);
+		float sx = (float)(double)mi->map.scale_x;
+		float t0 = (float)(double)mi->map.zoom_mul;
+		for (int i = 0; i<mi->count; ++i)
+		{
+			int idx = mi->first_index + i;
+			int nam = mi->first_name + i;
+
+			float tpmn = pow(t0, -idx);
+			float myw = mi->map.new_w / tpmn;
+			float myh = mi->map.new_h / tpmn;
+
+			float xstart = (mi->map.new_w-myw) / 2;
+			float ystart = (mi->map.new_h-myh) / 2;
+
+			float xstep = myw / mi->map.width;
+			float ystep = myh / mi->map.height;
+
+			float mod = mi->mf(sx / tpmn);
+
+			{
+				mi->ss << "Frame " << nam << " : ";
+				mi->ss << mod << " " << myw << "x" << myh << " ";
+				mi->ss << xstart << "+" << xstep << " ";
+				mi->ss << ystart << "+" << ystep << "\n";
+			}
+
+			for (UL y=0; y<mi->map.new_h; ++y)
+			{
+				for (UL x=0; x<mi->map.new_w; ++x)
+				{
+					mi->map.get(x,y).havergb = false;
+				}
+			}
+
+			UL x,y;
+			for (y=0; y<mi->map.height; ++y)
+			{
+				float yf = ystart + y * ystep;
+				for (x=0; x<mi->map.width; ++x)
+				{
+					double xf = xstart + x * xstep;
+					img.PutPixel(x,y,mi->map.extrapolate(xf,yf, mod));
+				}
+			}
+			img.Save( mi->nf(nam) );
+		}
+	}
+};
+
+//int j=start; j<n; ++j)
+//	curr_name = mkname(i+j);
+//	mh.makeimage_N(j,mod_func, fr).Save(curr_name);
+
+template<typename Flt>
+void Map<Flt>::makeimage_ItoN(int first_index, int first_name, int count, ModFunc mf, NameFunc nf, OSP osp)
+{
+	int sz = count / 4;
+	int ex = count - (sz*4);
+
+	MkImg<Flt> mki[4] = {
+		{ first_index, first_name, sz+ex, mf, nf, *this },
+		{ first_index, first_name,    sz, mf, nf, *this },
+		{ first_index, first_name,    sz, mf, nf, *this },
+		{ first_index, first_name,    sz, mf, nf, *this }
+	};
+	int n = 0;
+	for (int i=0; i<4; ++i)
+	{
+		mki[i].first_index += n;
+		mki[i].first_name  += n;
+		n += mki[i].count;
+	}
+
+	boost::thread tt[4];
+	for (int i=1; i<4; ++i)
+	{
+		tt[i] = boost::thread{&MkImg<Flt>::makeimg, mki+i};
+	}
+	MkImg<Flt>::makeimg(mki);
+	boost::chrono::nanoseconds ns{250'000};
+	int joined = 1;
+	while (true)
+	{
+		bool j = tt[joined].try_join_for(ns);
+		if (j)
+		{
+			++joined;
+			if (joined >= 4) break;
+		}
+	}
+
+	if (osp) for (int i=0; i<4; ++i)
+	{
+		(*osp) << mki[i].ss.str();
+	}
+
+}
 
 template<typename Flt>
 Point<Flt>& Map<Flt>::get(UL x, UL y)
@@ -492,7 +605,7 @@ UL Map<Flt>::generate_N_threaded(int n, UL cap, bool display)
 }
 
 template<typename Flt>
-Image Map<Flt>::makeimage_N(int n, ModFunc mf, OOR& fr)
+Image Map<Flt>::makeimage_N(int n, ModFunc mf, OSP fr)
 {
 	Image img(width, height);
 	float sx = (float)(double)scale_x;
@@ -512,9 +625,17 @@ Image Map<Flt>::makeimage_N(int n, ModFunc mf, OOR& fr)
 	
 	if (fr)
 	{
-		(*fr).get() << mod << " " << myw << "x" << myh << " ";
-		(*fr).get() << xstart << "+" << xstep << " ";
-		(*fr).get() << ystart << "+" << ystep << " ";
+		(*fr) << mod << " " << myw << "x" << myh << " ";
+		(*fr) << xstart << "+" << xstep << " ";
+		(*fr) << ystart << "+" << ystep << " ";
+	}
+
+	for (UL y=0; y<new_h; ++y)
+	{
+		for (UL x=0; x<new_w; ++x)
+		{
+			get(x,y).havergb = false;
+		}
 	}
 
 	UL x,y;
@@ -532,19 +653,19 @@ Image Map<Flt>::makeimage_N(int n, ModFunc mf, OOR& fr)
 }
 
 template<typename Flt>
-void Map<Flt>::setup_dbl(Flt target)
+void Map<Flt>::setup_dbl(Flt target, MultiLogger& logger)
 {
 	double n = std::log(0.5) / std::log((double)target);
 	count_dlb = std::roundl(n);
 	double factor = std::pow(0.5, 1.0/n);
-	std::cout << "new factor     : " << factor << std::endl;
-	std::cout << "new count      : " << count_dlb << std::endl;
+	logger << "new factor     : " << factor << std::endl;
+	logger << "new count      : " << count_dlb << std::endl;
 	width  = (width  >> 2) << 2;
 	height = (height >> 2) << 2;
 	new_w = width  * 2;
 	new_h = height * 2;
-	std::cout << "adjusted size  : " << width << "x" << height << std::endl;
-	std::cout << "new size       : " << new_w << "x" << new_h << std::endl;
+	logger << "adjusted size  : " << width << "x" << height << std::endl;
+	logger << "new size       : " << new_w << "x" << new_h << std::endl;
 
 	generate_init_rest();
 
@@ -590,13 +711,13 @@ Image Map<Flt>::dbl_makefull(UL cap)
 }
 
 template<typename Flt>
-int Map<Flt>::generate_dbl(UL cap, bool first, MultiLogger& logger)
+int Map<Flt>::generate_dbl(UL cap, bool first, bool display, MultiLogger& logger)
 {
 	
 	#ifndef NDEBUG
 
 	Updater::Init(new_h*3+1);
-	Updater::Display();
+	if (display) Updater::Display();
 
 	LineCache<Flt> lc = { cap, true, *this, first };
 	lc.y_start = 0;
@@ -614,10 +735,10 @@ int Map<Flt>::generate_dbl(UL cap, bool first, MultiLogger& logger)
 		Updater::Init(new_h*3+4);
 	else
 		Updater::Init(new_h*2+4);
-	Updater::Display();
+	if (display) Updater::Display();
 
 	LineCache<Flt> lc[4] = {
-		{ cap,    true, *this, first },
+		{ cap,  display, *this, first },
 		{ cap,   false, *this, first },
 		{ cap,   false, *this, first },
 		{ cap,   false, *this, first },
@@ -645,8 +766,8 @@ int Map<Flt>::generate_dbl(UL cap, bool first, MultiLogger& logger)
 	int joined = 1;
 	while (true)
 	{
-		Updater::Display();
-    
+		if (display) Updater::Display();
+
 		bool j = tt[joined].try_join_for(ns);
 		if (j)
 		{
@@ -668,7 +789,7 @@ int Map<Flt>::generate_dbl(UL cap, bool first, MultiLogger& logger)
 	#endif
 
 	Updater::Tick();
-	Updater::Display();
+	if (display) Updater::Display();
 
 	logger << "skipped        : " << sk << " pixels, of wich " << is << " was inside \n";
 	logger << "effective cap  : " << maxout << "\n";
