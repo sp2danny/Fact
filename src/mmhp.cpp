@@ -178,7 +178,7 @@ int main(int argc, char* argv[])
 		logger << "scale-x        : " << mh.scale_x << std::endl;
 		logger << "scale-y        : " << mh.scale_y << std::endl;
 
-		ModFunc mod_func = [](float d) -> float { return mod_base / std::powf(d, mod_pow); };
+		ModFunc mod_func = [](float d) -> float { return mod_base / powf(d, mod_pow); };
 		UL maxout;
 
 		auto EXEC = [&](int n) -> void
@@ -190,7 +190,7 @@ int main(int argc, char* argv[])
 			auto d1 = std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count();
 			logger << "generate time  : " << d1 / 1000.0f << std::endl;
 			logger << "effective cap  : " << maxout << std::endl;
-			logger << "color mod      : " << mod_func((float)zoom_cur) << std::endl;
+			logger << "color mod      : " << mod_func((float)(double)zoom_cur) << std::endl;
 			for (int j=0; j<n; ++j)
 			{
 				curr_name = mkname(i+j);
@@ -256,8 +256,9 @@ int main(int argc, char* argv[])
 			auto t2 = std::chrono::high_resolution_clock::now();
 			auto d1 = std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count();
 			logger << "generate time  : " << d1 / 1000.0f << std::endl;
-			logger << "color mod      : " << mod_func((float)zoom_cur) << std::endl;
+			logger << "color mod      : " << mod_func((float)(double)zoom_cur) << std::endl;
 			auto zc = zoom_cur;
+
 			/* */
 			for (int j=start; j<n; ++j)
 			{
@@ -271,8 +272,8 @@ int main(int argc, char* argv[])
 			}
 			/* */
 
-			//if (useh) mh.makeimage_ItoN(start, i, n-start, mod_func, mkname, fr);
-			//else      ml.makeimage_ItoN(start, i, n-start, mod_func, mkname, fr);
+			//if (useh) mh.makeimage_ItoN(start, i+start, n-start, mod_func, mkname, fr);
+			//else      ml.makeimage_ItoN(start, i+start, n-start, mod_func, mkname, fr);
 
 			auto t3 = std::chrono::high_resolution_clock::now();
 			auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(t3-t1).count();
@@ -293,11 +294,11 @@ int main(int argc, char* argv[])
 			{
 				mh.generate_init();
 				mh.generate(update_cap, true);
-				mh.makeimage( mod_func((float)zoom_cur) ).Save(curr_name);
+				mh.makeimage(mod_func((float)(double)zoom_cur)).Save(curr_name);
 			} else {
 				ml.generate_init();
 				ml.generate(update_cap, true);
-				ml.makeimage( mod_func((float)zoom_cur) ).Save(curr_name);
+				ml.makeimage(mod_func((float)(double)zoom_cur)).Save(curr_name);
 			}
 			zoom_cur *= zoom_step;
 			++i;

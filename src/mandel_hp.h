@@ -78,10 +78,9 @@ struct Point
 	#endif
 	bool docalc(const std::complex<Flt>& c, UL cap);
 	void init(const std::complex<Flt>& c);
-	RGB col(float mod) const;
+	void col(float mod);
 	static Flt stepsize;
-	mutable bool havergb;
-	mutable RGB rgbval;
+	RGB rgbval;
 };
 
 template<typename Flt> 
@@ -182,7 +181,8 @@ friend
 private:
 	void generate_N_init(int n, bool disp);
 	void generate_init_rest();
-	RGB extrapolate(float x, float y, float mod);
+	void colorize(float);
+	RGB extrapolate(float x, float y);
 	std::vector<Flt> vfx, vfy;
 };
 

@@ -140,14 +140,13 @@ void Point<Flt>::init(const std::complex<Flt>& c)
 }
 
 template<typename Flt>
-RGB Point<Flt>::col(float mod) const
+void Point<Flt>::col(float mod)
 {
-	if (havergb) return rgbval;
-
 	const Point& p = *this;
 	if (p.status != Point::out)
 	{
-		return RGB{0,0,0};
+		rgbval = {0,0,0};
+        return;
 	}
 	auto x = p.iter;
 
@@ -167,9 +166,7 @@ RGB Point<Flt>::col(float mod) const
 	int ri = clamp(int(r*256), 0, 255);
 	int gi = clamp(int(g*256), 0, 255);
 	int bi = clamp(int(b*256), 0, 255);
-	havergb = true;
 	rgbval = {(UC)ri, (UC)gi, (UC)bi};
-	return rgbval;
 }
 
 template struct Point<FltH>;
@@ -180,6 +177,18 @@ template struct Point<FltL>;
 // ***********
 // *** Map ***
 // ***********
+
+template<typename Flt>
+void Map<Flt>::colorize(float mod)
+{
+	for (UL y=0; y<new_h; ++y)
+	{
+		for (UL x=0; x<new_w; ++x)
+		{
+			get(x,y).col(mod);
+		}
+	}
+}
 
 template<typename Flt>
 struct MkImg
@@ -218,13 +227,7 @@ struct MkImg
 				mi->ss << ystart << "+" << ystep << "\n";
 			}
 
-			for (UL y=0; y<mi->map.new_h; ++y)
-			{
-				for (UL x=0; x<mi->map.new_w; ++x)
-				{
-					mi->map.get(x,y).havergb = false;
-				}
-			}
+			mi->map.colorize(mod);
 
 			UL x,y;
 			for (y=0; y<mi->map.height; ++y)
@@ -233,17 +236,13 @@ struct MkImg
 				for (x=0; x<mi->map.width; ++x)
 				{
 					double xf = xstart + x * xstep;
-					img.PutPixel(x,y,mi->map.extrapolate(xf,yf, mod));
+					img.PutPixel(x, y, mi->map.extrapolate(xf, yf));
 				}
 			}
-			img.Save( mi->nf(nam) );
+			img.Save(mi->nf(nam));
 		}
 	}
 };
-
-//int j=start; j<n; ++j)
-//	curr_name = mkname(i+j);
-//	mh.makeimage_N(j,mod_func, fr).Save(curr_name);
 
 template<typename Flt>
 void Map<Flt>::makeimage_ItoN(int first_index, int first_name, int count, ModFunc mf, NameFunc nf, OSP osp)
@@ -436,7 +435,8 @@ Image Map<Flt>::makeimage(float mod, UL upc)
 			auto& p = get(x,y);
 			if (p.status == Point<Flt>::out)
 			{
-				img.PutPixel(x,y,p.col(mod));
+				p.col(mod);
+				img.PutPixel(x,y,p.rgbval);
 			} else {
 				bool clc = p.status==Point<Flt>::calc;
 				bool ilu = upc && (p.iter<upc);
@@ -464,7 +464,7 @@ static RGB mix(const RGB& p1,const RGB& p2, float f)
 }
 
 template<typename Flt>
-RGB Map<Flt>::extrapolate(float x, float y, float mod)
+RGB Map<Flt>::extrapolate(float x, float y)
 {
 	using namespace std;
 	if (x<0.0f) x=0.0f; if (x>new_w) x=new_w;
@@ -491,10 +491,10 @@ RGB Map<Flt>::extrapolate(float x, float y, float mod)
 		y2 = ceill(y);
 		fy = y2-y;
 	}
-	RGB pix_11 = get(x1 , y1).col(mod);
-	RGB pix_12 = get(x1 , y2).col(mod);
-	RGB pix_21 = get(x2 , y1).col(mod);
-	RGB pix_22 = get(x2 , y2).col(mod);
+	RGB pix_11 = get(x1 , y1).rgbval;
+	RGB pix_12 = get(x1 , y2).rgbval;
+	RGB pix_21 = get(x2 , y1).rgbval;
+	RGB pix_22 = get(x2 , y2).rgbval;
 	RGB pix_1 = mix(pix_11, pix_12, fy);
 	RGB pix_2 = mix(pix_21, pix_22, fy);
 	RGB pix = mix(pix_1, pix_2, fx);
@@ -630,13 +630,7 @@ Image Map<Flt>::makeimage_N(int n, ModFunc mf, OSP fr)
 		(*fr) << ystart << "+" << ystep << " ";
 	}
 
-	for (UL y=0; y<new_h; ++y)
-	{
-		for (UL x=0; x<new_w; ++x)
-		{
-			get(x,y).havergb = false;
-		}
-	}
+	colorize(mod);
 
 	UL x,y;
 	for (y=0; y<height; ++y)
@@ -645,7 +639,7 @@ Image Map<Flt>::makeimage_N(int n, ModFunc mf, OSP fr)
 		for (x=0; x<width; ++x)
 		{
 			double xf = xstart + x * xstep;
-			img.PutPixel(x,y,extrapolate(xf,yf, mod));
+			img.PutPixel(x, y, extrapolate(xf, yf));
 		}
 	}
 
