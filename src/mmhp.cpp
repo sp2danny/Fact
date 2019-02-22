@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
 	mh.center_x = center_x;
 	mh.center_y = center_y;
 	mh.zoom_mul = zoom_step;
-	
+
 	Map<FltL> ml;
 	ml.width  = image_width;
 	ml.height = image_height;
@@ -293,11 +293,11 @@ int main(int argc, char* argv[])
 			if (useh)
 			{
 				mh.generate_init();
-				mh.generate(update_cap, true);
+				mh.generate(update_cap, prt);
 				mh.makeimage(mod_func((float)(double)zoom_cur)).Save(curr_name);
 			} else {
 				ml.generate_init();
-				ml.generate(update_cap, true);
+				ml.generate(update_cap, prt);
 				ml.makeimage(mod_func((float)(double)zoom_cur)).Save(curr_name);
 			}
 			zoom_cur *= zoom_step;

@@ -2,8 +2,8 @@
 <CodeLite_Workspace Name="Fact" Database="" Version="10.0.0">
   <Project Name="Fact" Path="Fact.project" Active="No"/>
   <Project Name="mm" Path="mm.project" Active="No"/>
-  <Project Name="mmhp" Path="mmhp.project" Active="Yes"/>
-  <Project Name="factmm" Path="factmm.project" Active="No"/>
+  <Project Name="mmhp" Path="mmhp.project" Active="No"/>
+  <Project Name="factmm" Path="factmm.project" Active="Yes"/>
   <Project Name="Server" Path="Server.project" Active="No"/>
   <Project Name="Client" Path="Client.project" Active="No"/>
   <BuildMatrix>

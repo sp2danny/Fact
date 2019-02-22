@@ -21,7 +21,10 @@
 
 cmdline cmd;
 
-Map m;
+typedef Map<FltH> MapH;
+typedef Point<FltH> PointH;
+
+MapH m;
 Image img;
 
 unsigned long iter_init = 600;
@@ -43,19 +46,19 @@ gboolean idle_func(gpointer data)
 	update_cap += update_step;
 
 	auto res = m.generate(update_cap, true, true);
-	if (res == Map::all_done)
+	if (res == MapH::all_done)
 	{
 		std::cout << " --- all done ---               " << std::endl << std::flush;
 		m.map_all_done = true;
 		return TRUE;
 	}
 
-	if (res == Map::was_updated )
+	if (res == MapH::was_updated )
 	{
 		std::cout << "        working            " << "     \r" << std::flush;
 		noupdatefor = 0;
 	}
-	if (res == Map::no_change)
+	if (res == MapH::no_change)
 	{
 		noupdatefor += 1;
 		std::cout << "        unupdated " << noupdatefor << "     \r" << std::flush;
@@ -121,7 +124,7 @@ void mk_img(GtkImage* image)
 {
 	noupdatefor = 0;
 	m.generate_init();
-	m.generate_odd(iter_init);
+	//m.generate_odd(iter_init);
 	//m.generate(update_cap, true);
 	std::cout << "        quad pix           " << "     \r" << std::flush;
 	disp_img(image);
@@ -136,12 +139,12 @@ void find_escape()
 	for (y=0; y<m.height; ++y) for (x=0; x<m.width; ++x)
 	{
 		auto& p = m.get(x,y);
-		if (p.status == Point::calc)
+		if (p.status == PointH::calc)
 		{
 			if (p.iter > non_escape) non_escape = p.iter;
 			continue;
 		}
-		if (p.status != Point::out) continue;
+		if (p.status != PointH::out) continue;
 		if (!found)
 		{
 			escape_min = escape_max = p.iter;
@@ -189,7 +192,8 @@ void kross(GtkImage* image)
 	gtk_image_set_from_pixbuf(image, pbuf);
 }
 
-std::string make_string(const Flt& flt)
+/*
+std::string make_string(const FltH& flt)
 {
 	std::string str;
 	constexpr std::size_t sz = 1024;
@@ -201,6 +205,7 @@ std::string make_string(const Flt& flt)
 	fclose(fp);
 	return str;
 }
+*/
 
 gboolean key_press(GtkWidget* widget, GdkEventKey* event, gpointer data)
 {
@@ -329,8 +334,8 @@ gboolean button_press(GtkWidget* widget, GdkEventButton* event, gpointer data)
 
     if (event->button == 1)
 	{
-		Flt ldx = m.to_xpos(event->x);
-		Flt ldy = m.to_ypos(event->y);
+		FltH ldx = m.to_xpos(event->x);
+		FltH ldy = m.to_ypos(event->y);
 
 		m.center_x = ldx;
 		m.center_y = ldy;
@@ -402,7 +407,7 @@ int main(int argc, char* argv[])
 	iter_init  = std::stol(  cmd.get_parameter ("iter-init",  "600"   ));
 
 	m.generate_init();
-	m.generate_odd(iter_init);
+	//m.generate_odd(iter_init);
 	float mod = mod_base / (float)pow((double)m.scale_x, mod_pow);
 	img = m.makeimage(mod, fuc);
 

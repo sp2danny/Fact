@@ -112,7 +112,7 @@ bool Point<Flt>::docalc(const std::complex<Flt>& c, UL cap)
 		{
 			did_smth = true;
 			status = Point::out;
-			over = (float)sqrtf(az2);
+			over = sqrtf(az2);
 			pixtype = pt_normal;
 			break;
 		}
@@ -158,7 +158,7 @@ void Point<Flt>::col(float mod)
 	float f = fmod((float)x, mod) + 1.0f;
 	f /= mod;
 
-	f -= (float)log(log(p.over) * ilg2) * ilg2 / mod;
+	f -= log(log(p.over) * ilg2) * ilg2 / mod;
 	f *= pi2;
 	float r = 0.5f + 0.5f*std::sin(f + pi2 * c000);
 	float g = 0.5f + 0.5f*std::sin(f + pi2 * c333);
