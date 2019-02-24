@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 
-typedef unsigned char UC;
+#include "common.h"
 
 #pragma pack(push, 1)
 
@@ -33,3 +33,4 @@ private:
 	std::vector<RGB> pixels;
 };
 
+extern RGB mix(const RGB& p1,const RGB& p2, float f);

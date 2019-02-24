@@ -5,6 +5,8 @@
 #include <cstring>
 #include <cassert>
 
+#include "common.h"
+
 Image::Image()
 {
 	w = h = 0;
@@ -122,4 +124,17 @@ void Image::Save(std::ostream& out)
 int Image::idx(int x, int y) const
 {
 	return x + y*w;
+}
+
+RGB mix(const RGB& p1,const RGB& p2, float f)
+{
+	assert( (f >= 0.0f) && (f <= 1.0f) );
+	const float inv = 1.0f-f;
+	float r = p1.r * f + p2.r * inv;
+	float g = p1.g * f + p2.g * inv;
+	float b = p1.b * f + p2.b * inv;
+	int ri = clamp(int(r), 0, 255);
+	int gi = clamp(int(g), 0, 255);
+	int bi = clamp(int(b), 0, 255);
+	return {(UC)ri, (UC)gi, (UC)bi};
 }

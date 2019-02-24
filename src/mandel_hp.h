@@ -4,7 +4,6 @@
 #include <cmath>
 #include <complex>
 #include <vector>
-#include <cstdint>
 #include <cassert>
 #include <cstddef>
 #include <cstdlib>
@@ -17,10 +16,11 @@
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
 
+#include "gmpxx.h"
+
+#include "common.h"
 #include "graph.h"
 #include "multilogger.hpp"
-
-#include "gmpxx.h"
 
 struct FltH : mpf_class
 {
@@ -73,13 +73,11 @@ inline FltU from_stringU(const std::string& str)
 }*/
 
 typedef double FltL;
-inline auto from_stringL = [](const std::string& str) { return std::stod(str); };
+inline FltL from_stringL(const std::string& str) { return std::stod(str); };
 
 inline bool isnan(const FltH&) { return false; }
 inline bool isinf(const FltH&) { return false; }
 FltH copysign(const FltH& a, const FltH& b);
-
-typedef std::uint32_t UL;
 
 template<typename Flt>
 std::complex<Flt> step(const std::complex<Flt>& c, const std::complex<Flt>& z);
@@ -95,11 +93,11 @@ struct Point
 {
 	enum { in, calc, out } status = calc;
 	UL iter = 0;
-	float over = 0.0;
+	float over = 0.0f;
 	UC pixtype = 0;
-	std::complex<Flt> z = {0.0,0.0};
+	std::complex<Flt> z = {0.0, 0.0};
 	#ifndef NDEBUG
-	std::complex<Flt> orig = {0.0,0.0};
+	std::complex<Flt> orig = {0.0, 0.0};
 	#endif
 	bool docalc(const std::complex<Flt>& c, UL cap);
 	void init(const std::complex<Flt>& c);
@@ -182,6 +180,7 @@ struct Map
 	// Singles
 	void generate_init();
 	Status generate(UL cap, bool display=false, bool extrap=false);
+	Status generate_odd(UL cap, bool display=false, bool extrap=false);	
 	Image makeimage(float mod, UL upc=0);
 
 	// Batch
@@ -211,12 +210,5 @@ private:
 	std::vector<Flt> vfx, vfy;
 };
 
-template<typename T>
-inline T clamp(T val, T min, T max)
-{
-	if (val < min) val = min;
-	if (val > max) val = max;
-	return val;
-}
 
 

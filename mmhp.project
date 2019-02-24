@@ -13,6 +13,7 @@
     <File Name="src/multilogger.hpp"/>
     <File Name="src/updater.cpp"/>
     <File Name="src/updater.h"/>
+    <File Name="src/common.h"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

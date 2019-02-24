@@ -2,16 +2,15 @@
 #include "mandel_hp.h"
 
 #include <cassert>
-#include <cstddef>
 #include <cstdlib>
 #include <iomanip>
 #include <cmath>
-#include <mutex>
 #include <climits>
 
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
 
+#include "common.h"
 #include "updater.h"
 
 using namespace std::literals;
@@ -194,7 +193,7 @@ void Map<Flt>::colorize(float mod)
 	}
 }
 
-template<typename Flt>
+/*template<typename Flt>
 struct MkImg
 {
 	int first_index, first_name, count;
@@ -246,11 +245,18 @@ struct MkImg
 			img.Save(mi->nf(nam));
 		}
 	}
-};
+};*/
 
 template<typename Flt>
-void Map<Flt>::makeimage_ItoN(int first_index, int first_name, int count, ModFunc mf, NameFunc nf, OSP osp)
+void Map<Flt>::makeimage_ItoN(
+	[[maybe_unused]] int first_index,
+	[[maybe_unused]] int first_name,
+	[[maybe_unused]] int count,
+	[[maybe_unused]] ModFunc mf,
+	[[maybe_unused]] NameFunc nf,
+	[[maybe_unused]] OSP osp)
 {
+	/*
 	int sz = count / 4;
 	int ex = count - (sz*4);
 
@@ -290,7 +296,7 @@ void Map<Flt>::makeimage_ItoN(int first_index, int first_name, int count, ModFun
 	{
 		(*osp) << mki[i].ss.str();
 	}
-
+	*/
 }
 
 template<typename Flt>
@@ -452,19 +458,6 @@ Image Map<Flt>::makeimage(float mod, UL upc)
 		}
 	}
 	return img;
-}
-
-static RGB mix(const RGB& p1,const RGB& p2, float f)
-{
-	assert( (f >= 0.0f) && (f <= 1.0f) );
-	const float inv = 1.0f-f;
-	float r = p1.r * f + p2.r * inv;
-	float g = p1.g * f + p2.g * inv;
-	float b = p1.b * f + p2.b * inv;
-	int ri = clamp(int(r), 0, 255);
-	int gi = clamp(int(g), 0, 255);
-	int bi = clamp(int(b), 0, 255);
-	return {(UC)ri, (UC)gi, (UC)bi};
 }
 
 template<typename Flt>
