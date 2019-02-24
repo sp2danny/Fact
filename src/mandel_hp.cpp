@@ -12,6 +12,8 @@
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
 
+#include "updater.h"
+
 using namespace std::literals;
 
 // ----------------------------------------------------------------------------
@@ -32,7 +34,7 @@ std::complex<Flt> step(const std::complex<Flt>& c, const std::complex<Flt>& z)
 	return z*z + c;
 }
 
-template std::complex<FltU> step<FltU>(const std::complex<FltU>&, const std::complex<FltU>&);
+//template std::complex<FltU> step<FltU>(const std::complex<FltU>&, const std::complex<FltU>&);
 template std::complex<FltH> step<FltH>(const std::complex<FltH>&, const std::complex<FltH>&);
 template std::complex<FltL> step<FltL>(const std::complex<FltL>&, const std::complex<FltL>&);
 
@@ -170,7 +172,7 @@ void Point<Flt>::col(float mod)
 	rgbval = {(UC)ri, (UC)gi, (UC)bi};
 }
 
-template struct Point<FltU>;
+//template struct Point<FltU>;
 template struct Point<FltH>;
 template struct Point<FltL>;
 
@@ -854,52 +856,9 @@ int Map<Flt>::shuffle_dbl()
 	return cpy;
 }
 
-template struct Map<FltU>;
+//template struct Map<FltU>;
 template struct Map<FltH>;
 template struct Map<FltL>;
-
-// ----------------------------------------------------------------------------
-
-// ***************l
-// *** Updater ***
-// ***************
-
-std::mutex Updater::lck;
-UL Updater::count, Updater::max, Updater::last;
-
-void Updater::Init(UL m)
-{
-	count = 0;
-	max = m;
-	last = (UL)-1;
-}
-
-void Updater::Tick()
-{
-	std::lock_guard guard(lck);
-	++count;
-}
-
-void Updater::Display()
-{
-	std::lock_guard guard(lck);
-	float f = 100.0f;
-	f /= max;
-	f *= count;
-	UL p = (int)f;
-	if (p==last) return;
-	std::cout << p << "%\r" << std::flush;
-	last = p;
-}
-
-int Updater::Get()
-{
-	std::lock_guard guard(lck);
-	float f = 100.0f;
-	f /= max;
-	f *= count;
-	return (int)f;
-}
 
 // ----------------------------------------------------------------------------
 
@@ -1198,7 +1157,7 @@ void LineCache<Flt>::execute_dbl(LineCache* lc)
 	#undef IDBO
 }
 
-template struct LineCache<FltU>;
+//template struct LineCache<FltU>;
 template struct LineCache<FltH>;
 template struct LineCache<FltL>;
 

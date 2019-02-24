@@ -47,7 +47,7 @@ inline FltH from_stringH(const std::string& str)
 	return FltH{str};
 }
 
-struct FltU : mpf_class
+/*struct FltU : mpf_class
 {
 	static constexpr int N = 512*4;
 	FltU() : mpf_class(0.0, N) { }
@@ -70,8 +70,7 @@ struct FltU : mpf_class
 inline FltU from_stringU(const std::string& str)
 {
 	return FltU{str};
-}
-
+}*/
 
 typedef double FltL;
 inline auto from_stringL = [](const std::string& str) { return std::stod(str); };
@@ -220,14 +219,4 @@ inline T clamp(T val, T min, T max)
 	return val;
 }
 
-struct Updater
-{
-	static void Init(UL);
-	static void Tick();
-	static void Display();
-	static int Get();
-private:
-	static std::mutex lck;
-	static UL count, max, last;
-};
 

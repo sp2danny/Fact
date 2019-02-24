@@ -11,6 +11,8 @@
     <File Name="src/graph.h"/>
     <File Name="src/mandel_hp.cpp"/>
     <File Name="src/multilogger.hpp"/>
+    <File Name="src/updater.cpp"/>
+    <File Name="src/updater.h"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

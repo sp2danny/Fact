@@ -106,12 +106,12 @@ int main(int argc, char* argv[])
 		std::cout << "skipping 0 .. " << (i-1) << std::endl;
 	}
 	
-	Map<FltU> mu;
+	/*Map<FltU> mu;
 	mu.width    = image_width;
 	mu.height   = image_height;
 	mu.center_x = center_x;
 	mu.center_y = center_y;
-	mu.zoom_mul = zoom_step;
+	mu.zoom_mul = zoom_step;*/
 
 	Map<FltH> mh;
 	mh.width    = image_width;
