@@ -47,6 +47,32 @@ inline FltH from_stringH(const std::string& str)
 	return FltH{str};
 }
 
+struct FltU : mpf_class
+{
+	static constexpr int N = 512*4;
+	FltU() : mpf_class(0.0, N) { }
+	explicit FltU(double d) : mpf_class(d, N) { }
+	explicit FltU(std::string s) : mpf_class(s.c_str(), N) {}
+	template<typename T>
+	FltU(T&& arg)
+		: FltU()
+	{
+		((mpf_class&)*this) = std::forward<T>(arg);
+	}
+	template<typename T>
+	FltU& operator=(T&& arg)
+	{
+		((mpf_class&)*this) = std::forward<T>(arg);
+		return *this;
+	}
+	explicit operator double() { return get_d(); }
+};
+inline FltU from_stringU(const std::string& str)
+{
+	return FltU{str};
+}
+
+
 typedef double FltL;
 inline auto from_stringL = [](const std::string& str) { return std::stod(str); };
 

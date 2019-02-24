@@ -105,17 +105,24 @@ int main(int argc, char* argv[])
 	{
 		std::cout << "skipping 0 .. " << (i-1) << std::endl;
 	}
+	
+	Map<FltU> mu;
+	mu.width    = image_width;
+	mu.height   = image_height;
+	mu.center_x = center_x;
+	mu.center_y = center_y;
+	mu.zoom_mul = zoom_step;
 
 	Map<FltH> mh;
-	mh.width  = image_width;
-	mh.height = image_height;
+	mh.width    = image_width;
+	mh.height   = image_height;
 	mh.center_x = center_x;
 	mh.center_y = center_y;
 	mh.zoom_mul = zoom_step;
 
 	Map<FltL> ml;
-	ml.width  = image_width;
-	ml.height = image_height;
+	ml.width    = image_width;
+	ml.height   = image_height;
 	ml.center_x = (double)center_x;
 	ml.center_y = (double)center_y;
 	ml.zoom_mul = (double)zoom_step;

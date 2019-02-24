@@ -32,6 +32,7 @@ std::complex<Flt> step(const std::complex<Flt>& c, const std::complex<Flt>& z)
 	return z*z + c;
 }
 
+template std::complex<FltU> step<FltU>(const std::complex<FltU>&, const std::complex<FltU>&);
 template std::complex<FltH> step<FltH>(const std::complex<FltH>&, const std::complex<FltH>&);
 template std::complex<FltL> step<FltL>(const std::complex<FltL>&, const std::complex<FltL>&);
 
@@ -169,6 +170,7 @@ void Point<Flt>::col(float mod)
 	rgbval = {(UC)ri, (UC)gi, (UC)bi};
 }
 
+template struct Point<FltU>;
 template struct Point<FltH>;
 template struct Point<FltL>;
 
@@ -852,6 +854,7 @@ int Map<Flt>::shuffle_dbl()
 	return cpy;
 }
 
+template struct Map<FltU>;
 template struct Map<FltH>;
 template struct Map<FltL>;
 
@@ -1195,6 +1198,7 @@ void LineCache<Flt>::execute_dbl(LineCache* lc)
 	#undef IDBO
 }
 
+template struct LineCache<FltU>;
 template struct LineCache<FltH>;
 template struct LineCache<FltL>;
 
