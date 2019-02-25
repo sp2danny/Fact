@@ -8,7 +8,6 @@
   <Project Name="Client" Path="Client.project" Active="No"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="no">
-      <Environment/>
       <Project Name="Fact" ConfigName="Debug"/>
       <Project Name="mm" ConfigName="Debug"/>
       <Project Name="mmhp" ConfigName="Debug"/>
@@ -17,7 +16,6 @@
       <Project Name="Client" ConfigName="Debug"/>
     </WorkspaceConfiguration>
     <WorkspaceConfiguration Name="Release" Selected="yes">
-      <Environment/>
       <Project Name="Fact" ConfigName="Release"/>
       <Project Name="mm" ConfigName="Release"/>
       <Project Name="mmhp" ConfigName="Release"/>

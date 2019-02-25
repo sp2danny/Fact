@@ -109,9 +109,6 @@ struct Point
 template<typename Flt> 
 Flt Point<Flt>::stepsize{};
 
-typedef float (*ModFunc)(float);
-typedef std::string (*NameFunc)(UL);
-
 template<typename Flt>
 using Scanline = std::vector<Point<Flt>>;
 
@@ -158,6 +155,9 @@ private:
 };
 
 typedef std::ostream* OSP;
+
+typedef std::string (*NameFunc)(UL);
+typedef float (*ModFunc)(double);
 
 template<typename Flt>
 struct Map

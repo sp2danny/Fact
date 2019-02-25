@@ -399,7 +399,7 @@ int main(int argc, char* argv[])
 	m.center_x =             cmd.get_parameter ("center-x",   "-0.75" ) ;
 	m.center_y =             cmd.get_parameter ("center-y",   "-0.0"  ) ;
 	m.scale_x  =             cmd.get_parameter ("scale-x",    "3.2"   ) ;
-	m.scale_y  = m.scale_x*3.0/4.0;
+	m.scale_y  = m.scale_x * double(m.height)/double(m.width);
 	fuc        = std::stol(  cmd.get_parameter ("update-cap", "2500"  ));
 	zoom_step  = std::stof(  cmd.get_parameter ("zoom-step",  "3.16"  ));
 	mod_base   = std::stof(  cmd.get_parameter ("col-base",   "120"   ));
@@ -408,7 +408,7 @@ int main(int argc, char* argv[])
 
 	m.generate_init();
 	//m.generate_odd(iter_init);
-	float mod = mod_base / (float)pow((double)m.scale_x, mod_pow);
+	float mod = mod_base / (float)powf((float)(double)m.scale_x, mod_pow);
 	img = m.makeimage(mod, fuc);
 
 	gtk_init(&argc, &argv);

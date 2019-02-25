@@ -605,10 +605,12 @@ template<typename Flt>
 Image Map<Flt>::makeimage_N(int n, ModFunc mf, OSP fr)
 {
 	Image img(width, height);
-	float sx = (float)(double)scale_x;
 
-	float t0 = (float)(double)zoom_mul;
-	float tpmn = pow(t0, -n);
+	double sx = (double)scale_x;
+
+	double t0 = (double)zoom_mul;
+	double tpmn = std::pow(t0, -n);
+
 	float myw = new_w / tpmn;
 	float myh = new_h / tpmn;
 	
