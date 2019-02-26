@@ -520,14 +520,25 @@ void Map<Flt>::generate_init_rest()
 		vfy[y] = (y_start + y_step*y);
 }
 
+FltH pow(FltH m, int e)
+{
+	if (e==0) return FltH{1.0};
+	if (e==1) return m;
+	if (e<0)  return FltH{1.0} / pow(m, -e);
+	FltH ret;
+	mpf_pow_ui(ret.get_mpf_t(), m.get_mpf_t(), (UL)e);
+	return ret;
+}
+
 template<typename Flt>
 void Map<Flt>::generate_N_init(int n, bool disp)
 {
-	double zm = (double)zoom_mul;
-	double tm = pow(zm, -n);
+	using std::pow;
+	
+	Flt tm = pow(zoom_mul, -n);
 
-	new_w = ceill(width  * tm);
-	new_h = ceill(height * tm);
+	new_w = ceill(width  * (double)tm);
+	new_h = ceill(height * (double)tm);
 
 	if (disp)
 	{
@@ -604,15 +615,14 @@ UL Map<Flt>::generate_N_threaded(int n, UL cap, bool display)
 template<typename Flt>
 Image Map<Flt>::makeimage_N(int n, ModFunc mf, OSP fr)
 {
+	using std::pow;
+
 	Image img(width, height);
 
-	double sx = (double)scale_x;
+	Flt tpmn = pow(zoom_mul, -n);
 
-	double t0 = (double)zoom_mul;
-	double tpmn = std::pow(t0, -n);
-
-	float myw = new_w / tpmn;
-	float myh = new_h / tpmn;
+	float myw = new_w / (double)tpmn;
+	float myh = new_h / (double)tpmn;
 	
 	float xstart = (new_w-myw) / 2;
 	float ystart = (new_h-myh) / 2;
@@ -620,7 +630,8 @@ Image Map<Flt>::makeimage_N(int n, ModFunc mf, OSP fr)
 	float xstep = myw / width;
 	float ystep = myh / height;
 
-	float mod = mf(sx / tpmn);
+	Flt quot = scale_x / tpmn;
+	float mod = mf((double)quot);
 	
 	if (fr)
 	{
@@ -651,8 +662,12 @@ void Map<Flt>::setup_dbl(Flt target, MultiLogger& logger)
 	double n = std::log(0.5) / std::log((double)target);
 	count_dlb = std::roundl(n);
 	double factor = std::pow(0.5, 1.0/n);
+
+	logger << "old factor     : " << (double)zoom_mul << std::endl;
 	logger << "new factor     : " << factor << std::endl;
 	logger << "new count      : " << count_dlb << std::endl;
+	
+	zoom_mul = factor;
 	width  = (width  >> 2) << 2;
 	height = (height >> 2) << 2;
 	new_w = width  * 2;
