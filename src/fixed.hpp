@@ -23,6 +23,8 @@ struct fixed3
 private:
 
 	void seti(unsigned short);
+	void i_sub(const fixed3&);
+	void i_add(const fixed3&);
 
 	unsigned short ip;
 	unsigned short fp[3];

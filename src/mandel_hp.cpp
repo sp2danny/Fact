@@ -33,7 +33,6 @@ std::complex<Flt> step(const std::complex<Flt>& c, const std::complex<Flt>& z)
 	return z*z + c;
 }
 
-//template std::complex<FltU> step<FltU>(const std::complex<FltU>&, const std::complex<FltU>&);
 template std::complex<FltH> step<FltH>(const std::complex<FltH>&, const std::complex<FltH>&);
 template std::complex<FltL> step<FltL>(const std::complex<FltL>&, const std::complex<FltL>&);
 
@@ -42,9 +41,6 @@ template std::complex<FltL> step<FltL>(const std::complex<FltL>&, const std::com
 // *************
 // *** Point ***
 // *************
-
-//template<typename Flt>
-//Flt Point<Flt>::stepsize;
 
 template<typename Flt>
 bool Point<Flt>::docalc(const std::complex<Flt>& c, UL cap)
@@ -171,7 +167,6 @@ void Point<Flt>::col(float mod)
 	rgbval = {(UC)ri, (UC)gi, (UC)bi};
 }
 
-//template struct Point<FltU>;
 template struct Point<FltH>;
 template struct Point<FltL>;
 
@@ -191,112 +186,6 @@ void Map<Flt>::colorize(float mod)
 			get(x,y).col(mod);
 		}
 	}
-}
-
-/*template<typename Flt>
-struct MkImg
-{
-	int first_index, first_name, count;
-	ModFunc mf;
-	NameFunc nf;
-	Map<Flt> map;
-	std::stringstream ss{};
-	static void makeimg(MkImg<Flt>* mi)
-	{
-		Image img(mi->map.width, mi->map.height);
-		float sx = (float)(double)mi->map.scale_x;
-		float t0 = (float)(double)mi->map.zoom_mul;
-		for (int i = 0; i<mi->count; ++i)
-		{
-			int idx = mi->first_index + i;
-			int nam = mi->first_name + i;
-
-			float tpmn = pow(t0, -idx);
-			float myw = mi->map.new_w / tpmn;
-			float myh = mi->map.new_h / tpmn;
-
-			float xstart = (mi->map.new_w-myw) / 2;
-			float ystart = (mi->map.new_h-myh) / 2;
-
-			float xstep = myw / mi->map.width;
-			float ystep = myh / mi->map.height;
-
-			float mod = mi->mf(sx / tpmn);
-
-			{
-				mi->ss << "Frame " << nam << " : ";
-				mi->ss << mod << " " << myw << "x" << myh << " ";
-				mi->ss << xstart << "+" << xstep << " ";
-				mi->ss << ystart << "+" << ystep << "\n";
-			}
-
-			mi->map.colorize(mod);
-
-			UL x,y;
-			for (y=0; y<mi->map.height; ++y)
-			{
-				float yf = ystart + y * ystep;
-				for (x=0; x<mi->map.width; ++x)
-				{
-					double xf = xstart + x * xstep;
-					img.PutPixel(x, y, mi->map.extrapolate(xf, yf));
-				}
-			}
-			img.Save(mi->nf(nam));
-		}
-	}
-};*/
-
-template<typename Flt>
-void Map<Flt>::makeimage_ItoN(
-	[[maybe_unused]] int first_index,
-	[[maybe_unused]] int first_name,
-	[[maybe_unused]] int count,
-	[[maybe_unused]] ModFunc mf,
-	[[maybe_unused]] NameFunc nf,
-	[[maybe_unused]] OSP osp)
-{
-	/*
-	int sz = count / 4;
-	int ex = count - (sz*4);
-
-	MkImg<Flt> mki[4] = {
-		{ first_index, first_name, sz+ex, mf, nf, *this },
-		{ first_index, first_name,    sz, mf, nf, *this },
-		{ first_index, first_name,    sz, mf, nf, *this },
-		{ first_index, first_name,    sz, mf, nf, *this }
-	};
-	int n = 0;
-	for (int i=0; i<4; ++i)
-	{
-		mki[i].first_index += n;
-		mki[i].first_name  += n;
-		n += mki[i].count;
-	}
-
-	boost::thread tt[4];
-	for (int i=1; i<4; ++i)
-	{
-		tt[i] = boost::thread{&MkImg<Flt>::makeimg, mki+i};
-	}
-	MkImg<Flt>::makeimg(mki);
-	boost::chrono::nanoseconds ns{250'000};
-	int joined = 1;
-	while (true)
-	{
-		bool j = tt[joined].try_join_for(ns);
-		if (j)
-		{
-			++joined;
-			if (joined >= 4) break;
-		}
-	}
-
-	if (osp) for (int i=0; i<4; ++i)
-	{
-		(*osp) << mki[i].ss.str();
-	}
-	*/
 }
 
 template<typename Flt>
@@ -632,7 +521,7 @@ Image Map<Flt>::makeimage_N(int n, ModFunc mf, OSP fr)
 
 	Flt quot = scale_x / tpmn;
 	float mod = mf((double)quot);
-	
+
 	if (fr)
 	{
 		(*fr) << mod << " " << myw << "x" << myh << " ";
@@ -693,7 +582,7 @@ Image Map<Flt>::dbl_makefull(UL cap)
 {
 	std::vector<Scanline<Flt>> saved;
 	saved.swap(points);
-	
+
 	generate_init_rest();
 
 	for (UL y=0; y<new_h; ++y)
@@ -713,14 +602,14 @@ Image Map<Flt>::dbl_makefull(UL cap)
 	swap(width, new_w); swap(height, new_h);
 
 	saved.swap(points);
-	
+
 	return img;
 }
 
 template<typename Flt>
 int Map<Flt>::generate_dbl(UL cap, bool first, bool display, MultiLogger& logger)
 {
-	
+
 	#ifndef NDEBUG
 
 	Updater::Init(new_h*3+1);
@@ -729,7 +618,7 @@ int Map<Flt>::generate_dbl(UL cap, bool first, bool display, MultiLogger& logger
 	LineCache<Flt> lc = { cap, true, *this, first };
 	lc.y_start = 0;
 	lc.y_count = new_h;
-	
+
 	LineCache<Flt>::execute_dbl(&lc);
 
 	UL sk = lc.skip_count;
@@ -792,7 +681,7 @@ int Map<Flt>::generate_dbl(UL cap, bool first, bool display, MultiLogger& logger
 		sk += lc[i].skip_count;
 		is += lc[i].inskip;
 	}
-	
+
 	#endif
 
 	Updater::Tick();
@@ -865,7 +754,6 @@ int Map<Flt>::shuffle_dbl()
 	return cpy;
 }
 
-//template struct Map<FltU>;
 template struct Map<FltH>;
 template struct Map<FltL>;
 
@@ -1116,7 +1004,7 @@ template<typename Flt>
 void LineCache<Flt>::execute_dbl(LineCache* lc)
 {
 	lc->base_init();
-	
+
 	#ifndef NDEBUG
 	#define IDBO(fn) lc->map.new_out(fn)
 	#else
@@ -1145,7 +1033,7 @@ void LineCache<Flt>::execute_dbl(LineCache* lc)
 
 	all_f( [&](UL x, UL y) { lc->ep_x(x,y); } );
 	all_f( [&](UL x, UL y) { lc->ep_y(x,y); } );
-	
+
 	IDBO("ED_2_Extrapolate_X_and_Y.bmp");
 
 	lc->odd();
@@ -1162,11 +1050,10 @@ void LineCache<Flt>::execute_dbl(LineCache* lc)
 
 	lc->all();
 	IDBO("ED_6_After_All.bmp");
-	
+
 	#undef IDBO
 }
 
-//template struct LineCache<FltU>;
 template struct LineCache<FltH>;
 template struct LineCache<FltL>;
 

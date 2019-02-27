@@ -57,6 +57,11 @@ fixed3::fixed3(long lval)
 	}
 }
 
+void fixed3::seti(unsigned short i)
+{
+	ip = i;
+}
+
 fixed3::fixed3(double dval)
 {
 	if (dval < 0)
@@ -73,9 +78,25 @@ fixed3::fixed3(double dval)
 		dval -= fl;
 		dval *= 65536.0;
 		fl = floorl(dval);
-		seti(fl);
+		f = (unsigned short)fl;
 	}
 }
+
+fixed3& fixed3::operator += (const fixed3& other)
+{
+	//if (
+}
+
+fixed3& fixed3::operator -= (const fixed3& other)
+{
+}
+
+fixed3& fixed3::operator *= (const fixed3& other)
+{
+}
+
+
+
 
 
 

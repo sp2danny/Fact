@@ -8,7 +8,7 @@
 
 typedef long double Flt;
 
-typedef unsigned long UL;
+//typedef unsigned long UL;
 
 typedef std::complex<Flt> Cmplx;
 
@@ -43,13 +43,13 @@ struct Map
 	bool do_one(UL,UL,UL);
 };
 
-template<typename T>
+/*template<typename T>
 T clamp(T val, T min, T max)
 {
 	if (val<min) val=min;
 	if (val>max) val=max;
 	return val;
-}
+}*/
 
 RGB col(Point p, float mod);
 

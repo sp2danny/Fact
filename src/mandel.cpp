@@ -243,7 +243,7 @@ void movie_maker(Map& m, UL cap)
 		m.generate_init();
 		m.generate(cap);
 		auto img = m.makeimage(225.f);
-		std::sprintf(buff, "./img/m%05lu.bmp", num);
+		std::sprintf(buff, "./img/m%05u.bmp", num);
 		img.Save(buff);
 		zoom_cur *= 0.99l;
 		if (zoom_cur < zoom_end) break;

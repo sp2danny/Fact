@@ -156,7 +156,7 @@ int main(int argc, char* argv[])
 		if (max_count)
 			if (i>max_count) break;
 
-		if ((!owr) && boost::filesystem::exists(curr_name))
+		if ((!owr) && fs::exists(curr_name))
 		{
 			i += 1;
 			zoom_cur *= zoom_step;
@@ -202,7 +202,7 @@ int main(int argc, char* argv[])
 			{
 				curr_name = mkname(i+j);
 				zoom_cur *= zoom_step;
-				if (owr && boost::filesystem::exists(curr_name)) continue;
+				if (owr && fs::exists(curr_name)) continue;
 				logger << i+j << "\r" << std::flush;
 				if (useh) mh.makeimage_N(j,mod_func).Save(curr_name);
 				else      ml.makeimage_N(j,mod_func).Save(curr_name);
@@ -270,7 +270,7 @@ int main(int argc, char* argv[])
 			for (int j=start; j<n; ++j)
 			{
 				curr_name = mkname(i+j);
-				if ((!owr) && boost::filesystem::exists(curr_name)) continue;
+				if ((!owr) && fs::exists(curr_name)) continue;
 				if (prt) std::cout << i+j << "\r" << std::flush;
 				if (rep) (*fr) << "Frame " << i+j << " : ";
 				if (useh) mh.makeimage_N(j,mod_func, fr).Save(curr_name);
