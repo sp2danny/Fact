@@ -4,6 +4,7 @@
 #include <fstream>
 #include <cstring>
 #include <cassert>
+#include <cmath>
 
 #include "common.h"
 
@@ -133,8 +134,8 @@ RGB mix(const RGB& p1,const RGB& p2, float f)
 	float r = p1.r * f + p2.r * inv;
 	float g = p1.g * f + p2.g * inv;
 	float b = p1.b * f + p2.b * inv;
-	int ri = clamp(int(r), 0, 255);
-	int gi = clamp(int(g), 0, 255);
-	int bi = clamp(int(b), 0, 255);
+	int ri = clamp((int)roundl(r), 0, 255);
+	int gi = clamp((int)roundl(g), 0, 255);
+	int bi = clamp((int)roundl(b), 0, 255);
 	return {(UC)ri, (UC)gi, (UC)bi};
 }

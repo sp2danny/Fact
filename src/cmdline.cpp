@@ -2,13 +2,34 @@
 #include "cmdline.h"
 
 #include <cassert>
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace std::literals;
 
 void cmdline::init(int argc, char* argv[])
 {
 	assert(argc>=1);
 	program_name = argv[0];
 	for(auto i=1; i<argc; ++i)
-		arguments.push_back(argv[i]);
+	{
+		if (argv[i] == "-f"s)
+		{
+			++i;
+			if (i<argc)
+			{
+				std::ifstream ifs(argv[i]);
+				std::string str;
+				while (ifs >> str)
+				{
+					arguments.push_back(str);
+				}
+			}
+		} else {
+			arguments.push_back(argv[i]);
+		}
+	}
 }
 
 cmdline::cmdline(int argc, char* argv[])

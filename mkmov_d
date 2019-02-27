@@ -1,0 +1,1 @@
+avconv -framerate 50 -i dbg/img_00%03d.bmp -r 50 movpart/dbg_00.mp4

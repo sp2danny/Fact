@@ -153,18 +153,18 @@ void Point<Flt>::col(float mod)
 	auto x = p.iter;
 
 	static const float pi2 = 3.1415926536f * 2;
-	static const float ilg2 = 1.0f / log(2.0f);
+	static const float ilg2 = 1.0f / logf(2.0f);
 	static const float c000 = 0.0f / 3.0f;
 	static const float c333 = 1.0f / 3.0f;
 	static const float c666 = 2.0f / 3.0f;
-	float f = fmod((float)x, mod) + 1.0f;
+	float f = fmodf((float)x, mod) + 1.0f;
 	f /= mod;
 
-	f -= log(log(p.over) * ilg2) * ilg2 / mod;
+	f -= logf(logf(p.over) * ilg2) * ilg2 / mod;
 	f *= pi2;
-	float r = 0.5f + 0.5f*std::sin(f + pi2 * c000);
-	float g = 0.5f + 0.5f*std::sin(f + pi2 * c333);
-	float b = 0.5f + 0.5f*std::sin(f + pi2 * c666);
+	float r = 0.5f + 0.5f*sinf(f + pi2 * c000);
+	float g = 0.5f + 0.5f*sinf(f + pi2 * c333);
+	float b = 0.5f + 0.5f*sinf(f + pi2 * c666);
 	int ri = clamp(int(r*256), 0, 255);
 	int gi = clamp(int(g*256), 0, 255);
 	int bi = clamp(int(b*256), 0, 255);
@@ -466,10 +466,10 @@ RGB Map<Flt>::extrapolate(float x, float y)
 	using namespace std;
 	if (x<0.0f) x=0.0f; if (x>new_w) x=new_w;
 	if (y<0.0f) y=0.0f; if (y>new_h) y=new_h;
-	double xr = round(x);
-	double yr = round(y);
-	double dx = x-xr;
-	double dy = y-yr;
+	float xr = roundf(x);
+	float yr = roundf(y);
+	float dx = x-xr;
+	float dy = y-yr;
 	UL x1,x2,y1,y2;
 	double fx, fy;
 	if (fabs(dx) < 0.05f) {
@@ -480,7 +480,7 @@ RGB Map<Flt>::extrapolate(float x, float y)
 		x2 = ceill(x);
 		fx = x2-x;
 	}
-	if (abs(dy) < 0.05f) {
+	if (fabs(dy) < 0.05f) {
 		y1 = y2 = roundl(y);
 		fy = 0.5f;
 	} else {
@@ -494,7 +494,7 @@ RGB Map<Flt>::extrapolate(float x, float y)
 	RGB pix_22 = get(x2 , y2).rgbval;
 	RGB pix_1 = mix(pix_11, pix_12, fy);
 	RGB pix_2 = mix(pix_21, pix_22, fy);
-	RGB pix = mix(pix_1, pix_2, fx);
+	RGB pix   = mix(pix_1,  pix_2,  fx);
 	return pix;
 }
 
@@ -663,7 +663,6 @@ void Map<Flt>::setup_dbl(Flt target, MultiLogger& logger)
 	count_dlb = std::roundl(n);
 	double factor = std::pow(0.5, 1.0/n);
 
-	logger << "old factor     : " << (double)zoom_mul << std::endl;
 	logger << "new factor     : " << factor << std::endl;
 	logger << "new count      : " << count_dlb << std::endl;
 	
