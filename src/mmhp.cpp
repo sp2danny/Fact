@@ -105,13 +105,6 @@ int main(int argc, char* argv[])
 	{
 		std::cout << "skipping 0 .. " << (i-1) << std::endl;
 	}
-	
-	/*Map<FltU> mu;
-	mu.width    = image_width;
-	mu.height   = image_height;
-	mu.center_x = center_x;
-	mu.center_y = center_y;
-	mu.zoom_mul = zoom_step;*/
 
 	Map<FltH> mh;
 	mh.width    = image_width;
@@ -181,7 +174,7 @@ int main(int argc, char* argv[])
 		if (useh) Point<FltH>::stepsize = mh.to_xpos(1) - mh.to_xpos(0);
 		else      Point<FltL>::stepsize = ml.to_xpos(1) - ml.to_xpos(0);
 
-		logger << std::setprecision(25);
+		logger << std::setprecision(50) << std::scientific;
 		logger << "scale-x        : " << mh.scale_x << std::endl;
 		logger << "scale-y        : " << mh.scale_y << std::endl;
 
@@ -195,6 +188,7 @@ int main(int argc, char* argv[])
 			else      maxout = ml.generate_N_threaded(n, update_cap, prt);
 			auto t2 = std::chrono::high_resolution_clock::now();
 			auto d1 = std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count();
+			logger << std::setprecision(10) << std::fixed;
 			logger << "generate time  : " << d1 / 1000.0f << std::endl;
 			logger << "effective cap  : " << maxout << std::endl;
 			logger << "color mod      : " << mod_func((double)zoom_cur) << std::endl;
@@ -262,6 +256,7 @@ int main(int argc, char* argv[])
 			else      n = ml.generate_dbl(update_cap, first, prt, logger);
 			auto t2 = std::chrono::high_resolution_clock::now();
 			auto d1 = std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count();
+			logger << std::setprecision(10) << std::fixed;
 			logger << "generate time  : " << d1 / 1000.0f << std::endl;
 			logger << "color mod      : " << mod_func((double)zoom_cur) << std::endl;
 			auto zc = zoom_cur;
@@ -273,8 +268,9 @@ int main(int argc, char* argv[])
 				if ((!owr) && fs::exists(curr_name)) continue;
 				if (prt) std::cout << i+j << "\r" << std::flush;
 				if (rep) (*fr) << "Frame " << i+j << " : ";
-				if (useh) mh.makeimage_N(j,mod_func, fr).Save(curr_name);
-				else      ml.makeimage_N(j,mod_func, fr).Save(curr_name);
+				if (rep) DiffReport(i+j);
+				if (useh) mh.makeimage_N(j, mod_func, fr).Save(curr_name);
+				else      ml.makeimage_N(j, mod_func, fr).Save(curr_name);
 				if (rep) (*fr) << std::endl;
 			}
 			/* */

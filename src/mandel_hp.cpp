@@ -6,6 +6,8 @@
 #include <iomanip>
 #include <cmath>
 #include <climits>
+#include <iostream>
+#include <fstream>
 
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
@@ -522,9 +524,13 @@ Image Map<Flt>::makeimage_N(int n, ModFunc mf, OSP fr)
 	Flt quot = scale_x / tpmn;
 	float mod = mf((double)quot);
 
+	if (fr) DiffReport((double)quot, mod);
+
 	if (fr)
 	{
-		(*fr) << mod << " " << myw << "x" << myh << " ";
+		(*fr) << std::setprecision(20) << std::setw(25) << std::scientific << quot << " ";
+		(*fr) << std::setprecision(10) << std::setw(15) << std::fixed << mod << " ";
+		(*fr) << myw << "x" << myh << " ";
 		(*fr) << xstart << "+" << xstep << " ";
 		(*fr) << ystart << "+" << ystep << " ";
 	}
@@ -545,16 +551,74 @@ Image Map<Flt>::makeimage_N(int n, ModFunc mf, OSP fr)
 	return img;
 }
 
+void adjust_factor(FltL&, int) {}
+
+int adjustments = 0;
+int epsilondbl = 0;
+
+void adjust_factor(FltH& f, int n)
+{
+	FltH epsilon = 0.001;
+	FltH target = pow(f, n);
+	FltH diff = abs(0.5f - target);
+
+	while (true)
+	{
+		while (true)
+		{
+			FltH up = f + epsilon;
+			if (up == f) return;
+			FltH new_target = pow(up, n);
+			FltH new_diff = abs(0.5f - new_target);
+			if (new_diff<diff)
+			{
+				++adjustments;
+				f = up;
+				target = new_target;
+				diff = new_diff;
+				continue;
+			}
+			break;
+		}
+		while (true)
+		{
+			FltH dn = f - epsilon;
+			if (dn == f) return;
+			FltH new_target = pow(dn, n);
+			FltH new_diff = abs(0.5f - new_target);
+			if (new_diff<diff)
+			{
+				++adjustments;
+				f = dn;
+				target = new_target;
+				diff = new_diff;
+				continue;
+			}
+			break;
+		}
+		epsilon /= 2;
+		++epsilondbl;
+	}
+}
+
 template<typename Flt>
 void Map<Flt>::setup_dbl(Flt target, MultiLogger& logger)
 {
+	using std::pow;
 	double n = std::log(0.5) / std::log((double)target);
 	count_dlb = std::roundl(n);
-	double factor = std::pow(0.5, 1.0/n);
+	Flt factor = std::pow(0.5, 1.0/n);
 
+	logger << std::setprecision(100) << std::fixed;
 	logger << "new factor     : " << factor << std::endl;
+	adjust_factor(factor, count_dlb);
+	logger << "adj. factor    : " << factor << std::endl;
 	logger << "new count      : " << count_dlb << std::endl;
-	
+	FltH new_target = pow(factor, count_dlb);
+	logger << "new doubling   : " << new_target << std::endl;
+
+	logger << "adj / dbl      : " << adjustments << " / " << epsilondbl << std::endl;
+
 	zoom_mul = factor;
 	width  = (width  >> 2) << 2;
 	height = (height >> 2) << 2;
@@ -1056,5 +1120,47 @@ void LineCache<Flt>::execute_dbl(LineCache* lc)
 
 template struct LineCache<FltH>;
 template struct LineCache<FltL>;
+
+
+// ----------------------------------------------------------------------------
+
+// ******************
+// *** DiffReport ***
+// ******************
+
+namespace {
+	bool first = true;
+	int current;
+	std::ofstream diffr;
+	double prv_zf;
+	float  prv_mod;
+}
+
+void DiffReport(int fr)
+{
+	if (first)
+	{
+		diffr.open("DiffReport.txt");
+	} else {
+		assert(fr == (current+1));
+	}
+	current = fr;
+}
+
+void DiffReport(double zf, float mod)
+{
+	if (!first)
+	{
+		diffr << std::setw(6) << current << " ";
+		diffr << std::setprecision(30) << std::setw(35);
+		diffr << std::fixed << (zf / prv_zf) << " ";
+		diffr << std::setprecision(10) << std::setw(15);
+		diffr << std::fixed << (mod / prv_mod) << std::endl << std::flush;
+	}
+	first = false;
+	prv_zf  = zf;
+	prv_mod = mod;
+}
+
 
 
