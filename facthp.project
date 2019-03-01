@@ -1,29 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<CodeLite_Project Name="mm" InternalType="Console" Version="10.0.0">
+<CodeLite_Project Name="facthp" Version="10.0.0" InternalType="Console">
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="src">
-    <File Name="src/mm.cpp"/>
     <File Name="src/cmdline.cpp"/>
-    <File Name="src/graph.cpp"/>
-    <File Name="src/mandel.cpp"/>
-  </VirtualDirectory>
-  <VirtualDirectory Name="hdr">
     <File Name="src/cmdline.h"/>
+    <File Name="src/graph.cpp"/>
     <File Name="src/graph.h"/>
-    <File Name="src/mandel.h"/>
+    <File Name="src/mandel_hp.cpp"/>
+    <File Name="src/mandel_hp.h"/>
+    <File Name="src/updater.cpp"/>
+    <File Name="src/updater.h"/>
+    <File Name="src/facthp.cpp"/>
   </VirtualDirectory>
+  <Dependencies Name="Debug"/>
+  <Dependencies Name="Release"/>
   <Settings Type="Executable">
     <GlobalSettings>
-      <Compiler Options="-std=c++14 -Wall -Wextra -Werror -pedantic" C_Options="" Assembler="">
-        <IncludePath Value="."/>
+      <Compiler Options="-std=c++17;-pthread;-Wall;-Wextra;-pedantic;-Werror" C_Options="-Wall" Assembler="">
+        <IncludePath Value="/usr/include/gtk-2.0"/>
+        <IncludePath Value="/usr/include/glib-2.0"/>
+        <IncludePath Value="/usr/lib/x86_64-linux-gnu/glib-2.0/include"/>
+        <IncludePath Value="/usr/include/cairo"/>
+        <IncludePath Value="/usr/include/pango-1.0"/>
+        <IncludePath Value="/usr/lib/x86_64-linux-gnu/gtk-2.0/include"/>
+        <IncludePath Value="/usr/include/gdk-pixbuf-2.0"/>
+        <IncludePath Value="/usr/include/atk-1.0"/>
       </Compiler>
       <Linker Options="">
         <LibraryPath Value="."/>
         <LibraryPath Value="/usr/lib/x86_64-linux-gnu/"/>
+        <Library Value="gtk-x11-2.0"/>
+        <Library Value="gdk-x11-2.0"/>
+        <Library Value="pangocairo-1.0"/>
+        <Library Value="atk-1.0"/>
+        <Library Value="cairo"/>
+        <Library Value="gdk_pixbuf-2.0"/>
+        <Library Value="gio-2.0"/>
+        <Library Value="pangoft2-1.0"/>
+        <Library Value="pango-1.0"/>
+        <Library Value="gobject-2.0"/>
+        <Library Value="glib-2.0"/>
+        <Library Value="fontconfig"/>
+        <Library Value="freetype"/>
         <Library Value="boost_system"/>
         <Library Value="boost_filesystem"/>
+        <Library Value="boost_chrono"/>
+        <Library Value="boost_thread"/>
         <Library Value="pthread"/>
+        <Library Value="gmp"/>
+        <Library Value="gmpxx"/>
       </Linker>
       <ResourceCompiler Options=""/>
     </GlobalSettings>
@@ -33,8 +59,7 @@
       </Compiler>
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(ProjectName)_dbg.out" IntermediateDirectory="./bin/Debug" Command="./$(ProjectName)_dbg.out" CommandArguments="center-x=-0xb.cbd5c4ae00101d2p-3 center-y=-0xb.b3604dafd65634fp-25 update-cap=1250 zoom-start=5 width=1024 height=768 num-digits=5 lead=img- target=./img zoom-end=5e-16" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
-      <BuildSystem Name="Default"/>
+      <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>
@@ -59,7 +84,7 @@
         <CustomPostBuild/>
         <CustomPreBuild/>
       </AdditionalRules>
-      <Completion EnableCpp11="no" EnableCpp14="no">
+      <Completion EnableCpp11="no">
         <ClangCmpFlagsC/>
         <ClangCmpFlags/>
         <ClangPP/>
@@ -67,14 +92,13 @@
       </Completion>
     </Configuration>
     <Configuration Name="Release" CompilerType="clang( tags/RELEASE_600/final )" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
-      <Compiler Options="-O2" C_Options="-O2" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
+      <Compiler Options="-O3" C_Options="-O2;-Wall" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <IncludePath Value="."/>
         <Preprocessor Value="NDEBUG"/>
       </Compiler>
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(ProjectName).out" IntermediateDirectory="./bin/Release" Command="./$(ProjectName).out" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
-      <BuildSystem Name="Default"/>
+      <General OutputFile="$(ProjectName).out" IntermediateDirectory="./bin/Release" Command="$(ProjectName).out" CommandArguments="width=320 height=240 center-x=-1.4745288243866597150005121240527838408721875 center-y=-3.4870768261694098233183896979924195325e-07 scale-x=6.3e-18  zoom-step=10 update-cap=7500 col-base=220 col-pow=-0.01" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="." PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>
@@ -99,7 +123,7 @@
         <CustomPostBuild/>
         <CustomPreBuild/>
       </AdditionalRules>
-      <Completion EnableCpp11="no" EnableCpp14="no">
+      <Completion EnableCpp11="no">
         <ClangCmpFlagsC/>
         <ClangCmpFlags/>
         <ClangPP/>
