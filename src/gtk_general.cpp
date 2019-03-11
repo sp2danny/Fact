@@ -30,16 +30,16 @@ namespace std
 	{
 		const std::tm* _M_tmb;
 		const _CharT* _M_fmt;
-    };
+	};
 
 	template<typename _CharT>
-    inline _Put_time<_CharT>
-    put_time(const std::tm* __tmb, const _CharT* __fmt)
-    { return { __tmb, __fmt }; }
+	inline _Put_time<_CharT>
+	put_time(const std::tm* __tmb, const _CharT* __fmt)
+	{ return { __tmb, __fmt }; }
 	template<typename _CharT, typename _Traits>
-    basic_ostream<_CharT, _Traits>&
-    operator<<(basic_ostream<_CharT, _Traits>& __os, _Put_time<_CharT> __f)
-    {
+	basic_ostream<_CharT, _Traits>&
+	operator<<(basic_ostream<_CharT, _Traits>& __os, _Put_time<_CharT> __f)
+	{
 		typename basic_ostream<_CharT, _Traits>::sentry __cerb(__os);
 		if (__cerb)
         {
@@ -73,10 +73,10 @@ namespace std
 std::string add_time(std::string s)
 {
 	auto now = std::chrono::system_clock::now();
-    auto in_time_t = std::chrono::system_clock::to_time_t(now);
-    std::stringstream ss;
-    ss << std::put_time(std::localtime(&in_time_t), "%F %T > ") << s;
-    return ss.str();
+	auto in_time_t = std::chrono::system_clock::to_time_t(now);
+	std::stringstream ss;
+	ss << std::put_time(std::localtime(&in_time_t), "%F %T > ") << s;
+	return ss.str();
 }
 
 gboolean delete_event(GtkWidget* widget, GdkEvent* event, gpointer data)
