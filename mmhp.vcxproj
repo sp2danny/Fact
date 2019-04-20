@@ -22,6 +22,9 @@
     <ClInclude Include="src\mandel_hp.h" />
     <ClInclude Include="src\multilogger.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\..\gmp-static\gmp.lib" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{4254B3C7-7B67-405D-87AF-0FBB93E3941F}</ProjectGuid>
@@ -80,7 +83,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeaderOutputFile />
-      <AdditionalIncludeDirectories>D:\boost</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\boost;D:\gmp-static</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -104,7 +107,7 @@
       <DebugInformationFormat>None</DebugInformationFormat>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeaderOutputFile />
-      <AdditionalIncludeDirectories>D:\boost</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\boost;D:\gmp-static</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
