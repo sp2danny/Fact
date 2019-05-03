@@ -206,27 +206,27 @@ auto mkname(int i) -> std::string
 
 void make_10(int f)
 {
-	Map m;
+	Map<FltH> m;
 	m.width    = get_param<int>("width"s);
 	m.height   = get_param<int>("height"s);
-	m.center_x = get_param<Flt>("center-x"s);
-	m.center_y = get_param<Flt>("center-y"s);
+	m.center_x = get_param<FltH>("center-x"s);
+	m.center_y = get_param<FltH>("center-y"s);
 	m.zoom_mul = 0.99;
 
 	static double mod_base = get_param<double>("col-base"s);
 	static double mod_pow  = get_param<double>("col-pow"s);
 
-	Flt z = get_param<Flt>("zoom-start"s);
+	FltH z = get_param<FltH>("zoom-start"s);
 	for (int i=0; i<f; ++i)
 		z *= m.zoom_mul;
 
 	m.scale_x = z;
-	m.scale_y = (z * (Flt)m.height) / (Flt)m.width;
+	m.scale_y = (z * (FltH)m.height) / (FltH)m.width;
 
 	ModFunc mod_func = [](double d) -> float { return mod_base / (float)pow(d, mod_pow); };
 
 	UL update_cap = get_param<UL>("update-cap"s);
-	UL maxout = m.generate_10 /* _threaded */ (update_cap, true);
+	UL maxout = m.generate_N_threaded(10, update_cap, true);
 
 	for (int j=0; j<10; ++j)
 	{

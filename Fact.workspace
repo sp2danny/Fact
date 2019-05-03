@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CodeLite_Workspace Name="Fact" Database="" Version="10.0.0">
-  <Project Name="mmhp" Path="mmhp.project" Active="No"/>
-  <Project Name="Server" Path="Server.project" Active="Yes"/>
+  <Project Name="mmhp" Path="mmhp.project" Active="Yes"/>
+  <Project Name="Server" Path="Server.project" Active="No"/>
   <Project Name="Client" Path="Client.project" Active="No"/>
   <Project Name="facthp" Path="facthp.project" Active="No"/>
   <Project Name="facthp" Path="facthp.project" Active="No"/>
